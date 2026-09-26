@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use Belis\Controllers\AccountController;
+use Belis\Controllers\AdminCategoriesController;
 use Belis\Controllers\AdminConfirmController;
 use Belis\Controllers\AdminController;
 use Belis\Controllers\AdminProductsController;
@@ -63,6 +64,10 @@ return static function (Router $router): void {
     $router->add('GET', '/admin/orders', [AdminOrdersController::class, 'index'], 'staff');
     $router->add('GET', '/admin/orders/{ref}', [AdminOrdersController::class, 'show'], 'staff');
     $router->add('POST', '/admin/orders/{ref}/fulfilment', [AdminOrdersController::class, 'fulfilment'], 'staff');
+    $router->add('GET', '/admin/categories', [AdminCategoriesController::class, 'index'], 'staff');
+    $router->add('POST', '/admin/categories', [AdminCategoriesController::class, 'create'], 'staff');
+    $router->add('GET', '/admin/categories/{id}', [AdminCategoriesController::class, 'show'], 'staff');
+    $router->add('POST', '/admin/categories/{id}', [AdminCategoriesController::class, 'update'], 'staff');
     $router->add('GET', '/admin/products', [AdminProductsController::class, 'index'], 'staff');
     $router->add('GET', '/admin/products/new', [AdminProductsController::class, 'newForm'], 'owner');
     $router->add('POST', '/admin/products/new', [AdminProductsController::class, 'create'], 'owner');

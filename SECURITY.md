@@ -33,6 +33,8 @@ Admin order view (built, local tests only): only signed-in staff or the owner ca
 
 Product and price management (built, local tests only): staff can edit product details, size names, stock levels and visibility; only the owner can create products, add sizes and change prices or bulk prices; every price or bulk price change needs a fresh emailed code, is checked on the server (whole pesewas, positive, bulk prices lower than the base and falling), needs an extra tick for a change over 50 percent, is written to an append-only price history (database triggers refuse updates and deletes) and to the audit log; new products start hidden; nothing is deleted. Gaps against CTL-BIZ-001: the baseline asks for dual approval of bulk price changes, and there is no feature to change many prices at once, so that rule is not built or needed yet; a single price change has one approver (the owner); there is no category management screen; content edits record which fields changed but not the old text.
 
+Category management (built, local tests only): staff and the owner can add categories and subcategories (hidden until shown), rename them, reorder them and show or hide them; slugs and parents never change; nothing is deleted; every change is audited with the field names. Category changes are content, not prices, so they need no fresh code; a compromised staff account could hide a category and so remove its products from the shop, which is reversible and audited.
+
 Not built at all: refunds, role-specific staff permissions, uploads and scanning, audit log, monitoring, backups, CI runs, branch protection.
 
 ## Change 0.4.0 (CHG-001, approved)
