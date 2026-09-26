@@ -1,6 +1,6 @@
 # Belis Bell Online Store
 
-Status: DRAFT scaffold. Design gate sealed. Security baseline 0.4.0 (emailed sign-in codes, CHG-001) is approved for development and staging only; 0.5.0 (keys in a Settings page, CHG-002) is proposed and awaits the owner's approval. Production is locked.  
+Status: DRAFT scaffold. Design gate sealed. Security baseline 0.5.0 (emailed sign-in codes CHG-001, keys in an owner Settings page CHG-002) is approved for development and staging only. Production is locked.  
 Owner: Prince Caleb (Super Admin); a Belis Bell business owner is still to be named (DEC-010, DEC-013)  
 Last reviewed: 2026-09-26
 
@@ -19,10 +19,10 @@ Non-goals for v1: native apps, contract-price accounts, AI features, WhatsApp Bu
 - Home page following the owner's mockup (hero, six category cards, promo banner, audience cards, product carousel, Why Choose, closing banner), plus `/shop`, `/c/{slug}`, `/p/{slug}`, `/categories`, `/for-businesses`, `/about` and `/contact`. Data comes from the database with mock content; photos are placeholders until supplied. (`GUI.md`)
 - Catalogue migration, mock seed loader and purge script, release builder and release checker. (`database/`, `bin/`)
 - Image pipeline: originals in `resources/images/` become responsive WebP (`npm run build:images`), and `image_html()` renders them or a neutral placeholder. Slots are documented in `docs/IMAGES.md`. (`scripts/build-images.mjs`, `src/Support/Images.php`)
-- 122 security and unit tests in a dependency-free runner. (`tests/`)
+- 143 security and unit tests in a dependency-free runner. (`tests/`)
 - GitHub Actions for CI and a locked production deploy, written but not yet run. (`.github/`)
 
-Sign-in, register and emailed codes work locally (codes are written to `storage/logs/mail.log`; real email sending is not built). Staff accounts are created with `php bin/create-staff.php email "Name" staff|owner`. Orders and Paystack test-mode payments exist but the Paystack calls have not been run against Paystack yet: local development uses `PAYMENTS_ADAPTER=mock`, a pretend payment page; set `PAYMENTS_ADAPTER=paystack` and a `sk_test_` key in `.env` to try the real service. Point Paystack's webhook at `/webhooks/paystack` and schedule `bin/reconcile-payments.php` daily (cron). Not built: password recovery, admin management screens, search, quotes and uploads, real email, monitoring. See `GUI.md`.
+Sign-in, register and emailed codes work locally (codes are written to `storage/logs/mail.log`; real email sending is not built). Staff accounts are created with `php bin/create-staff.php email "Name" staff|owner`. The owner (Super Admin) manages the Paystack, SMTP and WhatsApp settings at `/admin/settings` (fresh emailed code each time, values write-only); values saved there win over the environment file, which stays the fallback and holds `SETTINGS_KEY` and the database login. Orders and Paystack test-mode payments exist but the Paystack calls have not been run against Paystack yet: local development uses `PAYMENTS_ADAPTER=mock`, a pretend payment page; set `PAYMENTS_ADAPTER=paystack` and a `sk_test_` key in `.env` to try the real service. Point Paystack's webhook at `/webhooks/paystack` and schedule `bin/reconcile-payments.php` daily (cron). Not built: password recovery, admin management screens, search, quotes and uploads, real email, monitoring. See `GUI.md`.
 
 ## Project records
 
@@ -67,7 +67,7 @@ Not done yet, and locked by the approved baseline (production is out of scope). 
 
 ## Security approval
 
-The approved baseline digest is `d60e5d34e8d59b4c57b111cf2476d2ab8614eadd0daa8bc11e76d0c68e5c529e` (baseline 0.4.0). Store it as the GitHub repository variable `APPROVED_DIGEST` so CI compares the baseline against a value a pull request cannot edit. Until the repository is pushed and the checks are made required on a protected branch, the approval lock is checked by the validator but not enforced by a pipeline.
+The approved baseline digest is `8096f61945d374fb4a3261b921508e5b9604176cce186585cbf621b1aad1a4b3` (baseline 0.5.0). Store it as the GitHub repository variable `APPROVED_DIGEST` so CI compares the baseline against a value a pull request cannot edit. Until the repository is pushed and the checks are made required on a protected branch, the approval lock is checked by the validator but not enforced by a pipeline.
 
 ## Repository map
 

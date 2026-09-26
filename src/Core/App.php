@@ -39,6 +39,11 @@ final class App
                 return self::unavailable();
             }
         }
+        $inUse = \Belis\Support\Settings::violations();
+        if ($inUse !== []) {
+            Logger::error('Refusing to start: settings in use break the environment rules', ['reasons' => $inUse]);
+            return self::unavailable();
+        }
         try {
             return self::router()->dispatch($request);
         } catch (\Throwable $e) {

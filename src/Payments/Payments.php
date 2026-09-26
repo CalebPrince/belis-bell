@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Belis\Payments;
 
 use Belis\Core\Env;
+use Belis\Support\Settings;
 
 /** Chooses the payment adapter from the environment. Fails closed: with no key, Paystack is not available. */
 final class Payments
@@ -28,9 +29,12 @@ final class Payments
             }
             return new MockAdapter();
         }
-        $key = Env::get('PAYSTACK_SECRET_KEY', '') ?? '';
+        $key = Settings::get('PAYSTACK_SECRET_KEY', '') ?? '';
         if ($name !== 'paystack' || $key === '') {
             throw new \RuntimeException('No payment provider is configured');
+        }
+        if (Settings::violations() !== []) {
+            throw new \RuntimeException('The payment key is not allowed in this environment');
         }
         return new PaystackAdapter($key);
     }

@@ -47,8 +47,8 @@ final class Guard
             if (strlen(Env::get('AUTH_PEPPER', '') ?? '') < 32) {
                 $v[] = 'AUTH_PEPPER must be set to at least 32 random characters';
             }
-            if ((Env::get('MAIL_DRIVER', 'log') ?? 'log') === 'log') {
-                $v[] = 'The log mail driver is enabled in production, so no email would be sent';
+            if (!Secrets::keyIsValid(Env::get('SETTINGS_KEY', ''))) {
+                $v[] = 'SETTINGS_KEY must be set to 64 hex characters';
             }
             if (!str_starts_with(Env::get('APP_URL', '') ?? '', 'https://')) {
                 $v[] = 'APP_URL must start with https:// in production';

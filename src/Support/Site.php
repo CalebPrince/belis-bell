@@ -217,7 +217,7 @@ final class Site
      */
     public static function whatsappLink(string $message): ?string
     {
-        $number = preg_replace('/\D+/', '', Env::get('WHATSAPP_NUMBER', '') ?? '') ?? '';
+        $number = preg_replace('/\D+/', '', Settings::get('WHATSAPP_NUMBER', '') ?? '') ?? '';
         if ($number === '' || strlen($number) < 8 || strlen($number) > 15) {
             return null;
         }

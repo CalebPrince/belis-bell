@@ -20,11 +20,11 @@ final class Policy
             'public' => 200,
             'customer' => Auth::customer() !== null ? 200 : 401,
             'staff' => Auth::staff() !== null ? 200 : 401,
-            'owner' => Auth::owner() !== null ? 200 : 401,
+            'owner' => Auth::owner() !== null ? 200 : (Auth::staff() !== null ? 403 : 401),
             'webhook:paystack' => PaystackWebhook::verifySignature(
                 $request->rawBody(),
                 $request->header('x-paystack-signature'),
-                Env::get('PAYSTACK_SECRET_KEY', '') ?? '',
+                \Belis\Support\Settings::get('PAYSTACK_SECRET_KEY', '') ?? '',
             ) ? 200 : 401,
             default => 403,
         };

@@ -16,7 +16,7 @@ function prod(array $over = []): array
         'PAYSTACK_SECRET_KEY' => '',
         'PAYMENTS_ADAPTER' => 'paystack',
         'AUTH_PEPPER' => 'a-long-random-value-for-tests-0123456789',
-        'MAIL_DRIVER' => 'smtp',
+        'SETTINGS_KEY' => '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
     ];
 }
 
@@ -99,9 +99,9 @@ test('with preview login off nobody is signed in', function (): void {
     assert_same(null, Belis\Core\Auth::previewRole(), 'unknown roles are ignored');
 });
 
-test('production refuses a missing pepper and the log mail driver', function (): void {
+test('production refuses a missing pepper and a missing or bad settings key', function (): void {
     Env::fake(prod(['AUTH_PEPPER' => 'short']));
     assert_true(Guard::violations() !== []);
-    Env::fake(prod(['MAIL_DRIVER' => 'log']));
+    Env::fake(prod(['SETTINGS_KEY' => 'nope']));
     assert_true(Guard::violations() !== []);
 });

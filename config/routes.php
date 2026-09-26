@@ -8,6 +8,7 @@ use Belis\Controllers\CartController;
 use Belis\Controllers\CheckoutController;
 use Belis\Controllers\CatalogueController;
 use Belis\Controllers\HomeController;
+use Belis\Controllers\SettingsController;
 use Belis\Controllers\PageController;
 use Belis\Core\Router;
 
@@ -56,5 +57,10 @@ return static function (Router $router): void {
     $router->add('POST', '/admin/verify', [AuthController::class, 'staffVerify'], 'public');
     $router->add('POST', '/admin/resend', [AuthController::class, 'staffResend'], 'public');
     $router->add('POST', '/admin/sign-out', [AuthController::class, 'staffSignOut'], 'public');
+    $router->add('GET', '/admin/settings', [SettingsController::class, 'show'], 'owner');
+    $router->add('POST', '/admin/settings', [SettingsController::class, 'save'], 'owner');
+    $router->add('POST', '/admin/settings/code', [SettingsController::class, 'sendCode'], 'owner');
+    $router->add('POST', '/admin/settings/verify', [SettingsController::class, 'verifyCode'], 'owner');
+    $router->add('POST', '/admin/settings/test-email', [SettingsController::class, 'testEmail'], 'owner');
     $router->add('GET', '/admin', [AdminController::class, 'dashboard'], 'staff');
 };

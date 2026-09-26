@@ -24,6 +24,7 @@
       <li><span class="nav-off"><?= icon('tag') ?>Products <small>soon</small></span></li>
       <li><span class="nav-off"><?= icon('mail') ?>Quotes <small>soon</small></span></li>
       <li><span class="nav-off"><?= icon('users') ?>Customers <small>soon</small></span></li>
+      <?php if (($staff['role'] ?? '') === 'Owner') : ?><li><a href="/admin/settings"><?= icon('lock') ?>Settings</a></li><?php endif; ?>
     </ul>
   </nav>
 
