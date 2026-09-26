@@ -31,6 +31,21 @@ final class AdminController
     }
 
     /** @param array<string,string> $params */
+    public function forgot(Request $request, array $params = []): Response
+    {
+        return Response::html(View::render('pages/auth/forgot', ['title' => 'Forgot your password | Belis Bell', 'admin' => true]));
+    }
+
+    /** @param array<string,string> $params */
+    public function reset(Request $request, array $params = []): Response
+    {
+        if (!AuthController::hasPending(true, 'reset')) {
+            return Response::redirect('/admin/forgot');
+        }
+        return Response::html(View::render('pages/auth/reset', ['title' => 'Choose a new password | Belis Bell', 'admin' => true, 'error' => '']));
+    }
+
+    /** @param array<string,string> $params */
     public function dashboard(Request $request, array $params = []): Response
     {
         $staff = Auth::staff() ?? [];

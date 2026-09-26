@@ -18,7 +18,6 @@ function products_env(): array
     Env::fake(['APP_ENV' => 'local', 'MOCK_DATA' => '1', 'PREVIEW_LOGIN' => '', 'AUTH_PEPPER' => 'test-pepper-with-at-least-32-characters', 'SETTINGS_KEY' => KEY_A, 'APP_URL' => 'http://localhost', 'PAYMENTS_ADAPTER' => 'paystack']);
     $pdo = Db::fromEnv()->pdo();
     $pdo->exec('CREATE TABLE settings (name TEXT PRIMARY KEY, value_enc TEXT NOT NULL, updated_by INTEGER, updated_at INTEGER NOT NULL)');
-    $pdo->exec('CREATE TABLE audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, action TEXT, target TEXT, detail TEXT, ip TEXT, created_at INTEGER)');
     $pdo->exec('CREATE TABLE price_history (id INTEGER PRIMARY KEY AUTOINCREMENT, variant_id INTEGER, kind TEXT, old_value TEXT, new_value TEXT, changed_by INTEGER, created_at INTEGER)');
     $pdo->exec('ALTER TABLE categories ADD COLUMN name TEXT');
     $pdo->exec('ALTER TABLE categories ADD COLUMN parent_id INTEGER');

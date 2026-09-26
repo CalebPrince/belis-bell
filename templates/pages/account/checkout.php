@@ -16,7 +16,9 @@
  * @var bool $mock
  * @var bool $canOrder
  * @var list<array{slot:string,name:string}> $channels
+ * @var list<array<string,mixed>> $saved
  */
+$saved = $saved ?? [];
 ?>
 <div class="wrap page-head">
   <nav aria-label="Breadcrumb" class="crumbs"><ol><li><a href="/">Home</a></li><li aria-hidden="true">/</li><li><a href="/cart">Cart</a></li><li aria-hidden="true">/</li><li aria-current="page">Checkout</li></ol></nav>
@@ -46,6 +48,10 @@
 
     <section class="card form-section" aria-labelledby="ck-address">
       <h2 id="ck-address">Delivery address</h2>
+      <?php if ($saved !== []) : ?>
+        <p class="hint">Saved addresses:
+          <?php foreach ($saved as $a) : ?><a href="/checkout?address=<?= e($a['id']) ?>"><?= e($a['label']) ?></a> <?php endforeach; ?></p>
+      <?php endif; ?>
       <div class="field">
         <label for="ck-street">Street address or landmark</label>
         <input id="ck-street" name="street" type="text" autocomplete="street-address" value="<?= e($old['street'] ?? '') ?>" aria-invalid="<?= e(isset($errors['street']) ? 'true' : 'false') ?>" required>
@@ -71,6 +77,10 @@
         <textarea id="ck-notes" name="notes" rows="3" maxlength="500"><?= e($old['notes'] ?? '') ?></textarea>
       </div>
     </section>
+
+    <?php if ($canOrder) : ?>
+      <label class="opt"><input type="checkbox" name="save_address" value="1"><span>Save this address for next time</span></label>
+    <?php endif; ?>
 
     <section class="card form-section" aria-labelledby="ck-delivery">
       <h2 id="ck-delivery">Delivery method</h2>

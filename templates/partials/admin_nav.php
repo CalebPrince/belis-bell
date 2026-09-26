@@ -14,6 +14,6 @@
       <li><a href="/admin/categories"<?= flag($active === 'categories', 'aria-current="page"') ?>><?= icon('menu') ?>Categories</a></li>
       <li><span class="nav-off"><?= icon('mail') ?>Quotes <small>soon</small></span></li>
       <li><span class="nav-off"><?= icon('users') ?>Customers <small>soon</small></span></li>
-      <?php if (($staff['role'] ?? '') === 'Owner') : ?><li><a href="/admin/settings"<?= flag($active === 'settings', 'aria-current="page"') ?>><?= icon('lock') ?>Settings</a></li><?php endif; ?>
+      <?php if (($staff['role'] ?? '') === 'Owner') : ?><li><a href="/admin/staff"<?= flag($active === 'staff', 'aria-current="page"') ?>><?= icon('users') ?>Staff</a></li><li><a href="/admin/audit"<?= flag($active === 'audit', 'aria-current="page"') ?>><?= icon('clock') ?>Activity log</a></li><li><a href="/admin/settings"<?= flag($active === 'settings', 'aria-current="page"') ?>><?= icon('lock') ?>Settings</a></li><?php endif; ?>
     </ul>
   </nav>

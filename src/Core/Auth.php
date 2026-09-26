@@ -111,11 +111,11 @@ final class Auth
             return self::$cache = null;
         }
         try {
-            $row = Db::fromEnv()->one('SELECT id, email, name, phone, role, is_active, created_at FROM users WHERE id = ?', [(int) $a['uid']]);
+            $row = Db::fromEnv()->one('SELECT id, email, name, phone, role, is_active, created_at, pw_changed_at FROM users WHERE id = ?', [(int) $a['uid']]);
         } catch (\Throwable) {
             return self::$cache = null; // fail closed when the database cannot answer
         }
-        if ($row === null || (int) $row['is_active'] !== 1 || $row['role'] !== $a['role']) {
+        if ($row === null || (int) $row['is_active'] !== 1 || $row['role'] !== $a['role'] || (int) ($row['pw_changed_at'] ?? 0) > (int) $a['started']) {
             unset($_SESSION['auth']);
             return self::$cache = null;
         }

@@ -61,6 +61,13 @@ final class CheckoutController
         } catch (\Throwable $e) {
             return $this->unavailable($e);
         }
+        if (($request->post['save_address'] ?? '') === '1') {
+            try {
+                (new \Belis\Domain\Addresses($db))->saveFromCheckout((int) $customer['id'], $request->post);
+            } catch (\Throwable $e) {
+                Logger::error('Address could not be saved', ['type' => $e::class]);
+            }
+        }
         Session::start();
         $_SESSION['pay'][$order['ref']] = $url;
         return Response::redirect('/pay/' . rawurlencode($order['ref']));

@@ -7,7 +7,7 @@
  */
 $state = (string) $order['state'];
 $headline = [
-    'paid' => ['Thank you, your order is confirmed', 'We will contact you about delivery. Your order number is shown below.'],
+    'paid' => ['Thank you, your order is confirmed', 'We emailed you the details and will contact you about delivery. Your order number is shown below.'],
     'pending' => ['We are waiting for your payment', 'This can take a few minutes. Press Check payment status to look again. Please do not pay twice.'],
     'failed' => ['Your payment did not go through', 'You have not been charged for this order. You can go back to your cart and try again.'],
     'cancelled' => ['This order was cancelled', 'No payment was taken. You can start a new order from your cart.'],

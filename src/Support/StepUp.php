@@ -29,6 +29,6 @@ final class StepUp
     /** Only admin pages that ask for a confirmation may be returned to. */
     public static function safeNext(mixed $next): string
     {
-        return is_string($next) && preg_match('#^/admin/(products(/[0-9]+|/new)?|settings)$#', $next) === 1 ? $next : '/admin';
+        return is_string($next) && preg_match('#^/admin/(products(/[0-9]+|/new)?|settings|staff)$#', $next) === 1 ? $next : '/admin';
     }
 }

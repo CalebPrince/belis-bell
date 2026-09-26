@@ -8,6 +8,7 @@ use Belis\Core\Db;
 use Belis\Core\Request;
 use Belis\Core\Response;
 use Belis\Core\View;
+use Belis\Domain\Addresses;
 use Belis\Domain\Cart;
 use Belis\Domain\Catalogue;
 use Belis\Domain\Orders;
@@ -45,6 +46,21 @@ final class AccountController
     }
 
     /** @param array<string,string> $params */
+    public function forgot(Request $request, array $params = []): Response
+    {
+        return Response::html(View::render('pages/auth/forgot', ['title' => 'Forgot your password | Belis Bell', 'admin' => false]));
+    }
+
+    /** @param array<string,string> $params */
+    public function reset(Request $request, array $params = []): Response
+    {
+        if (!AuthController::hasPending(false, 'reset')) {
+            return Response::redirect('/account/forgot');
+        }
+        return Response::html(View::render('pages/auth/reset', ['title' => 'Choose a new password | Belis Bell', 'admin' => false, 'error' => '']));
+    }
+
+    /** @param array<string,string> $params */
     public function checkout(Request $request, array $params = []): Response
     {
         try {
@@ -57,7 +73,27 @@ final class AccountController
             return Response::redirect('/cart');
         }
         $customer = Auth::customer() ?? [];
-        return Response::html(View::render('pages/account/checkout', self::checkoutVars($cart, $customer, ['name' => $customer['name'] ?? '', 'phone' => $customer['phone'] ?? ''], [])));
+        $old = ['name' => $customer['name'] ?? '', 'phone' => $customer['phone'] ?? ''];
+        $saved = [];
+        if (isset($customer['id'])) {
+            try {
+                $book = new Addresses(Db::fromEnv());
+                $saved = $book->forUser((int) $customer['id']);
+                $want = is_string($request->query['address'] ?? null) && ctype_digit($request->query['address']) ? (int) $request->query['address'] : 0;
+                $pick = null;
+                foreach ($saved as $a) {
+                    if (($want > 0 && (int) $a['id'] === $want) || ($want === 0 && (int) $a['is_default'] === 1)) {
+                        $pick = $a;
+                    }
+                }
+                if ($pick !== null) {
+                    $old = ['name' => $pick['name'], 'phone' => $pick['phone'], 'street' => $pick['street'], 'city' => $pick['city'], 'region' => $pick['region']];
+                }
+            } catch (\Throwable $e) {
+                Logger::error('Saved addresses failed', ['type' => $e::class]);
+            }
+        }
+        return Response::html(View::render('pages/account/checkout', self::checkoutVars($cart, $customer, $old, [], $saved)));
     }
 
     /**
@@ -65,9 +101,10 @@ final class AccountController
      * @param array<string,string> $customer
      * @param array<string,mixed> $old
      * @param array<string,string> $errors
+     * @param list<array<string,mixed>> $saved
      * @return array<string,mixed>
      */
-    public static function checkoutVars(array $cart, array $customer, array $old, array $errors): array
+    public static function checkoutVars(array $cart, array $customer, array $old, array $errors, array $saved = []): array
     {
         $options = Site::deliveryOptions();
         $chosen = $options[0] ?? ['key' => '', 'fee' => 0];
@@ -91,6 +128,7 @@ final class AccountController
             'channels' => Site::paymentChannels(),
             'mock' => Payments::isMock(),
             'canOrder' => isset($customer['id']),
+            'saved' => $saved,
         ];
     }
 
@@ -155,11 +193,25 @@ final class AccountController
                 $orders = [];
             }
         }
+        $addresses = PreviewData::addresses();
+        if (isset($customer['id'])) {
+            try {
+                $addresses = array_map(static fn (array $a): array => [
+                    'id' => (int) $a['id'], 'label' => (string) $a['label'], 'default' => (int) $a['is_default'] === 1,
+                    'lines' => [(string) $a['name'] . ', ' . $a['phone'], (string) $a['street'], $a['city'] . ', ' . $a['region']],
+                ], (new Addresses(Db::fromEnv()))->forUser((int) $customer['id']));
+            } catch (\Throwable $e) {
+                Logger::error('Account addresses failed', ['type' => $e::class]);
+                $addresses = [];
+            }
+        }
         return Response::html(View::render('pages/account/dashboard', [
             'title' => 'My account | Belis Bell',
             'customer' => $customer,
             'orders' => $orders,
-            'addresses' => PreviewData::addresses(),
+            'addresses' => $addresses,
+            'regions' => Site::regions(),
+            'canEdit' => isset($customer['id']),
         ]));
     }
 }

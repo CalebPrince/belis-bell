@@ -6,6 +6,7 @@ namespace Belis\Domain;
 use Belis\Core\Db;
 use Belis\Payments\PaymentAdapter;
 use Belis\Support\Logger;
+use Belis\Support\Mailer;
 use Belis\Support\Site;
 use Belis\Support\Validator;
 
@@ -17,7 +18,7 @@ use Belis\Support\Validator;
  */
 final class Orders
 {
-    public function __construct(private readonly Db $db, private readonly ?int $clock = null)
+    public function __construct(private readonly Db $db, private readonly ?int $clock = null, private readonly ?Mailer $mailer = null)
     {
     }
 
@@ -126,14 +127,55 @@ final class Orders
         return $o;
     }
 
-    /** Set packing or delivery progress. Only a paid order can move. @return bool false when refused */
-    public function setFulfilment(string $ref, string $value): bool
+    /**
+     * Set packing or delivery progress. Only a paid order can move.
+     *
+     * @return array{ok:bool,changed:bool} ok is false when refused; changed is false when it was already that value
+     */
+    public function setFulfilment(string $ref, string $value): array
     {
         if (!array_key_exists($value, self::FULFILMENT)) {
-            return false;
+            return ['ok' => false, 'changed' => false];
         }
-        return $this->db->run("UPDATE orders SET fulfilment = ? WHERE ref = ? AND status = 'paid'", [$value, $ref]) > 0
-            || $this->db->one("SELECT id FROM orders WHERE ref = ? AND status = 'paid' AND fulfilment = ?", [$ref, $value]) !== null;
+        $o = $this->db->one("SELECT id, fulfilment FROM orders WHERE ref = ? AND status = 'paid'", [$ref]);
+        if ($o === null) {
+            return ['ok' => false, 'changed' => false];
+        }
+        if ($o['fulfilment'] === $value) {
+            return ['ok' => true, 'changed' => false];
+        }
+        $this->db->run("UPDATE orders SET fulfilment = ? WHERE id = ? AND status = 'paid'", [$value, (int) $o['id']]);
+        if ($value !== 'new') {
+            $line = ['packed' => 'has been packed and is getting ready to leave', 'out_for_delivery' => 'is out for delivery', 'delivered' => 'has been delivered'][$value];
+            $this->emailCustomer((int) $o['id'], 'Update on your Belis Bell order', 'fulfilment', $line);
+        }
+        return ['ok' => true, 'changed' => true];
+    }
+
+    /**
+     * Email the customer about their order. A failure is logged and never stops the payment or the change.
+     */
+    private function emailCustomer(int $orderId, string $subject, string $kind, string $line = ''): void
+    {
+        try {
+            $o = $this->db->one('SELECT o.*, u.email, u.name FROM orders o JOIN users u ON u.id = o.user_id WHERE o.id = ?', [$orderId]);
+            if ($o === null) {
+                return;
+            }
+            $items = $this->db->all('SELECT product_name, size_label, qty, line_pesewas FROM order_items WHERE order_id = ? ORDER BY id', [$orderId]);
+            $url = rtrim(\Belis\Core\Env::get('APP_URL', '') ?? '', '/') . '/order/' . rawurlencode((string) $o['ref']);
+            if ($kind === 'paid') {
+                $lines = array_map(static fn (array $i): string => '- ' . $i['product_name'] . ' (' . $i['size_label'] . ') x ' . $i['qty'] . '  ' . money((int) $i['line_pesewas']), $items);
+                $body = "Hello {$o['name']},\n\nThank you. We received your payment for order {$o['ref']}.\n\n" . implode("\n", $lines)
+                    . "\n\nDelivery: " . money((int) $o['delivery_pesewas']) . " ({$o['delivery_method']})\nTotal paid: " . money((int) $o['total_pesewas'])
+                    . "\n\nDelivering to: {$o['ship_name']}, {$o['ship_street']}, {$o['ship_city']}, {$o['ship_region']}\n\nWe will contact you about delivery. You can follow your order here: {$url}";
+            } else {
+                $body = "Hello {$o['name']},\n\nYour order {$o['ref']} {$line}.\n\nYou can see it here: {$url}";
+            }
+            ($this->mailer ?? Mailer::fromEnv())->send((string) $o['email'], $subject, $body . "\n\nBelis Bell will never ask for your password or a code by phone, WhatsApp or email.");
+        } catch (\Throwable $e) {
+            Logger::error('Order email could not be sent', ['type' => $e::class]);
+        }
     }
 
     /**
@@ -200,6 +242,9 @@ final class Orders
             }
             $n = $this->db->run("UPDATE orders SET status = 'paid', paid_at = ? WHERE id = ? AND status <> 'paid'", [$this->now(), $id]);
             $this->event($id, $source, $n > 0 ? 'paid' : 'already_paid');
+            if ($n > 0) {
+                $this->emailCustomer((int) $id, 'Your Belis Bell order is confirmed', 'paid');
+            }
             return 'paid';
         }
         if ($result['status'] === 'failed') {

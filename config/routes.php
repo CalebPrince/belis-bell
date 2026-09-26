@@ -2,10 +2,12 @@
 declare(strict_types=1);
 
 use Belis\Controllers\AccountController;
+use Belis\Controllers\AccountSelfController;
 use Belis\Controllers\AdminCategoriesController;
 use Belis\Controllers\AdminConfirmController;
 use Belis\Controllers\AdminController;
 use Belis\Controllers\AdminProductsController;
+use Belis\Controllers\AdminStaffController;
 use Belis\Controllers\AdminOrdersController;
 use Belis\Controllers\AuthController;
 use Belis\Controllers\CartController;
@@ -44,8 +46,21 @@ return static function (Router $router): void {
     $router->add('POST', '/account/verify', [AuthController::class, 'customerVerify'], 'public');
     $router->add('POST', '/account/resend', [AuthController::class, 'customerResend'], 'public');
     $router->add('POST', '/account/sign-out', [AuthController::class, 'customerSignOut'], 'public');
+    $router->add('GET', '/account/forgot', [AccountController::class, 'forgot'], 'public');
+    $router->add('POST', '/account/forgot', [AuthController::class, 'customerForgot'], 'public');
+    $router->add('GET', '/account/reset', [AccountController::class, 'reset'], 'public');
+    $router->add('POST', '/account/reset', [AuthController::class, 'customerReset'], 'public');
+    $router->add('GET', '/admin/forgot', [AdminController::class, 'forgot'], 'public');
+    $router->add('POST', '/admin/forgot', [AuthController::class, 'staffForgot'], 'public');
+    $router->add('GET', '/admin/reset', [AdminController::class, 'reset'], 'public');
+    $router->add('POST', '/admin/reset', [AuthController::class, 'staffReset'], 'public');
     $router->add('GET', '/account', [AccountController::class, 'dashboard'], 'customer');
     $router->add('GET', '/checkout', [AccountController::class, 'checkout'], 'customer');
+    $router->add('POST', '/account/details', [AccountSelfController::class, 'details'], 'customer');
+    $router->add('POST', '/account/password', [AccountSelfController::class, 'password'], 'customer');
+    $router->add('POST', '/account/addresses', [AccountSelfController::class, 'addAddress'], 'customer');
+    $router->add('POST', '/account/addresses/{id}/delete', [AccountSelfController::class, 'deleteAddress'], 'customer');
+    $router->add('POST', '/account/addresses/{id}/default', [AccountSelfController::class, 'defaultAddress'], 'customer');
     $router->add('POST', '/checkout', [CheckoutController::class, 'place'], 'customer');
     $router->add('GET', '/pay/{ref}', [CheckoutController::class, 'pay'], 'customer');
     $router->add('GET', '/payment/callback', [CheckoutController::class, 'callback'], 'customer');
@@ -79,6 +94,10 @@ return static function (Router $router): void {
     $router->add('GET', '/admin/confirm', [AdminConfirmController::class, 'show'], 'staff');
     $router->add('POST', '/admin/confirm/code', [AdminConfirmController::class, 'sendCode'], 'staff');
     $router->add('POST', '/admin/confirm', [AdminConfirmController::class, 'verify'], 'staff');
+    $router->add('GET', '/admin/staff', [AdminStaffController::class, 'index'], 'owner');
+    $router->add('POST', '/admin/staff', [AdminStaffController::class, 'create'], 'owner');
+    $router->add('POST', '/admin/staff/{id}/active', [AdminStaffController::class, 'setActive'], 'owner');
+    $router->add('GET', '/admin/audit', [AdminStaffController::class, 'audit'], 'owner');
     $router->add('GET', '/admin/settings', [SettingsController::class, 'show'], 'owner');
     $router->add('POST', '/admin/settings', [SettingsController::class, 'save'], 'owner');
     $router->add('POST', '/admin/settings/code', [SettingsController::class, 'sendCode'], 'owner');

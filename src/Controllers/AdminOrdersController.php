@@ -100,8 +100,9 @@ final class AdminOrdersController
             $db = Db::fromEnv();
             $pdo = $db->pdo();
             $pdo->beginTransaction();
-            $ok = (new Orders($db))->setFulfilment($ref, $to);
-            if ($ok) {
+            $res = (new Orders($db))->setFulfilment($ref, $to);
+            $ok = $res['ok'];
+            if ($res['ok'] && $res['changed']) {
                 Audit::add($db, (int) $staff['id'], 'order.fulfilment.' . $to, $ref, $request->ip);
             }
             $pdo->commit();

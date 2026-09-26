@@ -178,6 +178,98 @@ final class Accounts
         $this->db->run('UPDATE users SET email_verified_at = ? WHERE id = ? AND email_verified_at IS NULL', [$this->now(), $uid]);
     }
 
+    /**
+     * Start a password reset. Always looks the same to the visitor. Returns the account id when a code was sent, else 0.
+     * The account must match the sign-in area (customers here, staff at the staff page).
+     */
+    public function requestReset(string $email, bool $staff, string $ip): int
+    {
+        $email = strtolower(trim($email));
+        $now = $this->now();
+        if ($email === '' || !Throttle::hit($this->db, 'reset-ip:' . $ip, 10, 3600, $now) || !Throttle::hit($this->db, 'reset-email:' . $email, 3, 3600, $now)) {
+            return 0;
+        }
+        $user = $this->db->one('SELECT id, role, is_active FROM users WHERE email = ?', [$email]);
+        if ($user === null || (int) $user['is_active'] !== 1 || in_array($user['role'], ['staff', 'owner'], true) !== $staff) {
+            return 0;
+        }
+        return $this->issueCode((int) $user['id'], 'reset') ? (int) $user['id'] : 0;
+    }
+
+    /** Finish a reset with the emailed code. @return string|null a message when it failed, null when the password was changed */
+    public function resetPassword(int $uid, string $code, string $password, string $password2, string $ip): ?string
+    {
+        $user = $uid > 0 ? $this->db->one('SELECT email, name FROM users WHERE id = ?', [$uid]) : null;
+        $problem = self::passwordProblem($password, (string) ($user['email'] ?? ''), (string) ($user['name'] ?? ''));
+        if ($problem !== null) {
+            return $problem;
+        }
+        if ($password !== $password2) {
+            return 'The two passwords do not match.';
+        }
+        if ($user === null || !$this->checkCode($uid, 'reset', $code, $ip)) {
+            return 'That code did not work. It may have expired or been used. You can ask for a new one.';
+        }
+        $this->setPassword($uid, $password);
+        $this->markVerified($uid);
+        $this->notify((string) $user['email'], 'Your Belis Bell password was changed', "Your password was just changed using a code we emailed you.\n\nIf this was not you, use Forgot your password on the sign-in page straight away.");
+        return null;
+    }
+
+    /** Change the password of a signed-in person, who must give the current one. @return string|null a message when it failed */
+    public function changePassword(int $uid, string $current, string $password, string $password2): ?string
+    {
+        $user = $this->db->one('SELECT email, name, password_hash FROM users WHERE id = ?', [$uid]);
+        if ($user === null || !Throttle::hit($this->db, 'chpw:' . $uid, 5, 900, $this->now())) {
+            return 'Too many attempts. Please wait a few minutes and try again.';
+        }
+        if (!password_verify($current, (string) $user['password_hash'])) {
+            return 'Your current password is not right.';
+        }
+        $problem = self::passwordProblem($password, (string) $user['email'], (string) $user['name']);
+        if ($problem !== null) {
+            return $problem;
+        }
+        if ($password !== $password2) {
+            return 'The two passwords do not match.';
+        }
+        $this->setPassword($uid, $password);
+        $this->notify((string) $user['email'], 'Your Belis Bell password was changed', "Your password was just changed from your account page.\n\nIf this was not you, use Forgot your password on the sign-in page straight away.");
+        return null;
+    }
+
+    /**
+     * @param array<string,mixed> $in name, phone
+     * @return array<string,string> field errors, empty when saved
+     */
+    public function updateDetails(int $uid, array $in): array
+    {
+        $errors = Validator::check($in, ['name' => 'required|max:120', 'phone' => 'required|max:20']);
+        $phone = is_string($in['phone'] ?? null) ? trim($in['phone']) : '';
+        if (!isset($errors['phone']) && preg_match('/^\+?[0-9 ()-]{7,20}$/', $phone) !== 1) {
+            $errors['phone'] = 'Enter a valid phone number.';
+        }
+        if ($errors === []) {
+            $this->db->run('UPDATE users SET name = ?, phone = ? WHERE id = ?', [trim((string) $in['name']), $phone, $uid]);
+        }
+        return $errors;
+    }
+
+    /** The unix time of the last password change, or 0. Sessions that started earlier are ended. */
+    private function setPassword(int $uid, string $password): void
+    {
+        $this->db->run('UPDATE users SET password_hash = ?, pw_changed_at = ? WHERE id = ?', [self::hash($password), $this->now(), $uid]);
+    }
+
+    private function notify(string $to, string $subject, string $body): void
+    {
+        try {
+            $this->mailer->send($to, $subject, $body);
+        } catch (\Throwable) {
+            // The change already happened; a failed notice is not allowed to undo it.
+        }
+    }
+
     /** Create a verified account directly (used by the staff creation script only). */
     public function createVerified(string $email, string $name, string $phone, string $password, string $role): int
     {

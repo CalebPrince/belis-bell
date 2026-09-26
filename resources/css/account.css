@@ -91,3 +91,8 @@
 .filter-actions { display: flex; gap: .5rem; }
 .form-inline { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
 .form-inline select { min-height: 3rem; padding: 0 .8rem; border: 1px solid var(--line); border-radius: 10px; background: var(--canvas); color: var(--ink); font: inherit; }
+.fold { margin-top: 1rem; }
+.fold summary { display: inline-flex; align-items: center; min-height: 3rem; padding: 0 1rem; cursor: pointer; list-style: none; }
+.fold summary::-webkit-details-marker { display: none; }
+.fold[open] summary { margin-bottom: 1rem; }
+.sub-row { padding-left: 1.5rem !important; }

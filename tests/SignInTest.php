@@ -35,9 +35,10 @@ function auth_env(): OutboxMailer
 {
     Env::fake(['APP_ENV' => 'local', 'MOCK_DATA' => '1', 'PREVIEW_LOGIN' => '', 'AUTH_PEPPER' => 'test-pepper-with-at-least-32-characters']);
     $pdo = new PDO('sqlite::memory:', null, null, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
-    $pdo->exec('CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, phone TEXT NOT NULL, password_hash TEXT NOT NULL, role TEXT NOT NULL DEFAULT "customer", is_active INTEGER NOT NULL DEFAULT 1, email_verified_at INTEGER, created_at INTEGER NOT NULL)');
+    $pdo->exec('CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, phone TEXT NOT NULL, password_hash TEXT NOT NULL, role TEXT NOT NULL DEFAULT "customer", is_active INTEGER NOT NULL DEFAULT 1, email_verified_at INTEGER, created_at INTEGER NOT NULL, pw_changed_at INTEGER)');
     $pdo->exec('CREATE TABLE auth_codes (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, purpose TEXT NOT NULL, code_hash TEXT NOT NULL, expires_at INTEGER NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, used_at INTEGER, created_at INTEGER NOT NULL)');
     $pdo->exec('CREATE TABLE throttle (key_hash TEXT PRIMARY KEY, hits INTEGER NOT NULL, window_start INTEGER NOT NULL)');
+    $pdo->exec('CREATE TABLE audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, action TEXT, target TEXT, detail TEXT, ip TEXT, created_at INTEGER)');
     Db::useForTests(new Db($pdo));
     $mail = new OutboxMailer();
     Mailer::useForTests($mail);

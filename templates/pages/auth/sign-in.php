@@ -36,6 +36,7 @@ $self = $admin ? '/admin/sign-in' : '/account/sign-in';
       <button type="submit" class="btn-primary btn-block"><?= icon('lock') ?>Sign in</button>
     </form>
 
+    <p class="auth-alt"><a href="<?= e($admin ? '/admin/forgot' : '/account/forgot') ?>">Forgot your password?</a></p>
     <?php if (!$admin) : ?>
       <p class="auth-alt">New to Belis Bell? <a href="/account/register">Create an account</a></p>
     <?php else : ?>
