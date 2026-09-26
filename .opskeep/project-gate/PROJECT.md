@@ -9,7 +9,7 @@ Online store for washroom and cleaning products in Ghana, serving households and
 - **Usage:** Heavy contact: ordering, quotes and conversations all day
 - **Primary job:** Find the right product, get a price or quote, and order with confidence
 - **Platform:** Responsive web store, full features on phone and desktop
-- **Reference:** supplymaster.store (visual style and section arrangement only; all content, imagery and branding original)
+- **Reference:** Owner-supplied home page mockup (structure only); the owner supplies all images
 
 ## Product character
 
@@ -21,9 +21,9 @@ Online store for washroom and cleaning products in Ghana, serving households and
 
 ## Chosen direction: Bright Supply
 
-Photo-led supply store with bold tiles in the Belis Bell blue and green.
+Clean, photo-led home page in the Belis Bell logo colours.
 
-The reference's visual language and section order, rebuilt in the Belis Bell logo colours with original photos and copy. Friendly and clear for households, credible for institutions.
+Follows the owner's mockup: clear hero, category cards, audience cards, product carousel and two navy banners. Friendly for households and credible for institutions.
 
 ## Users & jobs
 
@@ -48,4 +48,5 @@ The reference's visual language and section order, rebuilt in the Belis Bell log
 - (med) Following another company's visual style closely can look like a clone. Original logo, photography, wording and palette are required, and nothing may suggest affiliation.
 - (med) The logo is a raster with a light halo on white. It needs a transparent or SVG file and a compact header lockup before build.
 - (med) Mock data can leak into production. Keep it in one labelled seed file, block launch until it is replaced, and never take real payments in test mode.
+- (med) The mockup shows recognisable third-party brand packaging (for example detergent, toilet cleaner and tissue brands). Showing them needs the right from the brand or distributor. Use only photos the owner has the right to show.
 

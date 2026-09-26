@@ -59,7 +59,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Dependency audit
         run: npm audit --audit-level=high
-      - run: npm run build:css
+      - run: npm run build
       - uses: shivammathur/setup-php@v2
         with:
           php-version: "8.3"

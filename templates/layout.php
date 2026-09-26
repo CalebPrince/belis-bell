@@ -7,6 +7,7 @@
 <meta name="description" content="Cleaning supplies and more for homes, businesses and institutions in Ghana.">
 <link rel="stylesheet" href="<?= asset('css/app.css') ?>">
 <link rel="icon" type="image/webp" href="<?= asset('brand/logo-mark.webp') ?>">
+<script src="<?= asset('js/app.js') ?>" defer></script>
 </head>
 <body>
 <a href="#main" class="skip-link">Skip to main content</a>

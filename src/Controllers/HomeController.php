@@ -9,6 +9,7 @@ use Belis\Core\Response;
 use Belis\Core\View;
 use Belis\Domain\Catalogue;
 use Belis\Support\Logger;
+use Belis\Support\Site;
 
 final class HomeController
 {
@@ -18,7 +19,7 @@ final class HomeController
         try {
             $catalogue = new Catalogue(Db::fromEnv());
             $categories = $catalogue->categories();
-            $products = $catalogue->featured(8);
+            $products = $catalogue->featured(10);
         } catch (\Throwable $e) {
             Logger::error('Home page data failed', ['type' => $e::class]);
             return Response::html(View::render('pages/unavailable', ['title' => 'Back shortly']), 503);
@@ -27,6 +28,9 @@ final class HomeController
             'title' => 'Belis Bell: cleaning supplies and more',
             'categories' => $categories,
             'products' => $products,
+            'trust' => Site::trust(),
+            'why' => Site::why(),
+            'audiences' => Site::audiences(),
         ]));
     }
 

@@ -17,6 +17,7 @@ test('e() escapes markup and quotes', function (): void {
 test('a rendered page escapes hostile product data', function (): void {
     $html = View::render('pages/home', [
         'title' => '<b>t</b>',
+        'trust' => [], 'why' => [], 'audiences' => [],
         'categories' => [['name' => '<img src=x onerror=alert(1)>', 'blurb' => '"><script>x</script>', 'slug' => 's']],
         'products' => [['name' => '<script>alert(1)</script>', 'pack_size' => '5"L', 'price_pesewas' => 1000, 'stock_status' => 'in_stock', 'slug' => 'p', 'category' => 'c']],
     ]);
@@ -30,7 +31,7 @@ test('templates print data only through the approved helpers', function (): void
         $code = (string) file_get_contents($file);
         preg_match_all('/<\?=\s*(.{0,40})/s', $code, $m);
         foreach ($m[1] as $expr) {
-            $ok = preg_match('/^(e|asset|csrf_field)\(/', $expr) === 1
+            $ok = preg_match('/^(e|asset|csrf_field|flag|image_html|icon)\(/', $expr) === 1
                 || (str_ends_with($file, 'templates/layout.php') && str_starts_with($expr, 'raw($content)'));
             assert_true($ok, basename($file) . ' prints unescaped output: <?= ' . trim($expr));
         }
@@ -40,7 +41,7 @@ test('templates print data only through the approved helpers', function (): void
 test('templates contain no inline script, style or event handlers', function (): void {
     foreach (files_under(BASE_PATH . '/templates', ['php']) as $file) {
         $code = strtolower((string) file_get_contents($file));
-        assert_true(!str_contains($code, '<script') && !str_contains($code, '<style'), basename($file) . ' has an inline script or style block');
+        assert_true(preg_match('/<script(?![^>]*\ssrc=)/', $code) !== 1 && !str_contains($code, '<style'), basename($file) . ' has an inline script or style block');
         assert_true(preg_match('/\son[a-z]+\s*=/', $code) !== 1, basename($file) . ' has an inline event handler');
         assert_true(preg_match('/\sstyle\s*=/', $code) !== 1, basename($file) . ' has an inline style attribute');
     }

@@ -8,58 +8,61 @@ Belis Bell sells washroom and cleaning products in Ghana. It serves households a
 
 ## Direction: Bright Supply (C)
 
-Tagline: photo-led supply store with bold tiles in the Belis Bell blue and green.
+Tagline: clean, photo-led home page in the Belis Bell logo colours.
 
-It follows the visual language and section order of the reference store (supplymaster.store) at the owner's request, rebuilt in Belis Bell's own logo colours, photography and wording (PG-025, PG-026, PG-029, PG-030). It is friendly and clear for households and credible for institutions.
+The structure comes from the owner's home page mockup (PG-033, PG-034). The visual style follows the mockup with one accessibility change (PG-036). The owner supplies every image (PG-035).
 
 What it deliberately is not:
-- Not a copy. No text, product photos, logos, brand or partner names are taken from the reference, and nothing implies affiliation (PG-026).
-- Not editorial or serif-led. The earlier editorial direction was superseded (PG-009).
-- Not a sidebar app. Navigation is a top bar with a mega-menu (PG-013).
-- Not gold, dark-first or heavy on effects. Premium comes from photography and restraint (PG-008).
+- Not a copy of another store. No text, photos, logos, brand or partner names are taken from other sites, and nothing implies affiliation.
+- Not editorial or serif-led (PG-009 superseded).
+- Not a sidebar app. Navigation is a header with text links (PG-034).
+- Not gold, dark-first or heavy on effects.
+- Not image-generated. The developer does not create or source photos (PG-035).
 
 ## Foundation
 
 | Aspect | Decision |
 |---|---|
-| Theme | Light default, dark follows the device (PG-012) |
-| Navigation | Announcement bar, header with search, nav row with Shop mega-menu and Buy for Business (PG-013) |
+| Theme | Light default, dark follows device (PG-012) |
+| Navigation | Header: logo, links Home, Shop, Categories, For Businesses, About, Contact, and icons Search, Account, Cart with count. Menu button on phones (PG-034) |
 | Content width | 1280px max |
 | Density | Balanced |
-| Corner radius | 12px for buttons and cards, 20px for large tiles |
-| Typography | Figtree semibold for headings, DM Sans for body, 17px base body size (PG-004) |
-| Primary interaction | Split hero with tile cluster, category pill tabs, product carousels with add-to-cart |
-| Mobile strategy | Full parity with desktop, tiles stack, carousels swipe, category drawer (PG-002) |
+| Corner radius | 16px cards, pill buttons |
+| Typography | Figtree bold for headings, DM Sans for body, 17px base (PG-004) |
+| Primary interaction | Hero with two buttons, category cards, audience cards, product carousel with Add to Cart (PG-033) |
+| Mobile strategy | Full parity, sections stack, carousels swipe (PG-002) |
 | Animation | Carousel scroll and gentle hover lift only, reduced-motion safe |
-| Icons | Lucide |
+| Icons | Lucide, in the green or blue of the palette |
 
 ## Rules
 
-1. The home page keeps this section order: announcement bar, header, nav row, split hero, category pill tabs, product carousels, brand spotlight, three ways to shop tiles, core category tiles, featured partner picks, trust counter, brand in focus, all brands A to Z, footer. Buying guides and hygiene advice form a lower strip (PG-014, PG-026).
-2. The split hero is a large photo with a dark overlay and a big white headline on the left, and a 2x2 cluster of coloured feature tiles on the right. On phones the tiles stack below the hero (PG-025, PG-002).
-3. Buttons and links use the blue primary. The announcement bar and footer use deep navy. Feature tiles rotate blue, navy, green (#2b7d32) and ink, always with white text above 4.5:1 contrast. The logo green (#43b14a) is decoration only, never text or a button background (PG-029, PG-031).
-4. Product cards show photo, name, pack size, price in GHS, stock status and a full-width add-to-cart button. Elevation is for cards and panels you act on; page sections stay flat (PG-011, PG-020).
-5. Every product page offers both add-to-cart and add-to-quote, plus a WhatsApp button (PG-020, PG-006).
-6. Institutions use the Buy for Business path: quote from a cart or list, optional requirements upload, a quote thread with messages, then approve into an order. Repeat orders reuse past quotes (PG-018, PG-023).
-7. Orders and quotes always have a review step, a confirmation with a reference number, and a logged audit trail. Edits or cancellations after submit are deliberate and recorded (PG-007).
-8. Checkout supports online payment. Payment methods and processor are decided in the security gate, not here (PG-022).
-9. One primary action per view. Use plain language and no jargon (PG-005).
-10. Copy has no em dashes. Tone is calm, warm and plain (PG-008).
-11. Pages must stay light. Images are responsive and compressed, use skeleton loading, and cart and quote drafts survive a dropped connection (PG-003, PG-021).
-12. Text is at least 17px body. Touch targets are at least 48px (PG-004).
-13. All colours come from `tokens.json`. Never hard-code a colour (PG-029).
-14. Use the supplied logo (`brand/logo-primary.webp`, PG-030). Its descriptor is "Cleaning Supplies & More" with the line "For homes, businesses and institutions". The header needs a transparent PNG or SVG compact lockup, which is produced before build.
-15. The first build uses clearly labelled mock data for products, prices, stock, categories, brands, delivery figures, the trust counter and customer content. It lives in one seed file, is never presented as real, and is removed before launch. Payments run in provider test mode only until the security gate signs off live keys (PG-032).
-16. Meet every rule in `accessibility.md` (PG-015).
+1. The home page keeps this section order (PG-033): header; hero (eyebrow, three-line two-tone headline, one sentence, two buttons Shop Now and For Businesses, trust row of four); Explore Our Range (six category cards); blue promo banner; Solutions for Every Space (Homes, Businesses, Institutions); Popular Products carousel; Why Choose Belis Bell (four points); Clean Spaces Start Here banner (Shop Now, Contact Us); footer.
+2. The header and footer follow PG-034. Links point only to pages that exist. Footer support and legal links (FAQ, shipping, returns, payment methods, track order, privacy, terms) and social icons appear only when the page or link is real (PG-037).
+3. The main button is filled green (#2b7d32, white text). The second button is white with a navy outline. Never use the mockup's bright green (#3fa80c) or the logo green (#43b14a) for text or button fills (PG-036).
+4. Headlines are navy, with blue and green emphasis words. Eyebrow labels are small, spaced capitals. Banners use deep navy (#00346e, #002b61) with the photo on the right. The footer is #001b38 (PG-036).
+5. Every photo is a named slot in `docs/IMAGES.md`, rendered by `image_html()`. A slot with no photo shows a neutral placeholder and keeps its shape (PG-035).
+6. Product cards show photo, name, pack size, price in GHS, stock status and an Add to Cart button. Cards use a soft shadow and 16px radius; page sections stay flat (PG-011, PG-020).
+7. Every product page offers add-to-cart and add-to-quote, plus a WhatsApp link when a number is configured (PG-020, PG-006).
+8. Institutions use the For Businesses path: quote from a cart or list, optional requirements upload, a quote thread with messages, then approve into an order. Repeat orders reuse past quotes (PG-018, PG-023). Until the quote flow exists, its button is switched off (PG-037).
+9. Orders and quotes always have a review step, a confirmation with a reference number, and an audit trail. Edits or cancellations after submit are deliberate and recorded (PG-007).
+10. Checkout supports online payment through Paystack. Details are in the security baseline (PG-022).
+11. One primary action per view. Use plain language and no jargon (PG-005). Copy has no em dashes (PG-008).
+12. The trust row and Why Choose copy are the owner's promises. They show as mock text until the owner confirms each one. "Secure payments" appears only once live payments are approved (PG-038).
+13. Pages stay light: responsive images, skeleton loading, drafts survive a dropped connection (PG-003, PG-021).
+14. Text is at least 17px body. Touch targets are at least 48px (PG-004).
+15. All colours come from `tokens.json`. Never hard-code a colour (PG-036).
+16. Use the supplied logo (`brand/logo-primary.webp`, PG-030). Its descriptor is "Cleaning Supplies & More" with the line "For homes, businesses and institutions". The header needs a transparent PNG or SVG lockup, produced before launch.
+17. The first build uses clearly labelled mock data for products, prices, stock, categories, brands, delivery figures, contact details and customer content. It lives in one seed file, is never presented as real, and is removed before launch (PG-032, AS-08).
+18. Meet every rule in `accessibility.md` (PG-015).
 
 ## Do and don't
 
 | Do | Don't |
 |---|---|
-| Use original Belis Bell photography and wording in the hero and tiles | Reuse the reference's images, headlines or brand names |
-| Show delivery and trust figures only when Belis Bell supplies the real numbers | Invent a free-delivery amount or a "60,000 deliveries" style counter |
-| Keep blue for actions and let tiles carry navy and green | Use the bright logo green for text or buttons, or add new accent colours and gradients |
-| Use the supplied logo from `brand/` and a compact lockup in the header | Redraw, recolour or stretch the logo, or use the white-background raster on a coloured band |
+| Keep the section order from the mockup and give each photo a named slot | Reorder sections or bake headlines and prices into images |
+| Show delivery figures, contact details and promises only when the owner supplies or confirms them | Invent a phone number, address or a "60,000 deliveries" style counter |
+| Use the dark green for buttons and let blue carry links | Use the bright mockup green for text or buttons |
+| Ask the owner before showing third-party brand packaging | Add a branded product photo you do not have the right to show |
 
 ## Tokens
 

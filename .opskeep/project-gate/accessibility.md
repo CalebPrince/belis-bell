@@ -5,7 +5,7 @@ Baseline is WCAG 2.2 AA. On top of it the owner asked for heavy keyboard use, sc
 ## Keyboard
 
 - Every action works with the keyboard alone, in a logical order that follows the visual order.
-- A skip link reaches the main content. Mega-menu, drawers, carousels, filters and the quote thread all work from the keyboard.
+- A skip link reaches the main content. Menu drawer, carousels, filters and the quote thread all work from the keyboard.
 - Drawers and dialogs trap focus, close with Escape, and return focus to the control that opened them.
 - Carousels have previous and next buttons and never trap focus.
 - Focus is always visible: a 3px `primary` outline with a 2px offset that meets 3:1 against its background in both themes.
@@ -22,7 +22,7 @@ Baseline is WCAG 2.2 AA. On top of it the owner asked for heavy keyboard use, sc
 ## Contrast and colour
 
 - Text contrast is at least 4.5:1 and large text at least 3:1, using the validated values in `tokens.json` for light and dark themes.
-- White text on the blue, navy, green (#2b7d32) and ink tiles was checked above 4.5:1 (PG-031). The bright logo green fails contrast and is never used for text. Text over photos sits on a dark overlay that keeps it above 4.5:1.
+- White text on the green button (#2b7d32, 5.1:1) and on the navy banners and footer (#00346e, #002b61, #001b38, above 12:1) meets 4.5:1. The mockup green (#3fa80c, 3.1:1) and the logo green (#43b14a) are never used behind or as text. Text over photos sits on a solid or gradient panel that keeps it above 4.5:1.
 - Colour is never the only signal. Stock, price changes, errors and status use text or icons as well.
 
 ## Low vision

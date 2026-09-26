@@ -10,6 +10,7 @@ Assumptions the builder saw but did not individually confirm. If one is wrong, r
 - **AS-05** Usage was set to all day because of heavy contact and ordering, so the store is designed for repeat use as well as first visits.
 - **AS-06** The announcement bar and trust counter use mock figures for now. Belis Bell must supply the real free-delivery amount and delivery or customer figure before launch.
 - **AS-07** Category names, Washroom Solutions packs and brand spotlights are mock until the real catalogue and supplier relationships are known.
+- **AS-08** The address, phone number, email address and opening hours in the mockup are placeholders. They stay mock until Belis Bell supplies the real details.
 
 ## Decisions confirmed by gate approval (not individually reviewed)
 

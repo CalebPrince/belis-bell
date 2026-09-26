@@ -29,7 +29,7 @@
     },
     {
       "label": "Reference",
-      "value": "supplymaster.store (visual style and section arrangement only; all content, imagery and branding original)"
+      "value": "Owner-supplied home page mockup (structure only); the owner supplies all images"
     }
   ],
   "character": [
@@ -168,10 +168,9 @@
       "id": "PG-013",
       "area": "ux",
       "title": "Top bar with mega-menu navigation",
-      "status": "CONFIRMED",
-      "confirmed_via": "interview",
+      "status": "SUPERSEDED",
       "value": "Sticky top bar: logo, search, account, cart, and a Buy for Business link. A category mega-menu on desktop; a full-screen category drawer on phone. No sidebar.",
-      "rationale": "Top bar chosen; the reference site uses a category mega-menu for a large catalogue.",
+      "rationale": "Top bar chosen; the reference site uses a category mega-menu for a large catalogue. Superseded: the owner mockup sets the header and navigation (PG-034).",
       "depends_on": [
         "PG-002"
       ]
@@ -180,13 +179,12 @@
       "id": "PG-014",
       "area": "screens",
       "title": "Content mix: photos, product grids and copy",
-      "status": "CONFIRMED",
+      "status": "SUPERSEDED",
       "value": "Home follows a fixed section order: announcement bar, header, nav row, split hero (photo with headline beside a 2x2 cluster of coloured feature tiles), category pill tabs, product carousels, brand spotlight, three ways to shop tiles, core category tiles, featured partner picks, trust counter, brand in focus, all brands A to Z, footer. Buying guides and hygiene advice sit as a lower strip. Copy and images are Belis Bell's own.",
-      "rationale": "Section arrangement taken from the reference at your request; content is original.",
+      "rationale": "Section arrangement taken from the reference at your request; content is original. Superseded: the owner mockup sets the home page structure (PG-033).",
       "depends_on": [
         "PG-025"
-      ],
-      "confirmed_via": "explicit"
+      ]
     },
     {
       "id": "PG-015",
@@ -350,19 +348,17 @@
       "id": "PG-025",
       "area": "visual",
       "title": "Supply Master visual language",
-      "status": "CONFIRMED",
-      "confirmed_via": "interview",
+      "status": "SUPERSEDED",
       "value": "Adopt the reference's visual style: deep-toned header, footer and buttons on a light page, a photo-led hero with dark overlay and large white headline, coloured feature tiles with photos, rounded (12px) buttons and cards, product carousels with a full-width add-to-cart button, Figtree-style semibold headings, generous section titles centred over light grey-tinted bands. Belis Bell's own palette, logo, photography and copy are used throughout.",
-      "rationale": "Your note: copy the visual style, not the content."
+      "rationale": "Your note: copy the visual style, not the content. Superseded: the owner mockup replaces the Supply Master visual language (PG-036)."
     },
     {
       "id": "PG-026",
       "area": "ux",
       "title": "Section arrangement follows the reference",
-      "status": "CONFIRMED",
-      "confirmed_via": "interview",
+      "status": "SUPERSEDED",
       "value": "Home and category pages keep the reference's section order and rhythm (see PG-014). No text, product photos, logos, brand names or partner names are copied. Nothing implies affiliation with Supply Master.",
-      "rationale": "Your note, plus the reference belongs to another company.",
+      "rationale": "Your note, plus the reference belongs to another company. Superseded: the owner mockup replaces the reference arrangement (PG-033).",
       "depends_on": [
         "PG-025"
       ]
@@ -383,23 +379,21 @@
       "id": "PG-028",
       "area": "screens",
       "title": "Ways-to-shop tiles and category set",
-      "status": "CONFIRMED",
+      "status": "SUPERSEDED",
       "value": "Three big entry tiles under the product carousels: Shop Products, Buy for Business (quotes) and Washroom Solutions (curated packs for a whole washroom). Core category tiles: Washroom Supplies, Cleaning Chemicals, Cleaning Equipment, Hygiene and Waste, Dispensers and Fittings. Final names come from the real catalogue.",
-      "rationale": "Mirrors the reference's three-ways and core-categories blocks for a washroom and cleaning catalogue.",
+      "rationale": "Mirrors the reference's three-ways and core-categories blocks for a washroom and cleaning catalogue. Superseded: the mockup uses six category cards and audience cards (PG-033).",
       "depends_on": [
         "PG-026",
         "PG-018"
-      ],
-      "confirmed_via": "explicit"
+      ]
     },
     {
       "id": "PG-029",
       "area": "visual",
       "title": "Brand colours come from the logo",
-      "status": "CONFIRMED",
+      "status": "SUPERSEDED",
       "value": "Blue is the single action colour (#006cbc, white text 5.4:1). Deep navy (#044788) is for the announcement bar, footer and headings on tinted bands. Green (#43b14a in the logo) is a brand accent for badges, highlights and illustration only. Text and buttons use a darker green (#2b7d32, white text 5.1:1) because the logo green fails contrast. Teal is dropped.",
-      "rationale": "Colours sampled from the supplied logo; the earlier teal pick predates it.",
-      "confirmed_via": "explicit"
+      "rationale": "Colours sampled from the supplied logo; the earlier teal pick predates it. Superseded: the mockup uses green for primary buttons (PG-036)."
     },
     {
       "id": "PG-030",
@@ -414,14 +408,13 @@
       "id": "PG-031",
       "area": "visual",
       "title": "Blue, navy and green in the Bright Supply layout",
-      "status": "CONFIRMED",
+      "status": "SUPERSEDED",
       "value": "Header, buttons and links use blue. The announcement bar and footer use navy. Feature tiles rotate blue, navy, green (#2b7d32) and ink (#0a1d33), each with white text above 4.5:1. Dark theme uses a light blue primary (#6ab7f5) on a deep navy-black ground.",
-      "rationale": "Applies the logo palette to the approved section layout.",
+      "rationale": "Applies the logo palette to the approved section layout. Superseded: the palette is now defined in PG-036.",
       "depends_on": [
         "PG-025",
         "PG-029"
-      ],
-      "confirmed_via": "explicit"
+      ]
     },
     {
       "id": "PG-032",
@@ -434,6 +427,73 @@
       "depends_on": [
         "PG-024"
       ]
+    },
+    {
+      "id": "PG-033",
+      "area": "screens",
+      "title": "Home page structure follows the owner's mockup",
+      "status": "CONFIRMED",
+      "confirmed_via": "interview",
+      "value": "Sections in this order: (1) header; (2) hero with a small eyebrow label, a three-line two-tone headline, one supporting sentence, two buttons (Shop Now, For Businesses) and a row of four trust points (Fast delivery across Ghana, Quality products, Trusted support, Secure payments); (3) Explore Our Range: six category cards, each with a photo, name and an arrow; (4) a blue promo banner with headline, one sentence, a Shop Now button and a photo on the right; (5) Solutions for Every Space: three audience cards (Homes, Businesses, Institutions) with a photo, icon, title and one line; (6) Popular Products: a carousel of product cards with price and Add to Cart; (7) Why Choose Belis Bell: four points with icons (Quality Brands, Fast Delivery, Great Value, Dedicated Support); (8) a second banner, Clean Spaces Start Here, with Shop Now and Contact Us; (9) footer.",
+      "rationale": "Supplied by the owner as a home page mockup. The mockup gives structure only; the owner supplies all images."
+    },
+    {
+      "id": "PG-034",
+      "area": "ux",
+      "title": "Header, navigation and footer follow the mockup",
+      "status": "CONFIRMED",
+      "confirmed_via": "interview",
+      "value": "Header: logo on the left, six text links (Home, Shop, Categories, For Businesses, About, Contact) and three icon buttons (Search, Account, Cart with a count). On phones the links move into a menu. Footer: logo and tagline with social icons, then Quick Links, Customer Support and Contact columns, then a copyright line with Privacy Policy and Terms links.",
+      "rationale": "Shown in the owner's mockup.",
+      "depends_on": [
+        "PG-002"
+      ]
+    },
+    {
+      "id": "PG-035",
+      "area": "visual",
+      "title": "The owner supplies all imagery",
+      "status": "CONFIRMED",
+      "confirmed_via": "interview",
+      "value": "Photos and illustrations are supplied by the owner. The site is built with named image slots (listed in docs/IMAGES.md) and neutral placeholders until each image arrives. No images are generated by the developer, and none are taken from other websites. Photos that show other companies' branded packaging need the owner's confirmation that showing them is allowed.",
+      "rationale": "Owner: 'I will supply the visuals images I want'. The mockup shows recognisable third-party brand packs, which need rights confirmed."
+    },
+    {
+      "id": "PG-036",
+      "area": "visual",
+      "title": "Visual style follows the mockup, with an accessible green",
+      "status": "CONFIRMED",
+      "value": "Light page with white and very pale blue-grey surfaces; rounded cards (16px) with a soft shadow; pill-shaped buttons, filled green for the main action and white with a navy outline for the second; headlines in navy with blue and green emphasis words; small spaced-out capital eyebrow labels; deep navy banners (#00346e and #002b61) with the photo on the right; deep navy footer (#001b38). The main button green is #2b7d32 with white text (5.1:1), because the mockup's bright green #3fa80c fails contrast with white text (3.1:1). Blue #006cbc is for links and small accents. The logo's bright green is for icons and highlights only. Dark theme stays.",
+      "rationale": "Colours sampled from the mockup, adjusted for WCAG AA.",
+      "depends_on": [
+        "PG-033"
+      ],
+      "confirmed_via": "explicit"
+    },
+    {
+      "id": "PG-037",
+      "area": "screens",
+      "title": "Structure pages for the navigation",
+      "status": "CONFIRMED",
+      "value": "Build the pages the navigation points to as structure with clearly labelled mock text: Categories (all categories), For Businesses (how quotes work, audience cards, a Request a quote button that is switched off until the quote flow is built), About, and Contact (details plus a WhatsApp link; no form yet). Footer links to FAQ, Shipping and Delivery, Returns and Refunds, Payment Methods, Track Order, Privacy Policy and Terms appear only when the page has real content. Social icons appear only with real links. The address, phone, email and opening hours in the mockup are treated as mock until supplied.",
+      "rationale": "Every nav link should go to a real page, and policy and legal text needs real content from the owner.",
+      "depends_on": [
+        "PG-033",
+        "PG-034"
+      ],
+      "confirmed_via": "explicit"
+    },
+    {
+      "id": "PG-038",
+      "area": "ux",
+      "title": "Promises in the trust row are the owner's to confirm",
+      "status": "CONFIRMED",
+      "value": "The trust row and the Why Choose section make promises: fast delivery across Ghana, quality brands, great value, dedicated support and secure payments. Shown as mock copy until the owner confirms each is true. Secure payments is shown only once Paystack live payments are approved.",
+      "rationale": "Claims must be things Belis Bell can keep.",
+      "depends_on": [
+        "PG-033"
+      ],
+      "confirmed_via": "explicit"
     }
   ],
   "conflicts": [],
@@ -588,9 +648,9 @@
     {
       "id": "C",
       "name": "Bright Supply",
-      "tagline": "Photo-led supply store with bold tiles in the Belis Bell blue and green.",
-      "fit": "The reference's visual language and section order, rebuilt in the Belis Bell logo colours with original photos and copy. Friendly and clear for households, credible for institutions.",
-      "tradeoffs": "Close to the reference in structure, so imagery, logo and wording must be clearly Belis Bell's own. Big tiles and carousels add page weight on slow connections, so images need strict compression.",
+      "tagline": "Clean, photo-led home page in the Belis Bell logo colours.",
+      "fit": "Follows the owner's mockup: clear hero, category cards, audience cards, product carousel and two navy banners. Friendly for households and credible for institutions.",
+      "tradeoffs": "Depends on the owner's photography for most of its appeal. Until the photos arrive, the placeholders make the page look plain.",
       "preview": {
         "nav": "top",
         "density": 2,
@@ -599,19 +659,19 @@
         "palette": {
           "bg": "#f3f8fc",
           "surface": "#ffffff",
-          "accent": "#006cbc",
-          "ink": "#0a1d33",
+          "accent": "#2b7d32",
+          "ink": "#112643",
           "line": "#d3e2ee"
         }
       },
       "foundation": {
         "Theme": "Light default, dark follows device",
-        "Navigation": "Announcement bar, header with search, nav row with Shop mega-menu and Buy for Business",
+        "Navigation": "Header with logo, six text links and search, account and cart icons",
         "Content width": "1280px max",
         "Density": "Balanced",
         "Corner radius": "12px",
-        "Typography": "Figtree (headings, semibold) + DM Sans (body)",
-        "Primary interaction": "Split hero with tile cluster, category pill tabs, product carousels with add-to-cart",
+        "Typography": "Figtree (headings, bold) + DM Sans (body)",
+        "Primary interaction": "Hero with two buttons, category cards, audience cards, product carousel with Add to Cart",
         "Mobile strategy": "Full parity, tiles stack, carousels swipe, category drawer",
         "Animation": "Carousel scroll and gentle hover lift, reduced-motion safe",
         "Icons": "Lucide"
@@ -621,9 +681,9 @@
           "bg": "#f3f8fc",
           "surface": "#ffffff",
           "border": "#d3e2ee",
-          "text": "#0a1d33",
+          "text": "#112643",
           "muted": "#4a5f75",
-          "primary": "#006cbc",
+          "primary": "#2b7d32",
           "primary_contrast": "#ffffff",
           "success": "#0f6a3b",
           "warning": "#7a4700",
@@ -635,8 +695,8 @@
           "border": "#22364f",
           "text": "#e7f0fa",
           "muted": "#a2b6cc",
-          "primary": "#6ab7f5",
-          "primary_contrast": "#04203a",
+          "primary": "#66d19a",
+          "primary_contrast": "#04201d",
           "success": "#66d19a",
           "warning": "#f2c26b",
           "danger": "#ff9d92"
@@ -701,6 +761,11 @@
       "id": "R-08",
       "severity": "med",
       "text": "Mock data can leak into production. Keep it in one labelled seed file, block launch until it is replaced, and never take real payments in test mode."
+    },
+    {
+      "id": "R-09",
+      "severity": "med",
+      "text": "The mockup shows recognisable third-party brand packaging (for example detergent, toilet cleaner and tissue brands). Showing them needs the right from the brand or distributor. Use only photos the owner has the right to show."
     }
   ],
   "assumptions": [
@@ -731,6 +796,10 @@
     {
       "id": "AS-07",
       "text": "Category names, Washroom Solutions packs and brand spotlights are mock until the real catalogue and supplier relationships are known."
+    },
+    {
+      "id": "AS-08",
+      "text": "The address, phone number, email address and opening hours in the mockup are placeholders. They stay mock until Belis Bell supplies the real details."
     }
   ],
   "gate": {
@@ -770,10 +839,20 @@
         "at": "2026-09-26T17:22:33Z",
         "event": "approved",
         "detail": "via dashboard"
+      },
+      {
+        "at": "2026-09-26T17:54:54Z",
+        "event": "reopened",
+        "detail": "PG-025, PG-013, PG-029: Owner supplied a home page mockup with its own structure, navigation and green buttons, and will supply all images"
+      },
+      {
+        "at": "2026-09-26T17:59:32Z",
+        "event": "approved",
+        "detail": "via dashboard"
       }
     ],
     "notes": "I like the way supply master visuals is. Dont copy the content but copy the visual style and the way the sections are arranged",
-    "approved_at": "2026-09-26T17:22:33Z",
+    "approved_at": "2026-09-26T17:59:32Z",
     "approval_method": "dashboard"
   }
 }

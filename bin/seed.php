@@ -24,15 +24,16 @@ foreach ($data['categories'] as [$slug, $name, $blurb, $order]) {
         [$slug, $name, $blurb, $order],
     );
 }
-foreach ($data['products'] as [$cat, $slug, $name, $pack, $price, $stock]) {
+foreach ($data['products'] as [$cat, $slug, $name, $pack, $price, $stock, $description, $usage]) {
     $row = $db->one('SELECT id FROM categories WHERE slug = ?', [$cat]);
     if ($row === null) {
         continue;
     }
     $db->run(
-        'INSERT INTO products (category_id, slug, name, pack_size, price_pesewas, stock_status, is_mock) VALUES (?, ?, ?, ?, ?, ?, 1) '
-        . 'ON DUPLICATE KEY UPDATE name = VALUES(name), pack_size = VALUES(pack_size), price_pesewas = VALUES(price_pesewas), stock_status = VALUES(stock_status)',
-        [(int) $row['id'], $slug, $name, $pack, $price, $stock],
+        'INSERT INTO products (category_id, slug, name, pack_size, description, usage_notes, price_pesewas, stock_status, is_mock) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1) '
+        . 'ON DUPLICATE KEY UPDATE name = VALUES(name), pack_size = VALUES(pack_size), description = VALUES(description), usage_notes = VALUES(usage_notes), '
+        . 'price_pesewas = VALUES(price_pesewas), stock_status = VALUES(stock_status)',
+        [(int) $row['id'], $slug, $name, $pack, $description, $usage, $price, $stock],
     );
 }
 echo 'mock data loaded (' . count($data['categories']) . ' categories, ' . count($data['products']) . " products)\n";

@@ -16,12 +16,13 @@ Non-goals for v1: native apps, contract-price accounts, AI features, WhatsApp Bu
 
 - Front controller, router with deny-by-default policies, CSRF layer, hardened session code, security headers, auto-escaping templates, prepared-statement database wrapper, validation, redacting logger. (`src/`)
 - Environment guard that refuses to start in production with mock data, debug output, test keys or a non-https URL. (`src/Core/Guard.php`)
-- Home page rendered from the database with mock data, styled from the approved design tokens. Everything else in the design is not built. (`GUI.md`)
+- Home page following the owner's mockup (hero, six category cards, promo banner, audience cards, product carousel, Why Choose, closing banner), plus `/shop`, `/c/{slug}`, `/p/{slug}`, `/categories`, `/for-businesses`, `/about` and `/contact`. Data comes from the database with mock content; photos are placeholders until supplied. (`GUI.md`)
 - Catalogue migration, mock seed loader and purge script, release builder and release checker. (`database/`, `bin/`)
-- 37 security and unit tests in a dependency-free runner. (`tests/`)
+- Image pipeline: originals in `resources/images/` become responsive WebP (`npm run build:images`), and `image_html()` renders them or a neutral placeholder. Slots are documented in `docs/IMAGES.md`. (`scripts/build-images.mjs`, `src/Support/Images.php`)
+- 61 security and unit tests in a dependency-free runner. (`tests/`)
 - GitHub Actions for CI and a locked production deploy, written but not yet run. (`.github/`)
 
-Not built: sign-in and accounts, staff admin, search, category and product pages, cart, checkout and Paystack calls, quotes and uploads, notifications, monitoring. See `GUI.md`.
+Not built: sign-in and accounts, staff admin, search, cart, checkout and Paystack calls, quotes and uploads, notifications, monitoring. See `GUI.md`.
 
 ## Project records
 
@@ -31,6 +32,7 @@ Not built: sign-in and accounts, staff admin, search, category and product pages
 - [Canonical security baseline](security-baseline.yaml) (approved copy in `.opskeep/security-design/baseline-0.3.0-approved.yaml`)
 - Design gate: `.opskeep/project-gate/` (`DESIGN.md`, `decisions.yaml`, `tokens.json`, `gate.json`)
 - Security dashboard: `.opskeep/security-design/dashboard.html`
+- Images to supply and where they go: `docs/IMAGES.md`
 - Brand assets: `brand/logo-primary.webp` (raster; transparent PNG or SVG still needed). `public/assets/brand/` holds resized copies, and the header mark is a temporary crop until a proper horizontal lockup exists.
 
 ## Setup and operation
@@ -39,8 +41,8 @@ Needs PHP 8.3 or newer with `pdo_mysql` and `mbstring`, MySQL 8 or a compatible 
 
 ```bash
 npm ci
-npm run build:css
-cp .env.example .env        # then edit: database user and password, test Paystack keys
+npm run build             # images (from resources/images) and CSS
+cp .env.example .env        # then edit: database user and password, test Paystack keys, optional WHATSAPP_NUMBER
 php bin/migrate.php         # run with the migration database user (BELIS_ENV_FILE=.env.migrate)
 php bin/seed.php            # local and staging only, needs MOCK_DATA=1
 php -S 127.0.0.1:8090 -t public
@@ -49,7 +51,7 @@ php tests/run.php           # security and unit tests
 
 Use two database users: the app user (`SELECT, INSERT, UPDATE, DELETE` only) in `.env`, and a migration user in `.env.migrate` (both are git-ignored). Point `BELIS_ENV_FILE` at the migration file when running `bin/migrate.php`.
 
-Release build: `npm run build:css && php bin/build-release.php && php bin/check-release.php`. This copies an allowlist into `dist/` and fails if seed data, tests, tools, design records, keys or mock markers are present.
+Release build: `npm run build && php bin/build-release.php && php bin/check-release.php`. This copies an allowlist into `dist/` and fails if seed data, tests, tools, design records, keys or mock markers are present.
 
 Before launch: `php bin/purge-mock.php`, load the real catalogue, and set `MOCK_DATA=0`. The app refuses to run in production while any row is flagged as mock.
 

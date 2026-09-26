@@ -5,7 +5,9 @@
   "description": "Belis Bell online store: plain PHP, Tailwind CSS, MySQL. Tailwind is a build-time tool only; nothing from npm runs on the server.",
   "scripts": {
     "fonts": "node scripts/copy-fonts.mjs",
+    "build:images": "node scripts/build-images.mjs",
     "build:css": "npm run fonts && tailwindcss -i resources/css/app.css -o public/assets/css/app.css --minify",
+    "build": "npm run build:images && npm run build:css",
     "watch:css": "npm run fonts && tailwindcss -i resources/css/app.css -o public/assets/css/app.css --watch",
     "audit": "npm audit --audit-level=high"
   },
@@ -13,6 +15,7 @@
     "@fontsource-variable/dm-sans": "^5.2.0",
     "@fontsource-variable/figtree": "^5.2.0",
     "@tailwindcss/cli": "^4.1.0",
+    "sharp": "^0.35.4",
     "tailwindcss": "^4.1.0"
   }
 }

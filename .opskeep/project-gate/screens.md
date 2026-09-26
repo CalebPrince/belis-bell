@@ -1,14 +1,14 @@
 # Screens
 
-Screen set from PG-019, arranged per PG-014 and PG-028. Every screen has empty, loading and error states as defined in PG-021. Prices are always visible (PG-024).
+Screen set from PG-019, home structure from PG-033, navigation from PG-034 and navigation pages from PG-037. Every screen has empty, loading and error states as defined in PG-021. Prices are always visible (PG-024).
 
 ## Navigation map
 
-Announcement bar, header (logo, search, account, saved lists, cart), nav row (Shop Products with mega-menu, Buy for Business, Top Sellers, Deals, Buying Guides). Footer holds About, Contact, FAQ, delivery and returns. On phones the categories open in a full-screen drawer (PG-013).
+Header (logo; Home, Shop, Categories, For Businesses, About, Contact; Search, Account and Cart icons) and footer (logo and tagline, socials when real, Quick Links, Customer Support, Contact, copyright with Privacy Policy and Terms when real). On phones the links open in a menu drawer. Links go only to pages that exist (PG-034, PG-037).
 
 ## Home
 
-Purpose: get anyone to a product or a quote in two taps. Layout follows PG-014: announcement bar, header, nav row, split hero with 2x2 tile cluster, category pill tabs, product carousels, brand spotlight, three ways to shop tiles (Shop Products, Buy for Business, Washroom Solutions), core category tiles (Washroom Supplies, Cleaning Chemicals, Cleaning Equipment, Hygiene and Waste, Dispensers and Fittings), featured partner picks, trust counter, brand in focus, brands A to Z, buying guides strip, footer. Category names come from the real catalogue (PG-028). States: skeleton tiles and carousels while loading; a retryable error per section so one failing section does not blank the page.
+Purpose: get anyone to a product or a quote in two taps. Sections in order (PG-033): hero with two buttons and a trust row of four; Explore Our Range (six category cards); blue promo banner; Solutions for Every Space (Homes, Businesses, Institutions); Popular Products carousel; Why Choose Belis Bell (four points); Clean Spaces Start Here banner with Shop Now and Contact Us. Each photo is a named slot (`docs/IMAGES.md`). Trust row and Why Choose copy are mock until the owner confirms them (PG-038). States: skeleton cards while loading, and a retryable error per section so one failing section does not blank the page.
 
 ## Category and search results
 
@@ -21,6 +21,22 @@ Job: confirm it is the right product and pack size. Layout: large photo with zoo
 ## Cart and checkout
 
 Job: pay online with confidence (PG-022). Layout: cart list, delivery details, review step, payment, confirmation with order reference (PG-007). Drafts survive a dropped connection (PG-003). Payment methods are set by the security gate.
+
+## Categories
+
+Job: see every category and pick one. Layout: grid of category cards, the same cards as on the home page. Built from the category list.
+
+## For Businesses
+
+Job: understand how institutions buy and start a quote (PG-018, PG-023). Layout: short intro, how a quote works in three steps, the audience cards, and a Request a quote button. The button is switched off until the quote flow is built (PG-037). Contact by WhatsApp or phone when configured.
+
+## About
+
+Job: build trust. Layout: who Belis Bell is, who it serves, the promises (mock until confirmed, PG-038) and a Contact link. Text is clearly labelled mock until the owner supplies it.
+
+## Contact
+
+Job: reach a person. Layout: address, phone, email, opening hours and a WhatsApp link, each shown only when supplied (the mockup values are mock, AS-08). No form until the security-reviewed contact flow exists.
 
 ## Buy for Business: quote request and quote thread
 
