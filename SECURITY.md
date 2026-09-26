@@ -33,6 +33,8 @@ Not built at all: authorisation on staff order actions, uploads and scanning, au
 
 ## Change 0.4.0 (CHG-001, approved)
 
+**Baseline 0.5.0 (CHG-002) is proposed and the approval is SUSPENDED (2026-09-27).** The owner asked for provider keys (Paystack, SMTP, other APIs) to be managed in a Super Admin Settings page. That moves secrets from the environment file into the database (encrypted, owner only, fresh emailed code, audit log, owner email). It adds threat THR-023, control CTL-SET-001 and decision DEC-015. Nothing under CHG-002 is built or may be built until the owner approves 0.5.0. Version 0.4.0 remains the last approved design (digest d60e5d34...c529e).
+
 The owner asked for emailed verification codes at every customer and admin sign-in, and confirmation emails on register. This replaces the earlier requirement that staff use a passkey or authenticator app, so it is a material change to authentication and the approval is suspended until the owner approves 0.4.0. An emailed code is only as safe as the mailbox that receives it and depends on email delivery, so the new threat THR-022 is rated HIGH residual. Compensating controls: staff mailboxes need MFA, short-lived single-use hashed codes with attempt limits, no remember-me for staff, uniform error messages, a fresh code for sensitive actions, and admin sign-in monitoring (MON-002). A passkey or authenticator app for the owner account is recommended before live payments.
 
 ## Baseline controls

@@ -1,6 +1,6 @@
 schema_version: "2.1"
-baseline_version: "0.4.0"
-record_digest: "d60e5d34e8d59b4c57b111cf2476d2ab8614eadd0daa8bc11e76d0c68e5c529e"
+baseline_version: "0.5.0"
+record_digest: "024294809262f6070b7dfe7295ebf58aa55fd714eb4133f59681a60844102d18"
 project:
   id: "PRJ-BELISBELL-001"
   name: "Belis Bell Online Store"
@@ -20,10 +20,10 @@ risk:
     - "The payment provider is Paystack (DEC-002). Live use needs a verified Paystack business account owned by Belis Bell and passing GATE-006; the first build uses Paystack test keys only"
   likely_production_tier: "HIGH"
 lifecycle:
-  status: "APPROVED"
+  status: "SUSPENDED"
   production_posture: "ELIGIBLE_WHEN_APPROVED"
   spike_expires_at: null
-  development_lock: "UNLOCKED"
+  development_lock: "LOCKED"
   deployment_lock: "LOCKED"
 classification_levels: [PUBLIC, INTERNAL, CONFIDENTIAL, SENSITIVE, RESTRICTED]
 assets:
@@ -520,6 +520,15 @@ threats:
     residual_risk: "HIGH"
     owner: "belis-bell-owner"
     status: "OPEN"
+  - id: "THR-023"
+    component_ids: ["CMP-005", "CMP-003", "CMP-006", "CMP-007"]
+    scenario: "Provider secrets (Paystack keys, SMTP password, other API keys) are managed in the admin Settings page and stored in the database. An attacker who takes over the owner account (for example through the owner's mailbox, see THR-022), or who reads the database together with the environment file, replaces the Paystack key with their own so customer payments go to them, reads a secret, or sends email as the store"
+    likelihood: "MEDIUM"
+    impact: "CRITICAL"
+    control_ids: ["CTL-SET-001", "CTL-AUTH-002", "CTL-AUDIT-001", "CTL-PAY-001"]
+    residual_risk: "MEDIUM"
+    owner: "belis-bell-owner"
+    status: "OPEN"
 controls:
   - id: "CTL-GOV-001"
     domain: "GOVERNANCE"
@@ -572,7 +581,7 @@ controls:
     evidence_ids: []
   - id: "CTL-PAY-001"
     domain: "PAYMENTS"
-    requirement: "Card and mobile money details are entered only on Paystack-hosted checkout (redirect or Paystack popup), never in fields on our pages. Belis Bell never receives, logs or stores card numbers, PINs or CVV, and keeps only provider references and status. Paystack secret keys live only in the server environment file above the web root, are never sent to the browser or committed, and test and live keys are separate per environment. Only the public key may appear in page code."
+    requirement: "Card and mobile money details are entered only on Paystack-hosted checkout (redirect or Paystack popup), never in fields on our pages. Belis Bell never receives, logs or stores card numbers, PINs or CVV, and keeps only provider references and status. Paystack secret keys are managed only through the owner-only Settings page under CTL-SET-001 (encrypted at rest), are never sent to the browser, logged or committed, and test and live keys are separate per environment. Only the public key may appear in page code."
     status: "REQUIRED"
     owner: "belis-bell-owner"
     acceptance: "Code and log inspection and a test payment show no payment instrument data reaches the application or logs"
@@ -667,6 +676,13 @@ controls:
     status: "REQUIRED"
     owner: "developer"
     acceptance: "Tests show each listed action writes an entry and staff cannot alter or delete entries"
+    evidence_ids: []
+  - id: "CTL-SET-001"
+    domain: "DATA"
+    requirement: "Integration credentials (Paystack public and secret keys, SMTP host, user and password, and any other API key) are entered and rotated by the owner (Super Admin) in an admin Settings page. They are stored in the database only as authenticated encryption (libsodium secretbox, a fresh random nonce per value) under a master key kept in the server environment file above the web root, which also keeps the bootstrap values that cannot live in the database (database login, master key, sign-in code pepper, environment name, site address). Secrets are write-only: after saving, the page shows only that a value is set and its last 4 characters, never the value, and values never appear in HTML, JavaScript, logs, error messages, emails or exports. Only the owner role can open the page; staff cannot. Viewing or changing any secret needs a fresh emailed code from the last 10 minutes and the CSRF token. Every change writes an audit entry (who, when, from where, which setting, never the value) and emails the owner. Live keys (sk_live_) are refused unless the environment is production and RELEASE_APPROVAL_REF is set; test keys (sk_test_) are refused in production. Values are validated for shape before saving, and a wrong value never blocks recovery: the environment file value is used if the database has none. Rotating the master key uses a script that re-encrypts every value. The environment file stays the fallback and the only place for the bootstrap values."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Tests show that a non-owner and a signed-out visitor cannot read or change settings, that a change without a fresh code is refused, that stored values are ciphertext and differ per nonce, that values never appear in rendered pages, logs or audit rows, that live and test key rules are enforced, and that each change writes an audit entry and an owner email"
     evidence_ids: []
   - id: "CTL-CLIENT-001"
     domain: "DATA"
@@ -807,6 +823,12 @@ decisions:
     required_decision: "Decided by the owner on 2026-09-26: an emailed one-time code at every sign-in, the same as customers. Weaker than a passkey or authenticator app because it is only as safe as the mailbox. Recommended: add a passkey or authenticator app for the owner account before live payments. Residual risk THR-022 is HIGH until then."
     blocks_approval: false
     status: "DECIDED"
+  - id: "DEC-015"
+    question: "Where do integration keys (Paystack, SMTP, other APIs) live?"
+    owner: "belis-bell-owner"
+    required_decision: "Requested by the owner on 2026-09-27: in a Settings page for the Super Admin, not only in the environment file. Trade-off accepted for approval: this is more convenient and lets the owner rotate keys without file access, but it puts the keys in the database and lets anyone who controls the owner account change where payments go. Compensating controls are in CTL-SET-001 (encryption, owner only, fresh emailed code, audit log, owner email on every change, write-only values). Recommended before live payments: a passkey or authenticator app for the owner account (see DEC-003 and THR-022), and an alert to a second contact when the payment key changes."
+    blocks_approval: false
+    status: "DECIDED"
   - id: "DEC-004"
     question: "Who can start a quote request, and how are institutions confirmed?"
     owner: "belis-bell-owner"
@@ -921,7 +943,7 @@ monitoring:
     provider: "NONE"
     owner: "belis-bell-owner"
     configuration_status: "NOT_CONFIGURED"
-    baseline_version: "0.4.0"
+    baseline_version: "0.5.0"
     record_digest: "d60e5d34e8d59b4c57b111cf2476d2ab8614eadd0daa8bc11e76d0c68e5c529e"
     environments: ["staging", "production"]
     handed_off_at: null
@@ -1006,7 +1028,7 @@ recovery:
   rollback: {status: "REQUIRED", details: "Switch back to the previous release folder or tag; reversible migrations"}
   incident_response: {status: "REQUIRED", details: "Disable the affected route or payment mode, revoke sessions and keys, preserve logs, notify the owner, assess notification duties under the Data Protection Act with qualified advice"}
 approval:
-  decision: "APPROVED"
+  decision: "SUSPENDED"
   approver: "Prince Caleb (Super Admin)"
   approved_at: "2026-09-26T19:50:38Z"
   baseline_version: "0.4.0"
@@ -1017,6 +1039,7 @@ approval:
     - "Implement GATE-001 to GATE-005 as the first engineering work, before feature code is merged"
     - "Emailed sign-in codes for customers and staff (CHG-001) as designed in CTL-AUTH-001 and CTL-AUTH-002"
     - "NOT covered: real customer data, live payments, live Paystack keys, production deployment, and enabling uploads in production"
+    - "SUSPENDED on 2026-09-27 by CHG-002 (keys managed in the owner Settings page). Version 0.4.0 stays approved as recorded above until 0.5.0 is approved; no work under CHG-002 may start before that."
     - "Any change to authentication, payments, personal data, uploads, hosting, third parties or admin permissions suspends this approval until reassessed"
   expires_at: null
 changes:
@@ -1030,4 +1053,15 @@ changes:
     new_rule: "Customers and staff both sign in with the password plus an emailed one-time code at every sign-in. Registration sends a verification code and a confirmation email. A passkey or authenticator app is recommended for the owner and for export or price-change roles."
     reason: "Owner decision on 2026-09-26 (customer and admin login pages)."
     impact: "An emailed code is only as safe as the mailbox and depends on email delivery. Compensating controls: staff mailboxes need MFA, short-lived single-use hashed codes, attempt limits, no remember-me for staff, uniform error messages, a fresh code for sensitive actions, and monitoring of admin sign-ins (MON-002). Residual risk THR-022 is HIGH until a passkey or authenticator is added."
+    approver_required: "Prince Caleb (Super Admin) or the Belis Bell business owner"
+  - id: "CHG-002"
+    type: "MODIFIED"
+    status: "PROPOSED"
+    security_impact: "HIGH"
+    material: true
+    targets: ["CTL-PAY-001", "CTL-SET-001", "CTL-AUDIT-001", "THR-023", "DEC-015"]
+    old_rule: "Paystack secret keys live only in the server environment file above the web root. Other provider credentials are also file-only."
+    new_rule: "Integration credentials are managed by the owner in an admin Settings page and stored encrypted in the database (CTL-SET-001). The environment file keeps the bootstrap values and the master encryption key, and remains the fallback."
+    reason: "Owner request on 2026-09-27: keys for Paystack, email SMTP and any other API should be set in the Super Admin settings page."
+    impact: "New CRITICAL-impact threat THR-023: taking over the owner account, or reading the database and environment file together, could redirect payments or read a secret. Compensating controls: authenticated encryption, owner-only access, fresh emailed code for every view or change, write-only values, audit log and owner email on every change, live and test key rules, environment fallback. The audit log (CTL-AUDIT-001) must exist at least for settings before this ships. Residual risk MEDIUM, rising to HIGH if the owner mailbox is compromised (THR-022) until a passkey or authenticator is added."
     approver_required: "Prince Caleb (Super Admin) or the Belis Bell business owner"
