@@ -1,0 +1,11 @@
+# Security-relevant paths need the owner's review (CTL-GOV-001, CTL-AGT-001).
+# Turn on "Require review from Code Owners" in branch protection so a coding agent cannot merge these alone.
+*                          @CalebPrince
+/security-baseline.yaml    @CalebPrince
+/tools/                    @CalebPrince
+/.github/                  @CalebPrince
+/src/Core/                 @CalebPrince
+/src/Payments/             @CalebPrince
+/public/.htaccess          @CalebPrince
+/public/.user.ini          @CalebPrince
+/database/migrations/      @CalebPrince

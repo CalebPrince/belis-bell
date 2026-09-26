@@ -1,0 +1,1012 @@
+schema_version: "2.1"
+baseline_version: "0.3.0"
+record_digest: "66848a5d526cfb5a3fdd714a829a039a4e53f3dc2c66979ff3df2fa2de6fa352"
+project:
+  id: "PRJ-BELISBELL-001"
+  name: "Belis Bell Online Store"
+  purpose: "Ghana-based online store for washroom and cleaning products, serving households and businesses with online checkout, and institutions (banks, schools, government and private companies) through quote requests, quote threads and repeat orders"
+  owner: "belis-bell-owner"
+risk:
+  tier: "HIGH"
+  mode: "FULL"
+  rationale:
+    - "Online payments (mobile money and cards) are in scope, although the first build uses mock data and payment-provider test mode only"
+    - "Customer and institutional personal data, delivery addresses, order and quote history, and message threads"
+    - "File uploads (requirements sheets) from unauthenticated or lightly verified users"
+    - "Privileged staff admin console that changes prices, catalogue, quotes and orders"
+    - "Institutional buyers include government bodies and banks, who may treat procurement details as confidential"
+    - "Ghana Data Protection Act, 2012 (Act 843) applies to personal data handling; legal position to be confirmed by the owner"
+    - "Stack is plain PHP with no framework (DEC-011), Tailwind CSS and MySQL (DEC-001), on Namecheap cPanel hosting with the domain at Namecheap (DEC-012). Shared hosting limits isolation, secret handling, logging and deploy identity, and having no framework means protections a framework would supply must be built and tested by hand, so compensating controls are required"
+    - "The payment provider is Paystack (DEC-002). Live use needs a verified Paystack business account owned by Belis Bell and passing GATE-006; the first build uses Paystack test keys only"
+  likely_production_tier: "HIGH"
+lifecycle:
+  status: "APPROVED"
+  production_posture: "ELIGIBLE_WHEN_APPROVED"
+  spike_expires_at: null
+  development_lock: "UNLOCKED"
+  deployment_lock: "LOCKED"
+classification_levels: [PUBLIC, INTERNAL, CONFIDENTIAL, SENSITIVE, RESTRICTED]
+assets:
+  - id: "AST-001"
+    name: "Customer and institutional contact data (name, email, phone, delivery addresses, organisation)"
+    classification: "CONFIDENTIAL"
+    owner: "belis-bell-owner"
+    retention: "Life of the account plus a period set by DEC-005; deletion on verified request except records the law requires"
+  - id: "AST-002"
+    name: "Orders, quotes and pricing agreed with buyers"
+    classification: "CONFIDENTIAL"
+    owner: "belis-bell-owner"
+    retention: "Statutory and accounting period set by DEC-005"
+  - id: "AST-003"
+    name: "Quote threads and uploaded requirements sheets"
+    classification: "CONFIDENTIAL"
+    owner: "belis-bell-owner"
+    retention: "Life of the quote plus a period set by DEC-005; uploads deleted with the quote"
+  - id: "AST-004"
+    name: "Payment instruments and authorisation (card numbers, mobile money PINs and tokens)"
+    classification: "RESTRICTED"
+    owner: "belis-bell-owner"
+    retention: "Never stored by Belis Bell; only provider references, amounts and status are kept"
+  - id: "AST-005"
+    name: "Staff and admin accounts, sessions and MFA secrets"
+    classification: "RESTRICTED"
+    owner: "belis-bell-owner"
+    retention: "Life of the staff account; sessions expire; removed on offboarding"
+  - id: "AST-006"
+    name: "Catalogue, published prices and unpublished price changes"
+    classification: "INTERNAL"
+    owner: "belis-bell-owner"
+    retention: "Versioned history kept for audit; published catalogue is PUBLIC"
+  - id: "AST-007"
+    name: "Secrets, API keys, webhook signing secrets and deployment credentials"
+    classification: "RESTRICTED"
+    owner: "developer"
+    retention: "Kept in an environment file above the web root with restricted permissions, never in the repository; rotated on any exposure"
+  - id: "AST-008"
+    name: "Audit and security logs"
+    classification: "CONFIDENTIAL"
+    owner: "belis-bell-owner"
+    retention: "Set by DEC-005; append-only; personal data redacted"
+  - id: "AST-009"
+    name: "Browser-held cart and quote drafts"
+    classification: "CONFIDENTIAL"
+    owner: "developer"
+    retention: "Until submit, logout or a short expiry; never holds payment or identity documents"
+  - id: "AST-010"
+    name: "Mock seed data (synthetic products, prices, customers, figures)"
+    classification: "PUBLIC"
+    owner: "developer"
+    retention: "Development and staging only; removed before launch"
+components:
+  - id: "CMP-001"
+    name: "Storefront web application (responsive, light and dark themes)"
+    exposure: "INTERNET"
+    provider: "PHP-rendered pages, Tailwind CSS compiled at build time"
+  - id: "CMP-002"
+    name: "Application API (catalogue, cart, checkout, quotes, accounts)"
+    exposure: "INTERNET"
+    provider: "Plain PHP, no framework (a currently supported version, 8.3 or newer)"
+  - id: "CMP-003"
+    name: "Primary database"
+    exposure: "PRIVATE"
+    provider: "MySQL on the cPanel account (verify engine and version on the chosen plan)"
+  - id: "CMP-004"
+    name: "Object storage for uploads and product images, with malware scanning"
+    exposure: "PRIVATE"
+    provider: "Private folder above the web root on the cPanel account"
+  - id: "CMP-005"
+    name: "Staff admin console"
+    exposure: "INTERNET"
+    provider: "PHP admin area"
+  - id: "CMP-006"
+    name: "Payment provider (hosted checkout, webhooks; test mode first)"
+    exposure: "THIRD_PARTY"
+    provider: "Paystack (test keys first)"
+  - id: "CMP-007"
+    name: "Email and SMS notification providers"
+    exposure: "THIRD_PARTY"
+    provider: "TBD"
+  - id: "CMP-008"
+    name: "Source repository and CI/CD pipeline"
+    exposure: "THIRD_PARTY"
+    provider: "Git host TBD; deploys to the cPanel account"
+  - id: "CMP-009"
+    name: "Edge, CDN and web application firewall"
+    exposure: "THIRD_PARTY"
+    provider: "Cloudflare in front of the host recommended (DEC-014); host ModSecurity or Imunify as fallback (verify)"
+  - id: "CMP-010"
+    name: "Mock seed data file and loader"
+    exposure: "INTERNAL"
+    provider: "Project repository"
+  - id: "CMP-011"
+    name: "Namecheap account, domain registration, DNS and cPanel hosting account"
+    exposure: "THIRD_PARTY"
+    provider: "Namecheap"
+trust_boundaries:
+  - id: "TB-001"
+    name: "Public internet to edge, storefront and API"
+    from: "PUBLIC_INTERNET"
+    to: ["CMP-009", "CMP-001", "CMP-002"]
+  - id: "TB-002"
+    name: "Application tier to private data stores"
+    from: "CMP-002"
+    to: ["CMP-003", "CMP-004"]
+  - id: "TB-003"
+    name: "Application and payment provider, both directions including inbound webhooks"
+    from: "CMP-002"
+    to: ["CMP-006"]
+  - id: "TB-004"
+    name: "Staff to admin console (privileged)"
+    from: "STAFF_BROWSER"
+    to: ["CMP-005", "CMP-002"]
+  - id: "TB-005"
+    name: "CI/CD to hosting environments"
+    from: "CMP-008"
+    to: ["CMP-001", "CMP-002", "CMP-005"]
+  - id: "TB-006"
+    name: "Application to notification providers"
+    from: "CMP-002"
+    to: ["CMP-007"]
+  - id: "TB-007"
+    name: "Untrusted uploaded files to storage and scanning"
+    from: "PUBLIC_INTERNET"
+    to: ["CMP-004"]
+  - id: "TB-008"
+    name: "Mock and test environments to production"
+    from: "CMP-010"
+    to: ["CMP-002", "CMP-003"]
+  - id: "TB-009"
+    name: "Owner and developer to registrar and hosting control panels"
+    from: "ADMIN_BROWSER"
+    to: ["CMP-011"]
+data_flows:
+  - id: "FLW-001"
+    name: "Browse catalogue and search"
+    origin: "Visitor"
+    processing: "Read published catalogue and prices, cache at the edge"
+    destination: "Visitor browser"
+    classification: "PUBLIC"
+    retention: "No personal data stored"
+    boundaries: ["TB-001"]
+  - id: "FLW-002"
+    name: "Register, sign in and recover account"
+    origin: "Customer"
+    processing: "Verify email or phone, hash password or issue passkey, create session"
+    destination: "Application database"
+    classification: "CONFIDENTIAL"
+    retention: "Account life"
+    boundaries: ["TB-001", "TB-002"]
+  - id: "FLW-003"
+    name: "Checkout and online payment"
+    origin: "Customer"
+    processing: "Server recomputes prices and totals, creates an order, redirects to provider-hosted payment"
+    destination: "Payment provider and order record"
+    classification: "RESTRICTED"
+    retention: "Order records only; no card or PIN data held"
+    boundaries: ["TB-001", "TB-002", "TB-003"]
+  - id: "FLW-004"
+    name: "Payment provider webhook"
+    origin: "Payment provider"
+    processing: "Verify signature, check amount and order match, apply idempotently"
+    destination: "Order status"
+    classification: "CONFIDENTIAL"
+    retention: "Provider reference and status kept"
+    boundaries: ["TB-003", "TB-002"]
+  - id: "FLW-005"
+    name: "Quote request with optional requirements upload"
+    origin: "Customer or institutional buyer"
+    processing: "Verify contact, validate fields, scan and store file, create quote"
+    destination: "Quote record and object storage"
+    classification: "CONFIDENTIAL"
+    retention: "Set by DEC-005"
+    boundaries: ["TB-001", "TB-002", "TB-007"]
+  - id: "FLW-006"
+    name: "Quote thread messages and approval into an order"
+    origin: "Buyer and Belis Bell staff"
+    processing: "Authorise by quote ownership or organisation, store message, notify, log approval"
+    destination: "Quote thread and order"
+    classification: "CONFIDENTIAL"
+    retention: "Set by DEC-005"
+    boundaries: ["TB-001", "TB-002", "TB-006"]
+  - id: "FLW-007"
+    name: "Admin manages catalogue, prices, quotes and orders"
+    origin: "Staff"
+    processing: "Authenticate with MFA, authorise by role, validate, write with audit entry"
+    destination: "Database and audit log"
+    classification: "CONFIDENTIAL"
+    retention: "Audit log per DEC-005"
+    boundaries: ["TB-004", "TB-002"]
+  - id: "FLW-008"
+    name: "Order and quote notifications"
+    origin: "Application"
+    processing: "Render from templates with minimal personal data, send"
+    destination: "Email or SMS provider"
+    classification: "CONFIDENTIAL"
+    retention: "Provider retention per contract; no secrets in messages"
+    boundaries: ["TB-006"]
+  - id: "FLW-009"
+    name: "Local cart and quote drafts on the device"
+    origin: "Customer browser"
+    processing: "Store non-sensitive draft fields, expire, clear on logout"
+    destination: "Browser storage"
+    classification: "CONFIDENTIAL"
+    retention: "Short expiry; cleared on logout and submit"
+    boundaries: ["TB-001"]
+  - id: "FLW-010"
+    name: "Load mock seed data"
+    origin: "Developer"
+    processing: "Seed development and staging only; loader refuses production"
+    destination: "Non-production database"
+    classification: "PUBLIC"
+    retention: "Removed before launch"
+    boundaries: ["TB-008"]
+identities:
+  - id: "ID-001"
+    name: "Guest visitor"
+    type: "HUMAN"
+    authentication: "None"
+    resources: ["CMP-001", "CMP-002"]
+    permissions: ["read published catalogue", "start a quote request after verifying contact (DEC-004)"]
+    forbidden_actions: ["read any order, quote or account", "upload without verification", "see unpublished prices"]
+    human_approval: "none"
+  - id: "ID-002"
+    name: "Customer"
+    type: "HUMAN"
+    authentication: "Password with breach check, or passkey; optional phone OTP"
+    resources: ["CMP-001", "CMP-002"]
+    permissions: ["manage own profile, addresses, saved lists", "place and pay own orders", "create and read own quotes and threads"]
+    forbidden_actions: ["read another customer's data", "set prices or discounts", "access admin routes"]
+    human_approval: "none"
+  - id: "ID-003"
+    name: "Institutional buyer member"
+    type: "HUMAN"
+    authentication: "As customer; membership of an organisation is confirmed by Belis Bell staff"
+    resources: ["CMP-001", "CMP-002"]
+    permissions: ["read and reply to quotes of their organisation", "approve a quote into an order within any approval limit"]
+    forbidden_actions: ["read another organisation's quotes", "change organisation membership", "bypass approval limits"]
+    human_approval: "Belis Bell staff confirm organisation membership; large orders may require a second approver (DEC-004)"
+  - id: "ID-004"
+    name: "Belis Bell staff (sales, fulfilment, content roles)"
+    type: "HUMAN"
+    authentication: "Password or passkey plus mandatory MFA; short admin sessions"
+    resources: ["CMP-005", "CMP-002"]
+    permissions: ["role-scoped: reply to quotes, update orders, edit catalogue drafts"]
+    forbidden_actions: ["publish bulk price changes alone", "export all customer data", "change staff roles", "read payment instruments"]
+    human_approval: "Bulk price changes and data exports need owner approval"
+  - id: "ID-005"
+    name: "Belis Bell owner (super admin)"
+    type: "HUMAN"
+    authentication: "Passkey or hardware-backed MFA"
+    resources: ["CMP-005", "CMP-002", "CMP-008"]
+    permissions: ["manage staff roles", "approve bulk price changes and exports", "enable live payments after the gate"]
+    forbidden_actions: ["use shared credentials", "disable audit logging"]
+    human_approval: "Live payment enablement requires recorded owner approval"
+  - id: "ID-006"
+    name: "Application workload"
+    type: "WORKLOAD"
+    authentication: "Workload identity or scoped service credential from the secret manager"
+    resources: ["CMP-003", "CMP-004", "CMP-006", "CMP-007"]
+    permissions: ["read and write application tables", "write and read uploads by object key", "call the payment provider API"]
+    forbidden_actions: ["schema changes at runtime", "read secrets it does not use", "access other environments"]
+    human_approval: "none"
+  - id: "ID-007"
+    name: "CI/CD deploy workload"
+    type: "WORKLOAD"
+    authentication: "SSH deploy key limited to the store's cPanel account, held as a CI secret and rotated; no FTP or shared passwords"
+    resources: ["CMP-001", "CMP-002", "CMP-005"]
+    permissions: ["deploy a reviewed build to the store account"]
+    forbidden_actions: ["read customer data", "read production secrets", "deploy unreviewed code", "access other hosting accounts", "change registrar or DNS settings"]
+    human_approval: "Production deploys need explicit human approval"
+  - id: "ID-008"
+    name: "Payment provider webhook sender"
+    type: "WORKLOAD"
+    authentication: "Signed requests verified against a secret held only by the API"
+    resources: ["CMP-002"]
+    permissions: ["report payment status for a known order"]
+    forbidden_actions: ["change order contents", "act on unsigned or replayed events"]
+    human_approval: "none"
+  - id: "ID-009"
+    name: "Coding agents and developer tooling"
+    type: "AGENT"
+    authentication: "Developer-scoped access to the repository and non-production environments only"
+    resources: ["CMP-008", "CMP-010"]
+    permissions: ["propose code and tests in branches"]
+    forbidden_actions: ["hold production credentials or live payment keys", "merge to protected branches", "approve baseline changes", "deploy to production", "read production customer data"]
+    human_approval: "Every merge and every deployment needs human approval"
+  - id: "ID-010"
+    name: "Developer with hosting access"
+    type: "HUMAN"
+    authentication: "Delegated cPanel or SSH access using keys and MFA, under an account the Belis Bell owner controls"
+    resources: ["CMP-011", "CMP-002", "CMP-003"]
+    permissions: ["deploy and maintain the store", "read logs"]
+    forbidden_actions: ["read customer data outside a logged support task", "change registrar ownership or billing", "share access with others"]
+    human_approval: "Owner can revoke access at any time; production data access is logged"
+threats:
+  - id: "THR-001"
+    component_ids: ["CMP-002", "CMP-003"]
+    scenario: "A customer or organisation reads or changes another buyer's orders, quotes, threads or addresses by guessing identifiers (object-level access failure)"
+    likelihood: "HIGH"
+    impact: "HIGH"
+    control_ids: ["CTL-AUTHZ-001", "CTL-ORG-001"]
+    residual_risk: "MEDIUM"
+    owner: "developer"
+    status: "OPEN"
+  - id: "THR-002"
+    component_ids: ["CMP-001", "CMP-002"]
+    scenario: "Credential stuffing, phishing or weak recovery flows take over a customer or staff account"
+    likelihood: "HIGH"
+    impact: "HIGH"
+    control_ids: ["CTL-AUTH-001", "CTL-AUTH-002", "CTL-SESS-001"]
+    residual_risk: "MEDIUM"
+    owner: "developer"
+    status: "OPEN"
+  - id: "THR-003"
+    component_ids: ["CMP-005"]
+    scenario: "A compromised or over-privileged staff account changes prices, exports customer data or redirects orders"
+    likelihood: "MEDIUM"
+    impact: "CRITICAL"
+    control_ids: ["CTL-AUTH-002", "CTL-AUDIT-001", "CTL-BIZ-001"]
+    residual_risk: "MEDIUM"
+    owner: "belis-bell-owner"
+    status: "OPEN"
+  - id: "THR-004"
+    component_ids: ["CMP-002"]
+    scenario: "A client alters prices, quantities, discounts or totals in a checkout or quote request"
+    likelihood: "HIGH"
+    impact: "HIGH"
+    control_ids: ["CTL-BIZ-001"]
+    residual_risk: "LOW"
+    owner: "developer"
+    status: "OPEN"
+  - id: "THR-005"
+    component_ids: ["CMP-002", "CMP-006"]
+    scenario: "Payment card or mobile money data is exposed, or a forged or replayed webhook marks an unpaid order as paid"
+    likelihood: "MEDIUM"
+    impact: "CRITICAL"
+    control_ids: ["CTL-PAY-001", "CTL-PAY-002"]
+    residual_risk: "MEDIUM"
+    owner: "belis-bell-owner"
+    status: "OPEN"
+  - id: "THR-006"
+    component_ids: ["CMP-004", "CMP-002"]
+    scenario: "A malicious upload (malware, macro documents, oversized or disguised files, path tricks) harms staff or the system"
+    likelihood: "HIGH"
+    impact: "HIGH"
+    control_ids: ["CTL-UPL-001"]
+    residual_risk: "MEDIUM"
+    owner: "developer"
+    status: "OPEN"
+  - id: "THR-007"
+    component_ids: ["CMP-001", "CMP-002", "CMP-005"]
+    scenario: "Injection or cross-site scripting through product fields, quote messages, names or uploaded metadata runs in a staff or customer browser"
+    likelihood: "MEDIUM"
+    impact: "HIGH"
+    control_ids: ["CTL-INP-001", "CTL-SC-002"]
+    residual_risk: "LOW"
+    owner: "developer"
+    status: "OPEN"
+  - id: "THR-008"
+    component_ids: ["CMP-003", "CMP-004", "CMP-007"]
+    scenario: "Personal data leaks through logs, backups, notifications, exports or over-retention, or a deletion request is not honoured"
+    likelihood: "MEDIUM"
+    impact: "HIGH"
+    control_ids: ["CTL-DATA-001"]
+    residual_risk: "MEDIUM"
+    owner: "belis-bell-owner"
+    status: "OPEN"
+  - id: "THR-009"
+    component_ids: ["CMP-001", "CMP-002", "CMP-009"]
+    scenario: "Bots scrape prices, spam quote requests and uploads, or overload the store during a campaign"
+    likelihood: "HIGH"
+    impact: "MEDIUM"
+    control_ids: ["CTL-API-001"]
+    residual_risk: "LOW"
+    owner: "developer"
+    status: "OPEN"
+  - id: "THR-010"
+    component_ids: ["CMP-008", "CMP-001", "CMP-002"]
+    scenario: "A committed secret, a compromised dependency or unreviewed generated code reaches production"
+    likelihood: "MEDIUM"
+    impact: "HIGH"
+    control_ids: ["CTL-SC-001", "CTL-DEP-001"]
+    residual_risk: "MEDIUM"
+    owner: "developer"
+    status: "OPEN"
+  - id: "THR-011"
+    component_ids: ["CMP-010", "CMP-002", "CMP-006"]
+    scenario: "Mock data, test payments or test keys leak into production, or real payments are attempted against a test configuration"
+    likelihood: "MEDIUM"
+    impact: "HIGH"
+    control_ids: ["CTL-ENV-001"]
+    residual_risk: "LOW"
+    owner: "developer"
+    status: "OPEN"
+  - id: "THR-012"
+    component_ids: ["CMP-008"]
+    scenario: "Implementation or deployment proceeds from an unreviewed design, or a coding agent gains production power"
+    likelihood: "MEDIUM"
+    impact: "HIGH"
+    control_ids: ["CTL-GOV-001", "CTL-AGT-001"]
+    residual_risk: "LOW"
+    owner: "belis-bell-owner"
+    status: "OPEN"
+  - id: "THR-013"
+    component_ids: ["CMP-002", "CMP-005"]
+    scenario: "Impersonation over WhatsApp, phone or quote threads tricks staff into changing delivery, bank or account details, or tricks buyers into paying a fake account"
+    likelihood: "HIGH"
+    impact: "HIGH"
+    control_ids: ["CTL-COMM-001"]
+    residual_risk: "MEDIUM"
+    owner: "belis-bell-owner"
+    status: "OPEN"
+  - id: "THR-014"
+    component_ids: ["CMP-003", "CMP-004"]
+    scenario: "Data loss, ransomware or an outage stops orders and destroys quote history"
+    likelihood: "MEDIUM"
+    impact: "HIGH"
+    control_ids: ["CTL-REC-001"]
+    residual_risk: "MEDIUM"
+    owner: "belis-bell-owner"
+    status: "OPEN"
+  - id: "THR-015"
+    component_ids: ["CMP-002", "CMP-005"]
+    scenario: "A quote approval, price change or refund cannot be attributed, so disputes cannot be resolved"
+    likelihood: "MEDIUM"
+    impact: "MEDIUM"
+    control_ids: ["CTL-AUDIT-001", "CTL-MON-001"]
+    residual_risk: "LOW"
+    owner: "belis-bell-owner"
+    status: "OPEN"
+  - id: "THR-016"
+    component_ids: ["CMP-001"]
+    scenario: "Cart or quote drafts held in the browser are read by the next person on a shared or office computer"
+    likelihood: "MEDIUM"
+    impact: "MEDIUM"
+    control_ids: ["CTL-CLIENT-001"]
+    residual_risk: "LOW"
+    owner: "developer"
+    status: "OPEN"
+  - id: "THR-017"
+    component_ids: ["CMP-001", "CMP-002", "CMP-005"]
+    scenario: "Session theft or cross-site request forgery performs actions as a signed-in user or staff member"
+    likelihood: "MEDIUM"
+    impact: "HIGH"
+    control_ids: ["CTL-SESS-001"]
+    residual_risk: "LOW"
+    owner: "developer"
+    status: "OPEN"
+  - id: "THR-018"
+    component_ids: ["CMP-001", "CMP-009"]
+    scenario: "A third-party script (analytics, chat, fonts, maps) or a compromised CDN asset exfiltrates data or alters checkout"
+    likelihood: "MEDIUM"
+    impact: "HIGH"
+    control_ids: ["CTL-SC-002"]
+    residual_risk: "LOW"
+    owner: "developer"
+    status: "OPEN"
+  - id: "THR-019"
+    component_ids: ["CMP-002", "CMP-003", "CMP-009", "CMP-011"]
+    scenario: "An outdated PHP or MySQL version, a misconfiguration (debug output, PHP execution in upload folders, exposed files such as .env or backups), or another site on the same shared server or cPanel account compromises the store"
+    likelihood: "MEDIUM"
+    impact: "HIGH"
+    control_ids: ["CTL-PLAT-001"]
+    residual_risk: "HIGH"
+    owner: "developer"
+    status: "OPEN"
+  - id: "THR-020"
+    component_ids: ["CMP-011", "CMP-007"]
+    scenario: "The Namecheap, cPanel or domain-email account is taken over, or the domain expires or is transferred, letting an attacker change DNS, read email, redirect orders, phish customers or take the site down"
+    likelihood: "MEDIUM"
+    impact: "CRITICAL"
+    control_ids: ["CTL-ACCT-001"]
+    residual_risk: "MEDIUM"
+    owner: "belis-bell-owner"
+    status: "OPEN"
+  - id: "THR-021"
+    component_ids: ["CMP-001", "CMP-002", "CMP-005"]
+    scenario: "Because there is no framework, a protection it would normally supply is missing or inconsistent: a route without a CSRF check, an authorisation check forgotten on one endpoint, an unescaped output, a raw SQL string, or a hand-rolled security primitive with a flaw"
+    likelihood: "HIGH"
+    impact: "HIGH"
+    control_ids: ["CTL-FW-001"]
+    residual_risk: "MEDIUM"
+    owner: "developer"
+    status: "OPEN"
+controls:
+  - id: "CTL-GOV-001"
+    domain: "GOVERNANCE"
+    requirement: "No repository, scaffolding, implementation or deployment until the owner explicitly approves this baseline version. Any material change suspends approval until reassessed and reapproved."
+    status: "PLANNED"
+    owner: "belis-bell-owner"
+    acceptance: "CI rejects a change when the baseline is not APPROVED with a digest from a protected source"
+    evidence_ids: []
+  - id: "CTL-AUTH-001"
+    domain: "AUTHENTICATION"
+    requirement: "Customer accounts use verified email or phone, passwords hashed with a modern memory-hard algorithm and checked against known breached passwords (or passkeys). Login, signup and recovery are rate-limited and give uniform responses. Recovery never reveals whether an account exists."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Tests show throttling, uniform responses, breached-password rejection and single-use expiring recovery links"
+    evidence_ids: []
+  - id: "CTL-AUTH-002"
+    domain: "AUTHENTICATION"
+    requirement: "Staff and owner access requires MFA (passkey or TOTP), short admin sessions, role-based least privilege and separate staff accounts. Sensitive actions (bulk price change, export, role change, live payment enablement) need step-up authentication and owner approval."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Tests prove admin routes reject sessions without MFA and that each role can perform only its permitted actions"
+    evidence_ids: []
+  - id: "CTL-SESS-001"
+    domain: "AUTHENTICATION"
+    requirement: "Sessions use HttpOnly, Secure, SameSite cookies with rotation on login and privilege change, idle and absolute timeouts, and anti-CSRF tokens on every state-changing request."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Tests show cross-site requests are rejected and old sessions are invalid after logout and role change"
+    evidence_ids: []
+  - id: "CTL-AUTHZ-001"
+    domain: "AUTHORIZATION"
+    requirement: "Every read and write checks ownership or organisation membership on the server for the specific object. Identifiers are unguessable and never trusted as proof of access. Authentication never implies authorisation. Hidden buttons are not access control."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Automated tests attempt cross-customer and cross-organisation access on every object route and all fail"
+    evidence_ids: []
+  - id: "CTL-ORG-001"
+    domain: "AUTHORIZATION"
+    requirement: "Institutional membership is confirmed by staff, roles inside an organisation are explicit, removed members lose access immediately, and any approval limit is enforced on the server."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Tests show removed members are denied and limits block over-limit approvals"
+    evidence_ids: []
+  - id: "CTL-BIZ-001"
+    domain: "BUSINESS_LOGIC"
+    requirement: "Prices, discounts, delivery fees, totals and stock are computed on the server from current catalogue data. Clients send only product IDs and quantities. Price changes are versioned, audited and require dual approval for bulk changes."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Tests show tampered client totals are ignored and bulk price changes cannot publish without a second approver"
+    evidence_ids: []
+  - id: "CTL-PAY-001"
+    domain: "PAYMENTS"
+    requirement: "Card and mobile money details are entered only on Paystack-hosted checkout (redirect or Paystack popup), never in fields on our pages. Belis Bell never receives, logs or stores card numbers, PINs or CVV, and keeps only provider references and status. Paystack secret keys live only in the server environment file above the web root, are never sent to the browser or committed, and test and live keys are separate per environment. Only the public key may appear in page code."
+    status: "REQUIRED"
+    owner: "belis-bell-owner"
+    acceptance: "Code and log inspection and a test payment show no payment instrument data reaches the application or logs"
+    evidence_ids: []
+  - id: "CTL-PAY-002"
+    domain: "PAYMENTS"
+    requirement: "Paystack webhooks are accepted only when the HMAC signature header matches the raw request body computed with the secret key (compared with hash_equals), and are idempotent and replay-safe. Before an order is marked paid, the server also confirms the transaction by calling the Paystack verify-transaction API and checks that the amount (in the smallest currency unit), currency (GHS) and reference match the order. Order status is never changed by a browser redirect or client callback alone. A scheduled job reconciles pending payments against Paystack daily. Verify these details against the current Paystack documentation at build time."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Tests reject webhooks with a bad or missing signature, replays and mismatched amounts, and an order is never marked paid without a successful server-side verify call"
+    evidence_ids: []
+  - id: "CTL-UPL-001"
+    domain: "DATA"
+    requirement: "Uploads are limited by type, size and count, checked by content not name, stored outside the web root under random keys (and never in a folder where PHP can run), scanned for malware before staff can open them, served only through authorised download with a forced download header, and never executed or rendered inline. Shared hosting may not offer a reliable virus scanner, so uploads stay disabled in production until a scanning method is in place and evidenced (DEC-006)."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Tests reject disallowed and oversized files, a test malware sample is quarantined, and a buyer cannot download another quote's file"
+    evidence_ids: []
+  - id: "CTL-INP-001"
+    domain: "API"
+    requirement: "All input is validated on the server against schemas. Database access uses prepared statements (PDO or the framework query builder), never string-built SQL. All output is context-encoded in templates. Rich text is not accepted in messages."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Static analysis and injection and XSS test cases pass on all forms and message fields"
+    evidence_ids: []
+  - id: "CTL-DATA-001"
+    domain: "DATA"
+    requirement: "Personal data is minimised. It is encrypted in transit and at rest. Logs and notifications redact personal data and never contain secrets. Retention periods (DEC-005) are enforced by jobs. A verified deletion and export process exists. Staff bulk exports are limited and logged."
+    status: "REQUIRED"
+    owner: "belis-bell-owner"
+    acceptance: "Log samples contain no personal data or secrets, retention jobs run, and a deletion request removes the account and its personal data"
+    evidence_ids: []
+  - id: "CTL-API-001"
+    domain: "API"
+    requirement: "Rate limits, bot protection and request size limits apply to login, signup, search, quote requests, uploads and checkout. The edge WAF is enabled. Expensive endpoints have quotas and timeouts."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Abuse tests show throttling and blocking without breaking normal use"
+    evidence_ids: []
+  - id: "CTL-SC-001"
+    domain: "SUPPLY_CHAIN"
+    requirement: "Committed-secret scanning, dependency vulnerability scanning (Composer audit and npm audit), committed lockfiles, pinned versions, minimal Composer and npm packages, an SBOM and build provenance are required. Generated code is reviewed like any other code."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Protected checks fail on a seeded secret and a known-vulnerable test dependency"
+    evidence_ids: []
+  - id: "CTL-SC-002"
+    domain: "SUPPLY_CHAIN"
+    requirement: "A strict Content Security Policy, subresource integrity for third-party assets, and a short approved list of third-party scripts. Tailwind CSS is compiled at build time; the Tailwind CDN or in-browser build is never used in production. No third-party script runs on checkout or account pages unless the owner approves it."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Header tests confirm the policy and an unapproved script is blocked"
+    evidence_ids: []
+  - id: "CTL-DEP-001"
+    domain: "DEPLOYMENT"
+    requirement: "Deploy from a protected branch or tag through a dedicated SSH deploy key limited to the store's cPanel account (or cPanel Git deployment), with human approval for production. No FTP, no shared or long-lived passwords. Keep the previous release so rollback is one step. Database migrations are reviewed and reversible. OIDC federation is not available on this host, so key rotation and human approval are the compensating controls."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "A deploy without approval or from an unprotected branch is denied, the deploy key cannot reach other accounts, and rollback restores the previous release"
+    evidence_ids: []
+  - id: "CTL-ENV-001"
+    domain: "DEPLOYMENT"
+    requirement: "Mock seed data, test payment keys and test-mode flags exist only in development and staging. Production refuses to start with mock data, mock payment adapters or test keys, and CI blocks a release that contains the seed loader or mock flags."
+    status: "IMPLEMENTED"
+    owner: "developer"
+    acceptance: "A production-configured build containing mock data or test keys fails to start and fails CI"
+    evidence_ids: []
+  - id: "CTL-AGT-001"
+    domain: "DEPLOYMENT"
+    requirement: "Coding agents and tools never hold production credentials, live payment keys or customer data. They work in branches, and humans review every merge. Agents cannot approve baseline changes."
+    status: "REQUIRED"
+    owner: "belis-bell-owner"
+    acceptance: "Repository and environment inspection shows agents have no production access and protected branches require human review"
+    evidence_ids: []
+  - id: "CTL-COMM-001"
+    domain: "OPERATIONS"
+    requirement: "Staff procedure: changes to delivery, bank or account details, and refunds, are never accepted by chat or phone alone; they need confirmation through the verified account or a call-back on a known number. Payment instructions are shown only inside the store, never typed into chat. WhatsApp use is click-to-chat links only in v1 (DEC-008). Links and attachments from buyers are treated as untrusted."
+    status: "REQUIRED"
+    owner: "belis-bell-owner"
+    acceptance: "Written procedure exists, staff are briefed, and admin tooling requires step-up for account and address changes"
+    evidence_ids: []
+  - id: "CTL-REC-001"
+    domain: "RECOVERY"
+    requirement: "Automated encrypted backups of the database and uploads made by scheduled jobs and copied off the hosting account, with tested restore, documented recovery objectives, and rollback to the last known-good release. Host-provided backups are a convenience and are not relied on."
+    status: "REQUIRED"
+    owner: "belis-bell-owner"
+    acceptance: "A restore test recovers the database and uploads within the agreed objectives and the result is recorded"
+    evidence_ids: []
+  - id: "CTL-AUDIT-001"
+    domain: "LOGGING"
+    requirement: "An append-only audit log records sign-ins, permission and role changes, price and catalogue changes, quote approvals, order and refund actions, exports and configuration changes with who, what, when and from where. Staff cannot edit it."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Tests show each listed action writes an entry and staff cannot alter or delete entries"
+    evidence_ids: []
+  - id: "CTL-CLIENT-001"
+    domain: "DATA"
+    requirement: "Browser drafts store only non-sensitive fields (product IDs, quantities, notes without personal identifiers), expire quickly, are cleared on logout and submit, and never hold payment, identity documents or passwords. Shared-device prompts offer a quick clear."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Tests confirm drafts contain no personal identifiers and are cleared on logout and expiry"
+    evidence_ids: []
+  - id: "CTL-MON-001"
+    domain: "LOGGING"
+    requirement: "Security signals (failed-login spikes, admin sign-ins, webhook signature failures, unusual price changes, malware detections, error rates, backup failures, mock-guard violations) are collected and routed to a named owner with a runbook. Because host logs are limited, an external uptime monitor and application-level logging are required."
+    status: "REQUIRED"
+    owner: "belis-bell-owner"
+    acceptance: "Each signal has an owner, threshold and runbook, and a test alert is received"
+    evidence_ids: []
+  - id: "CTL-PLAT-001"
+    domain: "DEPLOYMENT"
+    requirement: "Use a currently supported PHP version (8.3 or newer) selected in cPanel, and MySQL with security updates from the host. Only public assets are in the web root; application code, uploads, .env and backups sit above it. Set display_errors off, expose_php off and allow_url_fopen off where possible, and block PHP execution in upload and storage paths. Remote MySQL access is off, the application database user has no schema privileges, and migrations use a separate account. The store has its own cPanel account and database, shared with no other site. HTTPS is forced with HSTS, and directory listing, .git, .env and backup files are blocked from the web."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "A configuration inspection and external probe show supported versions, safe PHP settings, no exposed sensitive files, no remote MySQL, least-privilege database users and isolation from other sites"
+    evidence_ids: []
+  - id: "CTL-ACCT-001"
+    domain: "AUTHENTICATION"
+    requirement: "The Namecheap account, cPanel and the domain mailbox are owned by Belis Bell (DEC-013), use unique strong passwords and MFA, have registrar lock and auto-renew enabled with a current payment method, use a monitored recovery email and phone, and give the developer delegated access only. SPF, DKIM and DMARC are set for the sending domain. Changes to DNS, nameservers, contacts or billing alert the owner."
+    status: "REQUIRED"
+    owner: "belis-bell-owner"
+    acceptance: "Inspection shows MFA on every account, registrar lock, auto-renew, delegated developer access and passing SPF, DKIM and DMARC checks"
+    evidence_ids: []
+  - id: "CTL-FW-001"
+    domain: "API"
+    requirement: "No framework means the protections a framework would supply are built once, centrally, and tested. One front controller and router with deny-by-default authorisation middleware that every route must declare a policy for; one CSRF middleware for every state-changing request; one auto-escaping template layer, with no raw echo of user data; one database wrapper that only accepts prepared statements; one input-validation layer; central error handling that never shows details in production. Security primitives use PHP built-ins (password_hash with Argon2id, random_bytes, hash_equals, PDO prepared statements) or well-maintained libraries, never hand-written cryptography. Candidate libraries (confirm each is maintained at build time): a router such as FastRoute, an auto-escaping template engine such as Twig or Plates, a rate limiter, PHPMailer or Symfony Mailer, and a migrations tool such as Phinx. A written checklist maps each framework protection to where it is implemented. A security test suite covering CSRF, authorisation on every route, escaping, SQL injection and rate limits must pass before each gate."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "A route-inventory test proves every route declares an authorisation policy and a CSRF rule, static analysis finds no raw SQL strings or unescaped output, and the security test suite passes"
+    evidence_ids: []
+gates:
+  - id: "GATE-001"
+    name: "Baseline approval gate"
+    stage: "PRE_IMPLEMENTATION"
+    blocking: true
+    control_ids: ["CTL-GOV-001"]
+    required_evidence: ["EVD-001"]
+    status: "NOT_YET_BUILT"
+    evidence_ids: []
+  - id: "GATE-002"
+    name: "Pull request security checks (secrets, dependencies, static analysis, authorisation and input tests)"
+    stage: "PULL_REQUEST"
+    blocking: true
+    control_ids: ["CTL-SC-001", "CTL-AUTHZ-001", "CTL-INP-001", "CTL-UPL-001", "CTL-BIZ-001", "CTL-FW-001"]
+    required_evidence: ["EVD-002"]
+    status: "NOT_YET_BUILT"
+    evidence_ids: []
+  - id: "GATE-003"
+    name: "Protected branch with human review and no agent merge"
+    stage: "MERGE"
+    blocking: true
+    control_ids: ["CTL-AGT-001", "CTL-GOV-001"]
+    required_evidence: ["EVD-003"]
+    status: "NOT_YET_BUILT"
+    evidence_ids: []
+  - id: "GATE-004"
+    name: "Build provenance, SBOM and header policy checks"
+    stage: "BUILD"
+    blocking: true
+    control_ids: ["CTL-SC-001", "CTL-SC-002"]
+    required_evidence: ["EVD-004"]
+    status: "NOT_YET_BUILT"
+    evidence_ids: []
+  - id: "GATE-005"
+    name: "Mock data and test-mode guard before any production deploy"
+    stage: "PRE_DEPLOY"
+    blocking: true
+    control_ids: ["CTL-ENV-001"]
+    required_evidence: ["EVD-005"]
+    status: "NOT_YET_BUILT"
+    evidence_ids: []
+  - id: "GATE-006"
+    name: "Live payment enablement (Paystack business verification, live keys, webhook tests, owner approval)"
+    stage: "PRE_DEPLOY"
+    blocking: true
+    control_ids: ["CTL-PAY-001", "CTL-PAY-002", "CTL-AUTH-002"]
+    required_evidence: ["EVD-006"]
+    status: "NOT_YET_BUILT"
+    evidence_ids: []
+  - id: "GATE-007"
+    name: "Restore test and privacy readiness before launch"
+    stage: "PRE_DEPLOY"
+    blocking: true
+    control_ids: ["CTL-REC-001", "CTL-DATA-001", "CTL-COMM-001"]
+    required_evidence: ["EVD-007"]
+    status: "NOT_YET_BUILT"
+    evidence_ids: []
+  - id: "GATE-008"
+    name: "Protected production environment approval"
+    stage: "DEPLOY"
+    blocking: true
+    control_ids: ["CTL-DEP-001", "CTL-PLAT-001", "CTL-ACCT-001", "CTL-AUTH-001", "CTL-SESS-001", "CTL-ORG-001", "CTL-API-001", "CTL-CLIENT-001"]
+    required_evidence: ["EVD-008"]
+    status: "NOT_YET_BUILT"
+    evidence_ids: []
+  - id: "GATE-009"
+    name: "Runtime monitoring and audit logging live"
+    stage: "RUNTIME"
+    blocking: true
+    control_ids: ["CTL-MON-001", "CTL-AUDIT-001"]
+    required_evidence: ["EVD-009"]
+    status: "NOT_YET_BUILT"
+    evidence_ids: []
+decisions:
+  - id: "DEC-001"
+    question: "Which stack will the store use?"
+    owner: "belis-bell-owner"
+    required_decision: "Decided: PHP (currently supported version, 8.3 or newer), Tailwind CSS compiled at build time, and MySQL 8. Framework, hosting and CI are separate decisions (DEC-011, DEC-012)."
+    blocks_approval: true
+    status: "DECIDED"
+  - id: "DEC-011"
+    question: "Which PHP framework, or none?"
+    owner: "belis-bell-owner"
+    required_decision: "Decided: no framework, plain PHP with a small set of well-maintained libraries. Consequence: the protections a framework supplies must be built and tested by hand (CTL-FW-001). This adds build time and review effort and raises the chance of a missed check, which is why THR-021 is tracked and a security test suite is a gate."
+    blocks_approval: true
+    status: "DECIDED"
+  - id: "DEC-012"
+    question: "Where will the store be hosted?"
+    owner: "belis-bell-owner"
+    required_decision: "Decided: cPanel shared hosting and domain at Namecheap. Before build, confirm the chosen plan provides PHP 8.3 or newer, SSH, Composer or an approach to ship built dependencies, cron jobs, AutoSSL, a custom document root, MySQL and enough CPU and process limits. Give the store its own cPanel account. Upgrade triggers to a VPS or cloud host: the plan cannot meet these checks, sustained resource limits are hit, uploads need real malware scanning, or the owner wants stronger isolation."
+    blocks_approval: true
+    status: "DECIDED"
+  - id: "DEC-002"
+    question: "Which payment provider will handle cards and mobile money in Ghana?"
+    owner: "belis-bell-owner"
+    required_decision: "Decided: Paystack. The first build uses Paystack test keys behind a small payment adapter with a mock mode. For live payments Belis Bell must complete Paystack business verification on an account it owns (see DEC-013), supply live keys to the server environment file only, and pass GATE-006. Confirm which cards and mobile money networks are enabled for the Belis Bell account and the fees, from Paystack directly."
+    blocks_approval: false
+    status: "DECIDED"
+  - id: "DEC-003"
+    question: "Which MFA method for staff?"
+    owner: "belis-bell-owner"
+    required_decision: "Recommended: passkeys, with TOTP as fallback. MFA itself is mandatory under CTL-AUTH-002."
+    blocks_approval: false
+    status: "OPEN"
+  - id: "DEC-004"
+    question: "Who can start a quote request, and how are institutions confirmed?"
+    owner: "belis-bell-owner"
+    required_decision: "Decided: a quote request needs a verified email or phone (one-time code). Uploads need a verified contact. Institutions request a quote each time (per PG-023); staff link a verified organisation only when repeat buyers need shared access. Optional approval limits per organisation."
+    blocks_approval: true
+    status: "DECIDED"
+  - id: "DEC-005"
+    question: "What retention periods apply to accounts, orders, quotes, uploads and logs, and what does the Data Protection Act require?"
+    owner: "belis-bell-owner"
+    required_decision: "Periods and any Data Protection Commission registration, confirmed with qualified advice. Needed before launch, not for the mock-data build."
+    blocks_approval: false
+    status: "OPEN"
+  - id: "DEC-006"
+    question: "Which upload types and size limits apply, and which malware scanning service is used?"
+    owner: "developer"
+    required_decision: "Default until decided: PDF, DOCX, XLSX, CSV, PNG and JPG, 10 MB per file, 3 files per quote. Also choose a malware scanning method that works on cPanel (host-provided scanner, an external scanning service acceptable for confidential files, or staff opening files only on a protected machine). Uploads stay off in production until this is decided and proven."
+    blocks_approval: false
+    status: "OPEN"
+  - id: "DEC-013"
+    question: "Who owns the Namecheap, cPanel and domain-email accounts?"
+    owner: "belis-bell-owner"
+    required_decision: "Recommended: Belis Bell owns them under a company-controlled email with MFA, and the developer gets delegated access. Needed before launch, so the developer or a freelancer is never the only owner of the domain."
+    blocks_approval: false
+    status: "OPEN"
+  - id: "DEC-014"
+    question: "Put Cloudflare (or similar) in front of the Namecheap host?"
+    owner: "belis-bell-owner"
+    required_decision: "Recommended yes: a WAF, rate limiting, caching and bot protection, with DNS moved to it. Check the plan's features. If not, rely on the host's ModSecurity or Imunify and application rate limits, and accept weaker bot and DDoS protection."
+    blocks_approval: false
+    status: "OPEN"
+  - id: "DEC-007"
+    question: "Which staff roles exist and what can each do?"
+    owner: "belis-bell-owner"
+    required_decision: "Default until decided: owner, sales, fulfilment and content roles with least privilege as in ID-004 and ID-005."
+    blocks_approval: false
+    status: "OPEN"
+  - id: "DEC-008"
+    question: "Is WhatsApp click-to-chat links only, or the WhatsApp Business API?"
+    owner: "belis-bell-owner"
+    required_decision: "Decided for v1: click-to-chat links only. The API is a separate future change that would reopen this baseline."
+    blocks_approval: false
+    status: "DECIDED"
+  - id: "DEC-009"
+    question: "How is mock data kept out of production?"
+    owner: "developer"
+    required_decision: "Decided: one labelled seed file, a loader that refuses production, a startup guard and a CI check (CTL-ENV-001, GATE-005)."
+    blocks_approval: false
+    status: "DECIDED"
+  - id: "DEC-010"
+    question: "Who is the Belis Bell business owner who accepts payment and customer-data risk?"
+    owner: "belis-bell-owner"
+    required_decision: "Decided for this approval: Prince Caleb (Super Admin) approves this baseline for development and staging. Prince Caleb is also the developer, so a Belis Bell business owner must be named and approve before live payments and real customer data (GATE-006, ID-005, DEC-013)."
+    blocks_approval: true
+    status: "DECIDED"
+evidence:
+  - id: "EVD-001"
+    type: "OWNER_APPROVAL"
+    status: "PASSED"
+    observed_at: "2026-09-26T17:26:04Z"
+    observer: "Claude (recorded from the owner's chat message)"
+    location: "Chat message: 'Approve security baseline 0.3.0' from Prince Caleb (Super Admin), with DEC-004 'yes'"
+  - id: "EVD-002"
+    type: "CI_RUN"
+    status: "NOT_YET_BUILT"
+    observed_at: null
+    observer: null
+    location: null
+  - id: "EVD-003"
+    type: "CONFIG_INSPECTION"
+    status: "NOT_YET_BUILT"
+    observed_at: null
+    observer: null
+    location: null
+  - id: "EVD-004"
+    type: "SCAN_REPORT"
+    status: "NOT_YET_BUILT"
+    observed_at: null
+    observer: null
+    location: null
+  - id: "EVD-005"
+    type: "CI_RUN"
+    status: "NOT_YET_BUILT"
+    observed_at: null
+    observer: null
+    location: null
+  - id: "EVD-006"
+    type: "MANUAL_REVIEW"
+    status: "NOT_YET_BUILT"
+    observed_at: null
+    observer: null
+    location: null
+  - id: "EVD-007"
+    type: "TEST_RESULT"
+    status: "NOT_YET_BUILT"
+    observed_at: null
+    observer: null
+    location: null
+  - id: "EVD-008"
+    type: "CI_RUN"
+    status: "NOT_YET_BUILT"
+    observed_at: null
+    observer: null
+    location: null
+  - id: "EVD-009"
+    type: "CONFIG_INSPECTION"
+    status: "NOT_YET_BUILT"
+    observed_at: null
+    observer: null
+    location: null
+monitoring:
+  handoff:
+    provider: "NONE"
+    owner: "belis-bell-owner"
+    configuration_status: "NOT_CONFIGURED"
+    baseline_version: "0.3.0"
+    record_digest: "66848a5d526cfb5a3fdd714a829a039a4e53f3dc2c66979ff3df2fa2de6fa352"
+    environments: ["staging", "production"]
+    handed_off_at: null
+    acknowledged_at: null
+  signals:
+    - id: "MON-001"
+      name: "Failed sign-in and recovery spikes"
+      source: "application auth logs"
+      severity: "HIGH"
+      threshold: "More than 20 failures from one source or 200 overall in 10 minutes"
+      route: "belis-bell-owner"
+      runbook: "SECURITY.md#account-takeover"
+      status: "PLANNED"
+    - id: "MON-002"
+      name: "Admin sign-in and privilege changes"
+      source: "audit log"
+      severity: "HIGH"
+      threshold: "Any role change, new admin session from a new device, or sign-in outside working hours"
+      route: "belis-bell-owner"
+      runbook: "SECURITY.md#admin-compromise"
+      status: "PLANNED"
+    - id: "MON-003"
+      name: "Payment webhook signature failures and amount mismatches"
+      source: "webhook handler logs"
+      severity: "CRITICAL"
+      threshold: "Any invalid signature or mismatch"
+      route: "belis-bell-owner"
+      runbook: "SECURITY.md#payment-incident"
+      status: "PLANNED"
+    - id: "MON-004"
+      name: "Unusual price or catalogue changes"
+      source: "audit log"
+      severity: "HIGH"
+      threshold: "Price change above a set percentage, or more than a set number of items in one action"
+      route: "belis-bell-owner"
+      runbook: "SECURITY.md#price-tampering"
+      status: "PLANNED"
+    - id: "MON-005"
+      name: "Upload malware detections and quarantines"
+      source: "scanner results"
+      severity: "MEDIUM"
+      threshold: "Any detection"
+      route: "developer"
+      runbook: "SECURITY.md#malicious-upload"
+      status: "PLANNED"
+    - id: "MON-006"
+      name: "Server error rate and availability"
+      source: "external uptime monitor and application logs"
+      severity: "MEDIUM"
+      threshold: "Errors above 2% for 10 minutes, or the store unavailable for 5 minutes"
+      route: "developer"
+      runbook: "SECURITY.md#outage"
+      status: "PLANNED"
+    - id: "MON-007"
+      name: "Backup failure or missed restore test"
+      source: "backup job status"
+      severity: "HIGH"
+      threshold: "Any failed daily backup, or no restore test in 90 days"
+      route: "belis-bell-owner"
+      runbook: "SECURITY.md#recovery"
+      status: "PLANNED"
+    - id: "MON-009"
+      name: "Domain, DNS, nameserver or registrar changes and expiry"
+      source: "Namecheap notifications and an external DNS and certificate check"
+      severity: "CRITICAL"
+      threshold: "Any change, or fewer than 30 days to domain or certificate expiry"
+      route: "belis-bell-owner"
+      runbook: "SECURITY.md#domain-takeover"
+      status: "PLANNED"
+    - id: "MON-008"
+      name: "Mock data or test keys detected in production"
+      source: "startup guard and CI"
+      severity: "CRITICAL"
+      threshold: "Any occurrence"
+      route: "developer"
+      runbook: "SECURITY.md#mock-in-production"
+      status: "PLANNED"
+recovery:
+  owner: "belis-bell-owner"
+  backup: {status: "REQUIRED", details: "Daily encrypted database and upload backups by scheduled job, copied off the hosting account to separate storage; retention set with DEC-005; host backups are not relied on"}
+  restore: {status: "REQUIRED", details: "Restore drill before launch and every 90 days; recovery objectives agreed with the owner"}
+  rollback: {status: "REQUIRED", details: "Switch back to the previous release folder or tag; reversible migrations"}
+  incident_response: {status: "REQUIRED", details: "Disable the affected route or payment mode, revoke sessions and keys, preserve logs, notify the owner, assess notification duties under the Data Protection Act with qualified advice"}
+approval:
+  decision: "APPROVED"
+  approver: "Prince Caleb (Super Admin)"
+  approved_at: "2026-09-26T17:26:04Z"
+  baseline_version: "0.3.0"
+  record_digest: "66848a5d526cfb5a3fdd714a829a039a4e53f3dc2c66979ff3df2fa2de6fa352"
+  scope:
+    - "Create the repository and scaffold, and build and test in development and staging"
+    - "Use mock data only (single labelled seed file) and Paystack test keys only"
+    - "Implement GATE-001 to GATE-005 as the first engineering work, before feature code is merged"
+    - "NOT covered: real customer data, live payments, live Paystack keys, production deployment, and enabling uploads in production"
+    - "Any change to authentication, payments, personal data, uploads, hosting, third parties or admin permissions suspends this approval until reassessed"
+  expires_at: null
+changes: []

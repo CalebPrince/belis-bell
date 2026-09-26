@@ -1,0 +1,64 @@
+# Production deploy to Namecheap cPanel over SSH (CTL-DEP-001).
+# STATUS: LOCKED BY DESIGN. The baseline's deployment_lock is LOCKED, so the first step below fails
+# on purpose. Nothing here has been run. It only becomes usable after GATE-005 to GATE-009 pass,
+# a Belis Bell business owner is named (DEC-010, DEC-013), and the deployment lock is lifted through a
+# new approved baseline version.
+#
+# Required before first use (GitHub environment "production" with required reviewers, and secrets):
+#   DEPLOY_HOST, DEPLOY_USER, DEPLOY_PATH   the store's own cPanel account (no other sites)
+#   DEPLOY_SSH_KEY                          a key that only works for that account, rotated regularly
+#   DEPLOY_KNOWN_HOSTS                      pinned host key line for DEPLOY_HOST
+# The .env file lives above the web root on the server and is never deployed from here.
+name: Deploy (production, locked)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment: production   # requires a human approval before secrets are released
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+      - name: Baseline gate for production
+        env:
+          APPROVED_DIGEST: ${{ vars.APPROVED_DIGEST }}
+        run: |
+          test -n "$APPROVED_DIGEST" || { echo "APPROVED_DIGEST is not set: failing closed"; exit 1; }
+          python tools/security/validate_baseline.py security-baseline.yaml --require-approved --expected-digest "$APPROVED_DIGEST" --target production --stage PRE_DEPLOY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build:css
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+      - run: |
+          php bin/build-release.php
+          php bin/check-release.php
+      - name: Upload to a new release folder and switch the current link (previous release is kept for rollback)
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          REL="releases/${GITHUB_SHA}"
+          SSH="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes"
+          $SSH "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_PATH/$REL'"
+          rsync -az --delete -e "$SSH" dist/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/$REL/"
+          $SSH "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH' && ln -sfn '$REL' current"
+          rm -f ~/.ssh/deploy_key

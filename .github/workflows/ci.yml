@@ -1,0 +1,80 @@
+# Pull request and merge checks (GATE-002, GATE-003, GATE-004, GATE-005).
+# STATUS: written but NOT yet run or verified. The repository has no remote yet. After the first push:
+#  1. add the repository variable APPROVED_DIGEST (see README, "Security approval"),
+#  2. mark every job below as a required status check on the protected main branch,
+#  3. seed a failing change (a fake secret, a vulnerable package, a modified baseline) and record that it was blocked.
+# Until then GATE-001 to GATE-005 stay NOT_YET_BUILT or CONFIGURED in security-baseline.yaml.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  baseline-gate:
+    name: Security baseline approval (GATE-001)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+      - name: Structure, references and traceability
+        run: python tools/security/validate_baseline.py security-baseline.yaml
+      - name: Baseline must be APPROVED with the digest held outside this pull request
+        env:
+          APPROVED_DIGEST: ${{ vars.APPROVED_DIGEST }}
+        run: |
+          test -n "$APPROVED_DIGEST" || { echo "APPROVED_DIGEST repository variable is not set: failing closed"; exit 1; }
+          python tools/security/validate_baseline.py security-baseline.yaml --require-approved --expected-digest "$APPROVED_DIGEST" --stage PULL_REQUEST
+
+  php:
+    name: PHP checks and security tests (GATE-002)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_mysql, mbstring
+      - name: Syntax check every PHP file
+        run: find src config bin public templates tests database -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
+      - name: Security test suite
+        run: php tests/run.php
+
+  frontend-and-release:
+    name: CSS build, dependency audit, release contents (GATE-004, GATE-005)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Dependency audit
+        run: npm audit --audit-level=high
+      - run: npm run build:css
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+      - name: Build release from the allowlist and check it holds no mock data, seed files or keys
+        run: |
+          php bin/build-release.php
+          php bin/check-release.php
+
+  secret-scan:
+    name: Secret scan (CTL-SC-001)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

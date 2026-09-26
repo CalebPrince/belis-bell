@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Belis Bell Project Gate</title>
+<style>
+:root{
+  --bg:#f6f6f3;--panel:#ffffff;--ink:#16181d;--muted:#565d6b;--line:#dfe1e6;--line-strong:#c7cad2;
+  --accent:#2447b8;--accent-ink:#ffffff;--accent-soft:#e8edfb;
+  --ok:#0f6a3b;--ok-bg:#e3f3ea;--warn:#7a4700;--warn-bg:#fcefd6;--bad:#a11d12;--bad-bg:#fbe7e4;
+  --info:#28449a;--info-bg:#e8edfb;--neutral:#3f4652;--neutral-bg:#eceef1;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 6px 20px rgba(16,24,40,.05);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1115;--panel:#171a20;--ink:#eceef2;--muted:#a3aab8;--line:#2a2f39;--line-strong:#3a4150;
+  --accent:#8fb0ff;--accent-ink:#0b1020;--accent-soft:#1c2540;
+  --ok:#66d19a;--ok-bg:#12301f;--warn:#f2c26b;--warn-bg:#33270d;--bad:#ff9d92;--bad-bg:#3a1714;
+  --info:#a9c0ff;--info-bg:#1c2540;--neutral:#c5cad4;--neutral-bg:#232833;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.3);}}
+:root[data-theme="dark"]{
+  --bg:#0f1115;--panel:#171a20;--ink:#eceef2;--muted:#a3aab8;--line:#2a2f39;--line-strong:#3a4150;
+  --accent:#8fb0ff;--accent-ink:#0b1020;--accent-soft:#1c2540;
+  --ok:#66d19a;--ok-bg:#12301f;--warn:#f2c26b;--warn-bg:#33270d;--bad:#ff9d92;--bad-bg:#3a1714;
+  --info:#a9c0ff;--info-bg:#1c2540;--neutral:#c5cad4;--neutral-bg:#232833;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.3);}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans)}
+button,input,textarea{font:inherit;color:inherit}
+h1,h2,h3{margin:0;line-height:1.2;letter-spacing:-.01em}
+p{margin:0}
+[hidden]{display:none!important}
+.mono{font-family:var(--mono)}
+.eyebrow{font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.hint,.why{color:var(--muted);font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+.btn{border:1px solid var(--line-strong);background:var(--panel);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:14px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn[disabled]{opacity:.5;cursor:not-allowed;filter:none}
+.link{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:13px}
+.link.on{color:var(--accent);font-weight:600}
+
+.pill{display:inline-block;font:600 11px/1 var(--mono);letter-spacing:.04em;text-transform:uppercase;padding:4px 7px;border-radius:999px;white-space:nowrap}
+.s-CONFIRMED{background:var(--ok-bg);color:var(--ok)}
+.s-INFERRED{background:var(--info-bg);color:var(--info)}
+.s-PROPOSED{background:var(--neutral-bg);color:var(--neutral)}
+.s-NEEDS_INPUT{background:var(--warn-bg);color:var(--warn)}
+.s-REJECTED{background:var(--bad-bg);color:var(--bad)}
+.s-SUPERSEDED{background:var(--neutral-bg);color:var(--muted);text-decoration:line-through}
+
+input[type=text],textarea{width:100%;padding:10px 12px;border:1px solid var(--line-strong);border-radius:8px;background:var(--panel)}
+textarea{resize:vertical;min-height:72px}
+
+.meter{height:8px;background:var(--neutral-bg);border-radius:99px;overflow:hidden}
+.meter>i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s ease}
+
+.mini{display:block;width:100%;height:auto;border-radius:6px}
+
+.result{margin-top:14px;padding:14px;border:1px solid var(--line-strong);border-radius:10px;background:var(--panel)}
+.result h3{font-size:15px;margin-bottom:4px}
+.result textarea{font:12px/1.4 var(--mono);min-height:110px;margin:10px 0}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+.head{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-end;margin-bottom:18px}
+.head h1{font-size:30px;margin-top:8px}
+.head .sub{color:var(--muted);margin-top:4px;max-width:64ch}
+.ready{min-width:260px;flex:1;max-width:420px}
+.ready .big{font:700 28px/1 var(--mono);display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.ready .big small{font:600 11px var(--mono);color:var(--muted);letter-spacing:.1em}
+.counts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.banner{border:1px solid var(--warn);background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:14px}
+.layout{display:grid;gap:24px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:1000px){.layout{grid-template-columns:minmax(0,1fr) 330px;align-items:start}}
+section.blk{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:18px;box-shadow:var(--shadow)}
+section.blk>h2{font:700 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.kv{display:grid;grid-template-columns:140px 1fr;gap:8px 16px;margin:0;font-size:14px}
+.kv dt{color:var(--muted)}.kv dd{margin:0}
+@media (max-width:560px){.kv{grid-template-columns:1fr}.kv dt{margin-top:6px}}
+.trait{display:grid;grid-template-columns:110px 1fr 44px;gap:12px;align-items:center;font-size:14px;margin:8px 0}
+.trait b{font:600 13px var(--mono);text-align:right}
+.block-need{border-color:var(--warn)}
+.need{padding:14px 0;border-top:1px solid var(--line)}
+.need:first-of-type{border-top:0;padding-top:0}
+.need h3{font-size:16px;margin:6px 0}
+.opts{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));margin-top:10px}
+.opt{text-align:left;border:1.5px solid var(--line-strong);background:var(--panel);border-radius:10px;padding:10px 12px;cursor:pointer}
+.opt:hover{border-color:var(--accent);background:var(--accent-soft)}
+.opt b{display:block;font-size:14px}.opt small{color:var(--muted)}
+.area-h{font-size:15px;margin:18px 0 6px}
+.area-h:first-of-type{margin-top:0}
+ul.decs{list-style:none;margin:0;padding:0}
+.dec{padding:12px 0;border-top:1px solid var(--line)}
+.dec:first-child{border-top:0}
+.dec.muted{opacity:.55}
+.dec-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dec-head .id{font-size:12px;color:var(--muted)}
+.dec-title{font-weight:650;flex:1;min-width:160px}
+.dec-val{margin-top:4px}
+.dec-why{margin-top:2px;color:var(--muted);font-size:13px}
+.dec .row{margin-top:8px}
+.dec.changed{border-left:3px solid var(--accent);padding-left:12px;margin-left:-15px}
+.dirs{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.dir{border:1.5px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--panel)}
+.dir.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.dir-top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dir-top h3{font-size:16px;flex:1}
+.dir .detail{font-size:13px;display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.dir .detail dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:0}
+.dir .detail dt{color:var(--muted)}.dir .detail dd{margin:0;text-align:right}
+.swatchrow{display:flex;gap:4px}.swatchrow i{width:18px;height:18px;border-radius:5px;border:1px solid var(--line)}
+table.found{width:100%;border-collapse:collapse;font-size:14px}
+table.found td{padding:7px 0;border-top:1px solid var(--line)}
+table.found td:first-child{color:var(--muted);width:42%}
+.risk{display:flex;gap:10px;font-size:14px;padding:6px 0}
+.rail{position:sticky;top:12px}
+@media (max-width:999px){.rail{position:static}}
+.gate{border:2px solid var(--warn);border-radius:14px;padding:18px;background:var(--panel);box-shadow:var(--shadow)}
+.gate.ok{border-color:var(--ok)}
+.gate .state{font:700 15px var(--mono);color:var(--warn);margin:8px 0 4px}
+.gate .fine{font-size:13px;color:var(--muted);margin-bottom:12px}
+.gate ul{margin:0 0 12px;padding-left:18px;font-size:13px;color:var(--warn)}
+.gate .btns{display:grid;gap:8px}
+.gate .btns .btn{padding:10px 14px}
+.gate textarea{margin:10px 0;min-height:64px}
+.confirm{border:1px solid var(--line-strong);background:var(--neutral-bg);border-radius:10px;padding:12px;font-size:13px;margin-top:10px;display:grid;gap:10px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>const DATA={"state": {"schema": "opskeep.project-gate/state@1", "project": {"name": "Belis Bell", "slug": "belis-bell", "one_liner": "Online store for washroom and cleaning products in Ghana, serving households and businesses plus institutional buyers such as banks, schools, and government and private companies.", "created": "2026-09-26"}, "intent": [{"label": "Product", "value": "Online store with a business-supply (B2B) side"}, {"label": "Primary users", "value": "Institutional buyers (banks, schools, government, private companies) and general shoppers"}, {"label": "Usage", "value": "Heavy contact: ordering, quotes and conversations all day"}, {"label": "Primary job", "value": "Find the right product, get a price or quote, and order with confidence"}, {"label": "Platform", "value": "Responsive web store, full features on phone and desktop"}, {"label": "Reference", "value": "supplymaster.store (visual style and section arrangement only; all content, imagery and branding original)"}], "character": [{"trait": "Trustworthy", "score": 95}, {"trait": "Photo-led", "score": 75}, {"trait": "Friendly", "score": 70}, {"trait": "Premium", "score": 60}, {"trait": "Operational", "score": 65}], "decisions": [{"id": "PG-001", "area": "project", "title": "Online store for two audiences", "status": "CONFIRMED", "confirmed_via": "interview", "value": "One store serves everyday buyers and institutional accounts. Same catalogue, different paths: quick checkout for individuals, quotes and account ordering for institutions.", "rationale": "Belis Bell sells washroom and cleaning products and also supplies banks, schools, and government and private companies."}, {"id": "PG-002", "area": "responsive", "title": "Responsive web, full parity on phone", "status": "CONFIRMED", "confirmed_via": "interview", "value": "One responsive web app. Phone gets everything the desktop gets: browsing, quotes, checkout, account, order history. No native app in v1.", "rationale": "Used on desktop and phone, and you asked for everything on mobile."}, {"id": "PG-003", "area": "responsive", "title": "Slow-network tolerance", "status": "CONFIRMED", "confirmed_via": "interview", "value": "Lean pages, responsive compressed images, skeleton loading, retryable requests, cart and quote drafts that survive a dropped connection.", "rationale": "You flagged slow or patchy internet."}, {"id": "PG-004", "area": "users", "title": "Use in the field, on the move and on shared screens", "status": "CONFIRMED", "confirmed_via": "interview", "value": "Large touch targets, strong contrast and larger base type (17px body). Works at a desk, on a phone in a store room, and projected in an office.", "rationale": "Contexts chosen: desk, on the move, in the field, shared screen, low bandwidth.", "depends_on": ["PG-002"]}, {"id": "PG-005", "area": "users", "title": "Mixed software comfort", "status": "CONFIRMED", "confirmed_via": "interview", "value": "Plain language, one clear action per screen, no jargon. Repeat buyers get shortcuts such as reorder and saved lists.", "rationale": "Comfort level: mixed."}, {"id": "PG-006", "area": "ux", "title": "Conversation-led buying", "status": "CONFIRMED", "value": "Talking to a person is part of the flow: WhatsApp click-to-chat and call buttons on product and quote pages, and a quote thread that carries messages, not just a form.", "rationale": "Main activity chosen was communicating, with all-day use. Local B2B buying in Ghana often runs through WhatsApp and phone.", "confirmed_via": "explicit"}, {"id": "PG-007", "area": "ux", "title": "High-stakes ordering", "status": "CONFIRMED", "confirmed_via": "interview", "value": "Orders and quotes have a review step, a clear confirmation, an order reference, and an audit trail. Cancelling or editing after submit is deliberate and logged. Undo is not the main safety net.", "rationale": "Mistakes cost money."}, {"id": "PG-008", "area": "visual", "title": "Trustworthy, friendly, premium tone", "status": "CONFIRMED", "confirmed_via": "interview", "value": "Calm, reliable and polished, with warm plain-language copy. Premium through restraint and photography, not gold or heavy effects. No em dashes in UI copy.", "rationale": "Feel words chosen: trustworthy, friendly, premium."}, {"id": "PG-009", "area": "visual", "title": "Editorial visual direction", "status": "SUPERSEDED", "value": "Serif display type for headings, paper-toned neutrals, generous whitespace, product photography treated like magazine pages.", "rationale": "Editorial was the closest gut pick. Superseded: you selected Fresh and Bright and asked for the Supply Master look instead (PG-025)."}, {"id": "PG-010", "area": "visual", "title": "Teal accent", "status": "SUPERSEDED", "value": "Teal is the single accent for primary buttons, links and focus. Status colours stay separate. Every teal used for text or buttons meets 4.5:1.", "rationale": "Teal picked; suits water, cleanliness and hygiene. Superseded: the supplied logo sets the brand colours (PG-029)."}, {"id": "PG-011", "area": "visual", "title": "Soft elevated surfaces", "status": "CONFIRMED", "confirmed_via": "interview", "value": "Product cards, quote panels and summary boxes sit on soft shadows. Elevation is reserved for things you act on; page sections stay flat.", "rationale": "Soft elevation picked."}, {"id": "PG-012", "area": "visual", "title": "Light and dark themes", "status": "CONFIRMED", "confirmed_via": "interview", "value": "Follows the device. Light is the designed default (paper-toned); dark is a full second palette, not an inversion.", "rationale": "Both themes chosen."}, {"id": "PG-013", "area": "ux", "title": "Top bar with mega-menu navigation", "status": "CONFIRMED", "confirmed_via": "interview", "value": "Sticky top bar: logo, search, account, cart, and a Buy for Business link. A category mega-menu on desktop; a full-screen category drawer on phone. No sidebar.", "rationale": "Top bar chosen; the reference site uses a category mega-menu for a large catalogue.", "depends_on": ["PG-002"]}, {"id": "PG-014", "area": "screens", "title": "Content mix: photos, product grids and copy", "status": "CONFIRMED", "value": "Home follows a fixed section order: announcement bar, header, nav row, split hero (photo with headline beside a 2x2 cluster of coloured feature tiles), category pill tabs, product carousels, brand spotlight, three ways to shop tiles, core category tiles, featured partner picks, trust counter, brand in focus, all brands A to Z, footer. Buying guides and hygiene advice sit as a lower strip. Copy and images are Belis Bell's own.", "rationale": "Section arrangement taken from the reference at your request; content is original.", "depends_on": ["PG-025"], "confirmed_via": "explicit"}, {"id": "PG-015", "area": "accessibility", "title": "WCAG 2.2 AA plus extended needs", "status": "CONFIRMED", "confirmed_via": "interview", "value": "AA baseline with full keyboard operation, screen-reader labelling and live regions for cart and quote changes, a low-vision mode (text scaling to 200% without breakage, no reliance on colour), and layouts that tolerate text expansion and RTL.", "rationale": "Keyboard, screen reader, low vision and multi-language needs all selected."}, {"id": "PG-016", "area": "project", "title": "Brand identity starts fresh", "status": "SUPERSEDED", "value": "No existing brand guide. Belis Bell gets a wordmark, colour system and photography style as part of this build, all defined in the approved direction.", "rationale": "Brand answer: starting fresh. Superseded: a logo was supplied (PG-030)."}, {"id": "PG-017", "area": "ux", "title": "supplymaster.store as structural reference", "status": "SUPERSEDED", "value": "Borrow the structure that works for supply retail: category mega-menu, Buy for Business quote path, delivery and pay-on-delivery messaging, trust counters, FAQ. Do not copy its visual identity, layout details or copy.", "rationale": "Given as a note in the workshop. Superseded: you asked to copy the visual style and section arrangement, not just structure (PG-026)."}, {"id": "PG-018", "area": "screens", "title": "Buy for Business path", "status": "CONFIRMED", "value": "A dedicated path for institutions: request a quote from a cart or a list, upload a requirements sheet, get a quote thread, then approve it into an order. Repeat orders reuse past quotes.", "rationale": "Institutional supply is half the business and quote-led buying is how institutions procure.", "depends_on": ["PG-001", "PG-006"], "confirmed_via": "explicit"}, {"id": "PG-019", "area": "screens", "title": "Core screen set", "status": "CONFIRMED", "value": "Home, category, product, search results, cart, checkout, quote request, quote thread, account (orders, saved lists, addresses), order tracking, buying guides, about and contact, FAQ.", "rationale": "Standard store plus the B2B path.", "depends_on": ["PG-001"], "confirmed_via": "explicit"}, {"id": "PG-020", "area": "screens", "title": "Product page built for trust", "status": "CONFIRMED", "value": "Large photo with zoom, pack size and unit price, stock status, safety and usage notes, downloadable spec or safety data sheet where relevant, WhatsApp button, and add-to-cart plus add-to-quote.", "rationale": "Institutional buyers compare pack sizes and need documentation.", "depends_on": ["PG-018"], "confirmed_via": "explicit"}, {"id": "PG-021", "area": "visual", "title": "Empty, loading and error states", "status": "CONFIRMED", "value": "Skeleton loaders, helpful empty states (empty cart suggests categories), and plain errors that say what happened and how to fix it, with a retry.", "rationale": "Patchy connections make this visible often.", "depends_on": ["PG-003"], "confirmed_via": "explicit"}, {"id": "PG-022", "area": "project", "title": "Payment model", "status": "CONFIRMED", "rationale": "Changes checkout, account screens and the security design. Decide before build.", "question": "How will customers pay?", "options": [{"value": "online", "label": "Pay online", "hint": "Mobile money and card at checkout"}, {"value": "mixed", "label": "Online plus pay on delivery or invoice", "hint": "Individuals pay online, institutions get invoiced"}, {"value": "orders_only", "label": "Orders and quotes only", "hint": "No online payment; you confirm and invoice by hand"}], "value": "Pay online", "choice": "online", "confirmed_via": "explicit"}, {"id": "PG-023", "area": "project", "title": "Institutional account model", "status": "CONFIRMED", "rationale": "Decides whether institutions log in with contract pricing or just request quotes.", "question": "How should institutions buy?", "options": [{"value": "quotes", "label": "Request a quote each time", "hint": "No special accounts; you reply with pricing"}, {"value": "accounts", "label": "Approved business accounts", "hint": "Login, agreed pricing, order history, approval by you"}, {"value": "both", "label": "Quotes first, accounts later", "hint": "Launch with quotes, add accounts in a later phase"}], "value": "Request a quote each time", "choice": "quotes", "confirmed_via": "explicit"}, {"id": "PG-024", "area": "screens", "title": "Public prices", "status": "CONFIRMED", "rationale": "Affects catalogue cards, search and SEO.", "question": "Should prices be visible to everyone?", "options": [{"value": "public", "label": "Prices shown to all", "hint": "Standard store behaviour"}, {"value": "mixed", "label": "Retail prices public, bulk on quote", "hint": "Shows price, adds request-bulk-price"}, {"value": "hidden", "label": "Prices on request", "hint": "Catalogue only, quote for everything"}], "value": "Prices shown to all", "choice": "public", "confirmed_via": "explicit"}, {"id": "PG-025", "area": "visual", "title": "Supply Master visual language", "status": "CONFIRMED", "confirmed_via": "interview", "value": "Adopt the reference's visual style: deep-toned header, footer and buttons on a light page, a photo-led hero with dark overlay and large white headline, coloured feature tiles with photos, rounded (12px) buttons and cards, product carousels with a full-width add-to-cart button, Figtree-style semibold headings, generous section titles centred over light grey-tinted bands. Belis Bell's own palette, logo, photography and copy are used throughout.", "rationale": "Your note: copy the visual style, not the content."}, {"id": "PG-026", "area": "ux", "title": "Section arrangement follows the reference", "status": "CONFIRMED", "confirmed_via": "interview", "value": "Home and category pages keep the reference's section order and rhythm (see PG-014). No text, product photos, logos, brand names or partner names are copied. Nothing implies affiliation with Supply Master.", "rationale": "Your note, plus the reference belongs to another company.", "depends_on": ["PG-025"]}, {"id": "PG-027", "area": "visual", "title": "Deep teal takes the place of the reference's navy", "status": "SUPERSEDED", "value": "Header accent, buttons, announcement bar and footer use deep teal (#0a5f61). Feature tiles rotate teal, coral (#b4491f), green (#1f6b3d) and ink (#12303a), each with white text above 4.5:1. Reject this if you want the reference's navy instead.", "rationale": "You picked teal earlier and chose Fresh and Bright; keeping the hue keeps Belis Bell distinct from the reference. Superseded: the palette now comes from the logo (PG-031).", "depends_on": ["PG-025", "PG-010"]}, {"id": "PG-028", "area": "screens", "title": "Ways-to-shop tiles and category set", "status": "CONFIRMED", "value": "Three big entry tiles under the product carousels: Shop Products, Buy for Business (quotes) and Washroom Solutions (curated packs for a whole washroom). Core category tiles: Washroom Supplies, Cleaning Chemicals, Cleaning Equipment, Hygiene and Waste, Dispensers and Fittings. Final names come from the real catalogue.", "rationale": "Mirrors the reference's three-ways and core-categories blocks for a washroom and cleaning catalogue.", "depends_on": ["PG-026", "PG-018"], "confirmed_via": "explicit"}, {"id": "PG-029", "area": "visual", "title": "Brand colours come from the logo", "status": "CONFIRMED", "value": "Blue is the single action colour (#006cbc, white text 5.4:1). Deep navy (#044788) is for the announcement bar, footer and headings on tinted bands. Green (#43b14a in the logo) is a brand accent for badges, highlights and illustration only. Text and buttons use a darker green (#2b7d32, white text 5.1:1) because the logo green fails contrast. Teal is dropped.", "rationale": "Colours sampled from the supplied logo; the earlier teal pick predates it.", "confirmed_via": "explicit"}, {"id": "PG-030", "area": "project", "title": "Logo supplied", "status": "CONFIRMED", "value": "Use the updated Belis Bell logo (blue B with cart, spray bottle, soap and tissue; blue and green wordmark; descriptor 'Cleaning Supplies & More'; line 'For homes, businesses and institutions'). Saved as brand/logo-primary.webp; the first version is archived. The header uses a compact lockup and the full logo appears in the footer and about strip. The file is a 1254px raster on white with a light halo, so a transparent PNG or SVG and a horizontal lockup are needed before build.", "rationale": "You shared an updated logo in chat. Its descriptor now covers cleaning as well as washroom products.", "confirmed_via": "interview"}, {"id": "PG-031", "area": "visual", "title": "Blue, navy and green in the Bright Supply layout", "status": "CONFIRMED", "value": "Header, buttons and links use blue. The announcement bar and footer use navy. Feature tiles rotate blue, navy, green (#2b7d32) and ink (#0a1d33), each with white text above 4.5:1. Dark theme uses a light blue primary (#6ab7f5) on a deep navy-black ground.", "rationale": "Applies the logo palette to the approved section layout.", "depends_on": ["PG-025", "PG-029"], "confirmed_via": "explicit"}, {"id": "PG-032", "area": "project", "title": "Mock data for the first build", "status": "CONFIRMED", "confirmed_via": "interview", "value": "The first build uses clearly labelled mock data for products, prices (GHS), stock, categories, brands, delivery figures, the trust counter and customer content. Mock data lives in one seed file, is never presented as real, and is removed before launch. Payments run in provider test mode only until the security gate signs off live keys.", "rationale": "You asked to use mock data for prices, products and everything else for now.", "depends_on": ["PG-024"]}], "conflicts": [], "directions": [{"id": "A", "name": "Paper and Teal", "tagline": "A calm supply catalogue with editorial polish.", "fit": "Matches your picks exactly: editorial, teal, soft elevation, top bar, trustworthy and premium. Feels like a well-run supplier that institutions trust, and still warm enough for households.", "tradeoffs": "Serif headings and airy spacing use more scroll length. Needs good product photography to earn the premium feel.", "preview": {"nav": "top", "density": 2, "radius": 10, "surface": "elevated", "serif": true, "palette": {"bg": "#f5f3ee", "surface": "#fffefb", "accent": "#0a6b6f", "ink": "#1c2422", "line": "#ddd8cc"}}, "foundation": {"Theme": "Light default, dark follows device", "Navigation": "Sticky top bar with category mega-menu", "Content width": "1240px max, centered", "Density": "Balanced", "Corner radius": "10px", "Typography": "Fraunces (headings) + Source Sans 3 (body)", "Primary interaction": "Category browse, product grid, add to cart or quote", "Mobile strategy": "Full parity, category drawer, sticky add-to-cart", "Animation": "Subtle, image fade and card lift, reduced-motion safe", "Icons": "Lucide"}, "tokens": {"color": {"bg": "#f5f3ee", "surface": "#fffefb", "border": "#ddd8cc", "text": "#1c2422", "muted": "#55605d", "primary": "#0a6b6f", "primary_contrast": "#ffffff", "success": "#0f6a3b", "warning": "#7a4700", "danger": "#a11d12"}, "color_dark": {"bg": "#0e1514", "surface": "#162120", "border": "#2a3837", "text": "#eaf1ef", "muted": "#9fb1ad", "primary": "#4fd1c5", "primary_contrast": "#06201d", "success": "#66d19a", "warning": "#f2c26b", "danger": "#ff9d92"}, "radius": {"sm": 6, "md": 10, "lg": 16}, "font": {"sans": "Source Sans 3, system-ui, sans-serif", "mono": "ui-monospace, SFMono-Regular, Menlo, monospace"}, "space": {"unit": 4}, "density": {"row_height": 44}}}, {"id": "B", "name": "Procurement Desk", "tagline": "Quote-first and built for institutional buyers.", "fit": "Puts Buy for Business at the centre: a sharper, denser catalogue with pack-size tables, saved lists and reorder. Best if institutions bring most of the revenue.", "tradeoffs": "Less editorial warmth; households may find it businesslike. Needs the account model decision to be answered as accounts.", "preview": {"nav": "top", "density": 3, "radius": 6, "surface": "elevated", "palette": {"bg": "#f3f6f7", "surface": "#ffffff", "accent": "#0b5f73", "ink": "#14212a", "line": "#d5dde0"}}, "foundation": {"Theme": "Light default, dark follows device", "Navigation": "Top bar plus persistent account and quote strip", "Content width": "1320px max", "Density": "Medium-high", "Corner radius": "6px", "Typography": "IBM Plex Sans + IBM Plex Serif for headings", "Primary interaction": "Product tables, bulk quantity entry, saved lists", "Mobile strategy": "Full parity, tables collapse to stacked rows", "Animation": "Functional only", "Icons": "Lucide"}, "tokens": {"color": {"bg": "#f3f6f7", "surface": "#ffffff", "border": "#d5dde0", "text": "#14212a", "muted": "#52616b", "primary": "#0b5f73", "primary_contrast": "#ffffff", "success": "#0f6a3b", "warning": "#7a4700", "danger": "#a11d12"}, "color_dark": {"bg": "#0d1417", "surface": "#151e22", "border": "#27353b", "text": "#e8f0f3", "muted": "#9db0b8", "primary": "#56c6de", "primary_contrast": "#04171c", "success": "#66d19a", "warning": "#f2c26b", "danger": "#ff9d92"}, "radius": {"sm": 4, "md": 6, "lg": 10}, "font": {"sans": "IBM Plex Sans, system-ui, sans-serif", "mono": "IBM Plex Mono, ui-monospace, Menlo, monospace"}, "space": {"unit": 4}, "density": {"row_height": 36}}}, {"id": "C", "name": "Bright Supply", "tagline": "Photo-led supply store with bold tiles in the Belis Bell blue and green.", "fit": "The reference's visual language and section order, rebuilt in the Belis Bell logo colours with original photos and copy. Friendly and clear for households, credible for institutions.", "tradeoffs": "Close to the reference in structure, so imagery, logo and wording must be clearly Belis Bell's own. Big tiles and carousels add page weight on slow connections, so images need strict compression.", "preview": {"nav": "top", "density": 2, "radius": 12, "surface": "elevated", "palette": {"bg": "#f3f8fc", "surface": "#ffffff", "accent": "#006cbc", "ink": "#0a1d33", "line": "#d3e2ee"}}, "foundation": {"Theme": "Light default, dark follows device", "Navigation": "Announcement bar, header with search, nav row with Shop mega-menu and Buy for Business", "Content width": "1280px max", "Density": "Balanced", "Corner radius": "12px", "Typography": "Figtree (headings, semibold) + DM Sans (body)", "Primary interaction": "Split hero with tile cluster, category pill tabs, product carousels with add-to-cart", "Mobile strategy": "Full parity, tiles stack, carousels swipe, category drawer", "Animation": "Carousel scroll and gentle hover lift, reduced-motion safe", "Icons": "Lucide"}, "tokens": {"color": {"bg": "#f3f8fc", "surface": "#ffffff", "border": "#d3e2ee", "text": "#0a1d33", "muted": "#4a5f75", "primary": "#006cbc", "primary_contrast": "#ffffff", "success": "#0f6a3b", "warning": "#7a4700", "danger": "#a11d12"}, "color_dark": {"bg": "#0a1522", "surface": "#111f33", "border": "#22364f", "text": "#e7f0fa", "muted": "#a2b6cc", "primary": "#6ab7f5", "primary_contrast": "#04203a", "success": "#66d19a", "warning": "#f2c26b", "danger": "#ff9d92"}, "radius": {"sm": 8, "md": 12, "lg": 20}, "font": {"sans": "DM Sans, system-ui, sans-serif", "display": "Figtree, DM Sans, system-ui, sans-serif", "mono": "ui-monospace, SFMono-Regular, Menlo, monospace"}, "space": {"unit": 4}, "density": {"row_height": 44}}}], "selected_direction": "C", "risks": [{"id": "R-01", "severity": "high", "text": "High-stakes ordering with payments and institutional data means security must be designed before the first commit (payment handling, account access, quote data). Next gate: Opskeep/Elliot."}, {"id": "R-02", "severity": "med", "text": "Premium editorial look depends on real product photography. Weak or inconsistent photos undermine trust more than in a plain design."}, {"id": "R-03", "severity": "med", "text": "Extended accessibility scope (screen reader, low vision, multi-language and RTL) adds test effort across every screen."}, {"id": "R-04", "severity": "med", "text": "Payment, institutional account and price visibility decisions (PG-022 to PG-024) change checkout, accounts and data model. They must be answered before build."}, {"id": "R-05", "severity": "low", "text": "The reference site is another company's identity. Only its structure is borrowed; visuals and copy must be original."}, {"id": "R-06", "severity": "med", "text": "Following another company's visual style closely can look like a clone. Original logo, photography, wording and palette are required, and nothing may suggest affiliation."}, {"id": "R-07", "severity": "med", "text": "The logo is a raster with a light halo on white. It needs a transparent or SVG file and a compact header lockup before build."}, {"id": "R-08", "severity": "med", "text": "Mock data can leak into production. Keep it in one labelled seed file, block launch until it is replaced, and never take real payments in test mode."}], "assumptions": [{"id": "AS-01", "text": "English is the launch language. Layouts tolerate text expansion and RTL, but translated content is not part of v1."}, {"id": "AS-02", "text": "Prices and currency are in Ghana cedis (GHS)."}, {"id": "AS-03", "text": "Delivery is within Ghana. Delivery zones and fees are not designed yet."}, {"id": "AS-04", "text": "Belis Bell supplies real product photography before launch; placeholders are used meanwhile. The supplied logo is a raster, so a transparent or SVG version and a horizontal lockup are needed before build."}, {"id": "AS-05", "text": "Usage was set to all day because of heavy contact and ordering, so the store is designed for repeat use as well as first visits."}, {"id": "AS-06", "text": "The announcement bar and trust counter use mock figures for now. Belis Bell must supply the real free-delivery amount and delivery or customer figure before launch."}, {"id": "AS-07", "text": "Category names, Washroom Solutions packs and brand spotlights are mock until the real catalogue and supplier relationships are known."}], "gate": {"status": "changes_requested", "history": [{"at": "2026-09-26T16:43:11Z", "event": "approved", "detail": "via dashboard"}, {"at": "2026-09-26T16:44:18Z", "event": "reopened", "detail": "PG-009, PG-017: Selected Fresh and Bright (not editorial) and asked to copy Supply Master's visual style and section arrangement, not content"}, {"at": "2026-09-26T16:47:52Z", "event": "approved", "detail": "via dashboard"}, {"at": "2026-09-26T16:50:00Z", "event": "reopened", "detail": "PG-010, PG-016: Belis Bell logo supplied: brand colours are blue (#006cbc, #044788) and green (#43b14a), not teal"}, {"at": "2026-09-26T16:52:07Z", "event": "approved", "detail": "via dashboard"}, {"at": "2026-09-26T16:58:03Z", "event": "reopened", "detail": "PG-030: Updated logo supplied: descriptor now 'Cleaning Supplies & More, for homes, businesses and institutions'"}], "notes": "I like the way supply master visuals is. Dont copy the content but copy the visual style and the way the sections are arranged", "approved_at": "2026-09-26T16:52:07Z", "approval_method": "dashboard", "reopened": ["PG-030"]}}, "base_hash": "1bd63206faeffb58"};</script>
+<script>
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+
+function lum(hex) {
+  const h = String(hex).replace('#', '');
+  const f = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+  const v = [0, 2, 4].map(i => parseInt(f.substr(i, 2), 16) / 255).map(c => c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4));
+  return .2126 * v[0] + .7152 * v[1] + .0722 * v[2];
+}
+
+/* Wireframe preview drawn from a small spec: nav, density(1-3), radius, surface, palette, serif/mono, title */
+function miniPreview(s) {
+  s = s || {};
+  const P = Object.assign({bg:'#f6f7f9', surface:'#ffffff', accent:'#2f6feb', ink:'#1b1f24', line:'#dfe3e8'}, s.palette || {});
+  const W = 200, H = 125;
+  const r = Math.max(0, Math.min(s.radius == null ? 6 : s.radius, 14));
+  const nav = s.nav || 'top', dens = s.density || 2, surf = s.surface || 'flat';
+  const f = (x, y, w, h, fill, o) => {
+    o = o || {};
+    return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${o.r || 0}" fill="${fill}"` +
+      (o.stroke ? ` stroke="${o.stroke}" stroke-width="1"` : '') + (o.op != null ? ` opacity="${o.op}"` : '') + '/>';
+  };
+  let g = f(0, 0, W, H, P.bg, {r: 6});
+  let x0 = 10, y0 = 10, x1 = W - 10, y1 = H - 10;
+  if (nav === 'sidebar') {
+    g += f(0, 0, 36, H, P.surface, {stroke: P.line}) + f(8, 10, 10, 10, P.accent, {r: 3});
+    for (let i = 0; i < 5; i++) g += f(8, 30 + i * 13, 20, 5, P.ink, {r: 2, op: i === 1 ? .9 : .25});
+    x0 = 46;
+  } else if (nav === 'top') {
+    g += f(0, 0, W, 18, P.surface, {stroke: P.line}) + f(8, 5, 8, 8, P.accent, {r: 3});
+    for (let i = 0; i < 3; i++) g += f(60 + i * 22, 7, 16, 4, P.ink, {r: 2, op: i === 0 ? .9 : .25});
+    y0 = 26;
+  } else if (nav === 'tabs') {
+    g += f(0, H - 20, W, 20, P.surface, {stroke: P.line});
+    for (let i = 0; i < 4; i++) g += f(24 + i * 40, H - 13, 10, 6, i === 0 ? P.accent : P.ink, {r: 2, op: i === 0 ? 1 : .3});
+    y1 = H - 28;
+  }
+  const font = s.serif ? 'Georgia,serif' : (s.mono ? 'ui-monospace,Menlo,monospace' : 'system-ui,sans-serif');
+  g += `<text x="${x0}" y="${y0 + 11}" font-family="${font}" font-size="12" font-weight="700" fill="${P.ink}">${esc((s.title || 'Aa').slice(0, 14))}</text>`;
+  g += f(x1 - 26, y0 + 1, 26, 10, P.accent, {r: Math.min(r, 5)});
+  const cy = y0 + 20, ch = y1 - cy;
+  if (dens === 3) {
+    const n = Math.max(3, Math.floor(ch / 11));
+    for (let i = 0; i < n; i++) {
+      const y = cy + i * 11;
+      g += f(x0, y, x1 - x0, 9, i === 0 ? P.line : P.surface, {r: Math.min(r, 3), stroke: P.line});
+      g += f(x0 + 4, y + 3, 18 + ((i * 7) % 14), 3, P.ink, {r: 1, op: .55}) + f(x0 + 70, y + 3, 24, 3, P.ink, {r: 1, op: .25});
+      g += f(x1 - 24, y + 3, 14, 3, P.accent, {r: 1, op: i % 2 ? .5 : .9});
+    }
+  } else {
+    const cols = dens === 2 ? 3 : 2, gap = dens === 2 ? 6 : 10, rows = dens === 2 ? 2 : 1;
+    const cw = (x1 - x0 - gap * (cols - 1)) / cols, h = (ch - (rows - 1) * gap) / rows;
+    for (let rr = 0; rr < rows; rr++) for (let c = 0; c < cols; c++) {
+      const x = x0 + c * (cw + gap), y = cy + rr * (h + gap);
+      if (surf === 'elevated') g += f(x, y + 2, cw, h, '#000', {r: r, op: .12}) + f(x, y, cw, h, P.surface, {r: r});
+      else if (surf === 'open') g += f(x, y, cw, 2, P.ink, {op: .6});
+      else g += f(x, y, cw, h, P.surface, {r: r, stroke: P.line});
+      g += f(x + 6, y + 8, cw * .5, 3, P.ink, {r: 1, op: .7}) + f(x + 6, y + 15, cw * .75, 3, P.ink, {r: 1, op: .25});
+      if (h > 34) g += f(x + 6, y + h - 14, cw * .3, 6, P.accent, {r: Math.min(r, 3)});
+    }
+  }
+  return `<svg class="mini" viewBox="0 0 ${W} ${H}" role="img" aria-label="Layout preview">${g}</svg>`;
+}
+
+/* Result hand-off: always selectable text + copy + download, because sandboxes may block either. */
+function resultPanel(obj, o) {
+  const txt = JSON.stringify(obj);
+  return `<section class="result" aria-live="polite"><h3>${esc(o.title)}</h3><p class="hint">${esc(o.lead)}</p>` +
+    `<textarea id="result-json" readonly rows="6" aria-label="Response to paste back to Claude">${esc(txt)}</textarea>` +
+    `<div class="row"><button type="button" class="btn primary" data-a="copy">Copy</button>` +
+    `<button type="button" class="btn" data-a="download" data-f="${esc(o.filename)}">Download .json</button></div>` +
+    `<p class="hint" id="copy-hint" style="margin-top:8px"></p></section>`;
+}
+function hintMsg(m) { const e = $('#copy-hint'); if (e) e.textContent = m; }
+async function copyResult() {
+  const t = $('#result-json'); if (!t) return;
+  try { await navigator.clipboard.writeText(t.value); hintMsg('Copied. Paste it back to Claude.'); }
+  catch (e) { t.focus(); t.select(); try { document.execCommand('copy'); hintMsg('Copied. Paste it back to Claude.'); } catch (_) { hintMsg('Select the text above and copy it.'); } }
+}
+function downloadResult(name) {
+  try {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([$('#result-json').value], {type: 'application/json'}));
+    a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    hintMsg('Downloaded. If nothing saved, copy the text instead.');
+  } catch (e) { hintMsg('Download is blocked here. Copy the text instead.'); }
+}
+
+</script>
+<script>
+const S = DATA.state, H = DATA.base_hash, KEY = 'pg-dash:' + H;
+const LABEL = {CONFIRMED:'Confirmed', INFERRED:'Inferred', PROPOSED:'Proposed', NEEDS_INPUT:'Needs input', REJECTED:'Rejected', SUPERSEDED:'Superseded'};
+const AREAS = [['project','Project'],['users','Users & jobs'],['ux','UX decisions'],['screens','Screen architecture'],['visual','Visual direction'],['responsive','Responsive strategy'],['accessibility','Accessibility']];
+const W = {CONFIRMED:1, INFERRED:.75, PROPOSED:.5, NEEDS_INPUT:0, REJECTED:0};
+
+let edits = {}, selDir = S.selected_direction || null, notes = '', editing = null, confirming = false, result = null;
+const openDirs = new Set();
+(function () { const s = store.get(KEY); if (s) { edits = s.edits || {}; selDir = s.selDir || selDir; notes = s.notes || ''; } })();
+const persist = () => store.set(KEY, {edits, selDir, notes});
+
+const eff = d => Object.assign({}, d, edits[d.id] || {});
+const decs = () => S.decisions.map(eff);
+function counts() { const c = {CONFIRMED:0,INFERRED:0,PROPOSED:0,NEEDS_INPUT:0,REJECTED:0,SUPERSEDED:0}; decs().forEach(d => c[d.status]++); return c; }
+function readiness(c) {
+  const active = c.CONFIRMED + c.INFERRED + c.PROPOSED + c.NEEDS_INPUT + c.REJECTED;
+  if (!active) return 0;
+  return Math.round(Object.keys(W).reduce((s, k) => s + W[k] * c[k], 0) / active * 100);
+}
+function conflicts() {
+  const m = Object.fromEntries(decs().map(d => [d.id, d])), live = x => x && !['REJECTED', 'SUPERSEDED'].includes(x.status);
+  return (S.conflicts || []).filter(c => live(m[c.a]) && live(m[c.b]));
+}
+function blockers() {
+  const c = counts(), b = [];
+  if (c.NEEDS_INPUT) b.push(`${c.NEEDS_INPUT} decision${c.NEEDS_INPUT > 1 ? 's' : ''} still need your input`);
+  if (c.REJECTED) b.push(`${c.REJECTED} rejected: use Request Changes so I can replace ${c.REJECTED > 1 ? 'them' : 'it'}`);
+  const cf = conflicts().length; if (cf) b.push(`${cf} unresolved conflict${cf > 1 ? 's' : ''}`);
+  if (!selDir) b.push('Pick a design direction');
+  return b;
+}
+const pill = s => `<span class="pill s-${s}">${LABEL[s]}</span>`;
+const dirName = id => (S.directions.find(x => x.id === id) || {}).name || '';
+
+/* ---------- pieces ---------- */
+function header(c, pct) {
+  return `<div class="head"><div><div class="eyebrow">Opskeep · Project Gate</div><h1>${esc(S.project.name)}</h1>` +
+    (S.project.one_liner ? `<p class="sub">${esc(S.project.one_liner)}</p>` : '') + `</div>` +
+    `<div class="ready"><div class="big"><span>${pct}%</span><small>READY</small></div>` +
+    `<div class="meter" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>` +
+    `<div class="counts">${['CONFIRMED','INFERRED','PROPOSED','NEEDS_INPUT'].map(k => `<span class="pill s-${k}">${c[k]} ${LABEL[k].toLowerCase()}</span>`).join('')}` +
+    `<span class="pill ${conflicts().length ? 's-REJECTED' : 's-PROPOSED'}">${conflicts().length} conflicts</span></div></div></div>`;
+}
+function reopenBanner() {
+  const g = S.gate || {};
+  if (g.status !== 'reopened' || !(g.reopened || []).length) return '';
+  return `<div class="banner"><b>Reopened.</b> ${g.reopened.length} decision${g.reopened.length > 1 ? 's' : ''} affected by a change (${esc(g.reopened.join(', '))}). Everything else stays as approved.</div>`;
+}
+function intentBlock() {
+  return `<section class="blk"><h2>Project intent</h2><dl class="kv">${(S.intent || []).map(r => `<dt>${esc(r.label)}</dt><dd>${esc(r.value)}</dd>`).join('')}</dl></section>`;
+}
+function characterBlock() {
+  if (!(S.character || []).length) return '';
+  return `<section class="blk"><h2>Product character</h2>${S.character.map(t =>
+    `<div class="trait"><span>${esc(t.trait)}</span><div class="meter" role="img" aria-label="${esc(t.trait)} ${t.score} percent"><i style="width:${t.score}%"></i></div><b>${t.score}%</b></div>`).join('')}</section>`;
+}
+function needBlock() {
+  const ns = decs().filter(d => d.status === 'NEEDS_INPUT');
+  if (!ns.length) return '';
+  return `<section class="blk block-need"><h2>Blocking decisions · ${ns.length}</h2>${ns.map(d => `<div class="need"><span class="pill s-NEEDS_INPUT">Needs input</span> <span class="mono hint">${d.id}</span>` +
+    `<h3>${esc(d.question || d.title)}</h3>${d.rationale ? `<p class="hint">${esc(d.rationale)}</p>` : ''}` +
+    (d.reopened_because ? `<p class="hint">Reopened: ${esc(d.reopened_because)}</p>` : '') +
+    (d.options && d.options.length
+      ? `<div class="opts">${d.options.map(o => `<button type="button" class="opt" data-a="choose" data-id="${d.id}" data-v="${esc(o.value)}" data-l="${esc(o.label)}"><b>${esc(o.label)}</b>${o.hint ? `<small>${esc(o.hint)}</small>` : ''}</button>`).join('')}</div>`
+      : `<textarea id="ed-${d.id}" placeholder="Your answer" aria-label="${esc(d.title)}"></textarea><button type="button" class="btn primary sm" data-a="save-free" data-id="${d.id}">Save answer</button>`) +
+    `</div>`).join('')}</section>`;
+}
+function actions(d, changed) {
+  const b = (a, l, cls) => `<button type="button" class="btn sm ${cls || ''}" data-a="${a}" data-id="${d.id}">${l}</button>`;
+  let r = '';
+  if (d.status === 'INFERRED' || d.status === 'PROPOSED') r = b('confirm', 'Confirm', 'primary') + b('edit', 'Change') + b('reject', 'Reject', 'danger');
+  else if (d.status === 'CONFIRMED') r = b('edit', 'Change') + (changed ? b('reset', 'Undo') : '');
+  else if (d.status === 'REJECTED') r = b('reset', 'Reconsider');
+  return r ? `<div class="row">${r}</div>` : '';
+}
+function editor(d) {
+  return `<div class="row" style="align-items:stretch;flex-direction:column;gap:8px;margin-top:8px">` +
+    (d.options && d.options.length ? `<div class="opts">${d.options.map(o => `<button type="button" class="opt" data-a="choose" data-id="${d.id}" data-v="${esc(o.value)}" data-l="${esc(o.label)}"><b>${esc(o.label)}</b>${o.hint ? `<small>${esc(o.hint)}</small>` : ''}</button>`).join('')}</div>` : '') +
+    `<textarea id="ed-${d.id}" aria-label="Edit ${esc(d.title)}">${esc(d.value)}</textarea>` +
+    `<div class="row"><button type="button" class="btn primary sm" data-a="save-edit" data-id="${d.id}">Save change</button><button type="button" class="btn sm" data-a="cancel-edit">Cancel</button></div></div>`;
+}
+function decRow(d) {
+  const changed = !!edits[d.id];
+  return `<li class="dec ${d.status === 'SUPERSEDED' ? 'muted' : ''} ${changed ? 'changed' : ''}" id="${d.id}"><div class="dec-head"><span class="mono id">${d.id}</span><span class="dec-title">${esc(d.title)}</span>${pill(d.status)}</div>` +
+    `<div class="dec-val">${esc(d.value)}</div>${d.rationale ? `<div class="dec-why">${esc(d.rationale)}</div>` : ''}` +
+    (editing === d.id ? editor(d) : actions(d, changed)) + `</li>`;
+}
+function decisionsBlock() {
+  const all = decs().filter(d => d.status !== 'NEEDS_INPUT');
+  const html = AREAS.map(([k, label]) => {
+    const rows = all.filter(d => d.area === k && d.status !== 'SUPERSEDED');
+    return rows.length ? `<h3 class="area-h">${label}</h3><ul class="decs">${rows.map(decRow).join('')}</ul>` : '';
+  }).join('');
+  const sup = all.filter(d => d.status === 'SUPERSEDED');
+  return `<section class="blk"><h2>Decisions</h2>${html}${sup.length ? `<h3 class="area-h">Superseded</h3><ul class="decs">${sup.map(decRow).join('')}</ul>` : ''}</section>`;
+}
+function conflictBlock() {
+  const cf = conflicts(); if (!cf.length) return '';
+  return `<section class="blk block-need"><h2>Conflicts · ${cf.length}</h2>${cf.map(c => `<p class="need"><span class="mono">${c.a} ↔ ${c.b}</span><br>${esc(c.text)}<br><span class="hint">Reject or change one of them above to resolve.</span></p>`).join('')}</section>`;
+}
+function dirCard(x) {
+  const sel = selDir === x.id, open = openDirs.has(x.id), col = (x.tokens && x.tokens.color) || {};
+  return `<article class="dir ${sel ? 'sel' : ''}"><div class="stage">${miniPreview(Object.assign({title: S.project.name}, x.preview))}</div>` +
+    `<div class="dir-top"><span class="mono hint">${x.id}</span><h3>${esc(x.name)}</h3>${sel ? '<span class="pill s-CONFIRMED">Selected</span>' : ''}</div><p>${esc(x.tagline)}</p>` +
+    (open ? `<div class="detail"><p>${esc(x.fit)}</p><div class="swatchrow" aria-label="Palette">${['bg','surface','primary','text'].map(k => col[k] ? `<i style="background:${esc(col[k])}" title="${k} ${esc(col[k])}"></i>` : '').join('')}</div>` +
+      `<dl>${Object.entries(x.foundation).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl><p><b>Trade-off:</b> ${esc(x.tradeoffs)}</p></div>` : '') +
+    `<div class="row"><button type="button" class="btn ${sel ? '' : 'primary'}" data-a="select-dir" data-id="${x.id}" aria-pressed="${sel}">${sel ? 'Selected' : 'Select direction'}</button>` +
+    `<button type="button" class="btn" data-a="toggle-dir" data-id="${x.id}" aria-expanded="${open}">${open ? 'Hide details' : 'Explore direction'}</button></div></article>`;
+}
+function directionsBlock() {
+  return `<section class="blk"><h2>Design directions</h2><div class="dirs">${S.directions.map(dirCard).join('')}</div></section>`;
+}
+function foundationBlock() {
+  const x = S.directions.find(d => d.id === selDir);
+  return `<section class="blk"><h2>Foundation${x ? ' · ' + esc(x.name) : ''}</h2>` +
+    (x ? `<table class="found">${Object.entries(x.foundation).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table>` : '<p class="hint">Select a direction to see its foundation.</p>') + '</section>';
+}
+function riskBlock() {
+  const rs = S.risks || [], as = S.assumptions || [];
+  if (!rs.length && !as.length) return '';
+  return `<section class="blk"><h2>Risks &amp; assumptions</h2>` +
+    rs.map(r => `<div class="risk"><span class="pill ${r.severity === 'high' ? 's-REJECTED' : r.severity === 'low' ? 's-PROPOSED' : 's-NEEDS_INPUT'}">${esc(r.severity || 'med')}</span><span>${esc(r.text)}</span></div>`).join('') +
+    as.map(a => `<div class="risk"><span class="pill s-INFERRED">assumed</span><span>${esc(a.text)}</span></div>`).join('') + '</section>';
+}
+function approvalRail() {
+  const bl = blockers(), c = counts(), unrev = c.INFERRED + c.PROPOSED;
+  return `<div class="gate ${result && result.action === 'approve_project_gate' ? 'ok' : ''}"><div class="eyebrow">Project gate</div>` +
+    `<div class="state">${result && result.action === 'approve_project_gate' ? 'APPROVAL SUBMITTED' : '⚠ NOT APPROVED'}</div>` +
+    `<p class="fine">${result && result.action === 'approve_project_gate' ? 'Not recorded until Claude validates and applies it.' : 'Approving authorises the design direction only, not implementation.'}</p>` +
+    (bl.length ? `<ul>${bl.map(b => `<li>${esc(b)}</li>`).join('')}</ul>` : '') +
+    `<label class="hint" for="notes">Notes for Claude (optional)</label><textarea id="notes" placeholder="Anything to add or change">${esc(notes)}</textarea>` +
+    `<div class="btns"><button type="button" class="btn primary" data-a="ask-approve" ${bl.length ? 'disabled' : ''}>Approve Project Gate</button>` +
+    `<button type="button" class="btn" data-a="submit" data-act="request_changes">Request Changes</button>` +
+    `<button type="button" class="btn" data-a="submit" data-act="explore_alternative">Explore Alternative</button></div>` +
+    (confirming ? `<div class="confirm"><span>Approve <b>${esc(dirName(selDir))}</b> for <b>${esc(S.project.name)}</b>?` +
+      (unrev ? ` ${unrev} inferred/proposed decision${unrev > 1 ? 's' : ''} will be confirmed by approving.` : '') + ` Implementation stays locked until the security gate passes.</span>` +
+      `<div class="row"><button type="button" class="btn primary sm" data-a="submit" data-act="approve_project_gate">Yes, approve</button><button type="button" class="btn sm" data-a="cancel-approve">Cancel</button></div></div>` : '') +
+    (result ? resultPanel(result, {title: {approve_project_gate: 'Approval ready', request_changes: 'Change request ready', explore_alternative: 'Alternative request ready'}[result.action], lead: 'Copy this and paste it back into the chat with Claude, or download it.', filename: 'gate-response.json'}) : '') + '</div>';
+}
+
+function render() {
+  const c = counts();
+  $('#app').innerHTML = header(c, readiness(c)) + reopenBanner() +
+    `<div class="layout"><div>${intentBlock()}${characterBlock()}${needBlock()}${conflictBlock()}${directionsBlock()}${foundationBlock()}${decisionsBlock()}${riskBlock()}</div><aside class="rail">${approvalRail()}</aside></div>`;
+  if (editing) { const t = $('#ed-' + editing); if (t) t.focus(); }
+}
+
+/* ---------- actions ---------- */
+function setEdit(id, patch) { edits[id] = Object.assign({}, edits[id] || {}, patch); result = null; confirming = false; persist(); }
+function buildResponse(action) {
+  const changes = [];
+  Object.entries(edits).forEach(([id, e]) => {
+    const base = S.decisions.find(d => d.id === id); if (!base) return;
+    if (e.status !== base.status || (e.value != null && e.value !== base.value)) {
+      const ch = {id, status: e.status, value: e.value != null ? e.value : base.value};
+      if (e.choice) ch.choice = e.choice; changes.push(ch);
+    }
+  });
+  return {schema: 'opskeep.project-gate/response@1', project: S.project.slug, base_hash: H, action, selected_direction: selDir, changes, notes: notes.trim(), submitted_at: new Date().toISOString()};
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-a]'); if (!t) return;
+  const a = t.dataset.a, id = t.dataset.id;
+  if (a === 'copy') return copyResult();
+  if (a === 'download') return downloadResult(t.dataset.f);
+  if (a === 'confirm') setEdit(id, {status: 'CONFIRMED'});
+  else if (a === 'reject') setEdit(id, {status: 'REJECTED'});
+  else if (a === 'reset') { delete edits[id]; result = null; persist(); }
+  else if (a === 'edit') editing = id;
+  else if (a === 'cancel-edit') editing = null;
+  else if (a === 'save-edit') { const v = $('#ed-' + id).value.trim(); if (v) setEdit(id, {status: 'CONFIRMED', value: v}); editing = null; }
+  else if (a === 'save-free') { const v = $('#ed-' + id).value.trim(); if (!v) return; setEdit(id, {status: 'CONFIRMED', value: v}); }
+  else if (a === 'choose') { setEdit(id, {status: 'CONFIRMED', value: t.dataset.l, choice: t.dataset.v}); editing = null; }
+  else if (a === 'select-dir') { selDir = id; result = null; confirming = false; persist(); }
+  else if (a === 'toggle-dir') { openDirs.has(id) ? openDirs.delete(id) : openDirs.add(id); }
+  else if (a === 'ask-approve') confirming = true;
+  else if (a === 'cancel-approve') confirming = false;
+  else if (a === 'submit') { if (t.dataset.act === 'approve_project_gate' && blockers().length) return; confirming = false; result = buildResponse(t.dataset.act); }
+  else return;
+  render();
+  if (result && (a === 'submit')) { const r = $('#result-json'); if (r) r.scrollIntoView({block: 'nearest', behavior: 'smooth'}); }
+});
+document.addEventListener('input', e => { if (e.target.id === 'notes') { notes = e.target.value; result = null; persist(); } });
+render();
+</script>
+</body>
+</html>

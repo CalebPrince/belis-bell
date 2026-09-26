@@ -1,0 +1,27 @@
+# Web root rules for Apache on cPanel (LiteSpeed reads this too).
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+
+# Force HTTPS (also honours a CDN or proxy that sets X-Forwarded-Proto).
+RewriteEngine On
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Never serve dotfiles, backups, dumps, logs or source-control folders.
+<FilesMatch "(^\.|\.(env|ini|log|sql|bak|old|orig|swp|yml|yaml|md|lock|json)$)">
+  Require all denied
+</FilesMatch>
+# Allow the manifest-style files we really serve, if any are added later, explicitly.
+
+# Route everything that is not a real file through the front controller.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L]
+
+# Static assets: cache with a version query string (see asset() in src/helpers.php).
+<IfModule mod_headers.c>
+  <FilesMatch "\.(css|woff2|webp|png|svg)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>

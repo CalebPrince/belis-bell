@@ -1,0 +1,72 @@
+{
+  "skill": "Opskeep-project-gate",
+  "version": "1.0.0",
+  "project": "Belis Bell",
+  "status": "approved",
+  "approved_at": "2026-09-26T17:22:33Z",
+  "approval_method": "dashboard",
+  "implementation_authorized": false,
+  "next_gate": "opskeep-security",
+  "direction": {
+    "id": "C",
+    "name": "Bright Supply"
+  },
+  "decisions": {
+    "confirmed": 27,
+    "inferred": 0,
+    "open": 0,
+    "blocking": 0,
+    "confirmed_explicitly": 27,
+    "confirmed_by_gate_approval": 0
+  },
+  "state_hash": "1bd63206faeffb58",
+  "files": {
+    "PROJECT.md": "66573be826b36fe93d70252b096af0e482b6ec1ddf5160a4013bad96f49490d1",
+    "assumptions.md": "a146500405daa0d774f8d96a6cc834afcf6e33e2a98972d080d8ab2234343530",
+    "decisions.yaml": "15ccfac557db0ce2963d0660833f6b811d2244ee6617deea3d8b2fd5d1878edc",
+    "tokens.json": "a1d6bafbb9c8ef6a1e37e9ab42cd0fc10915eb46a44403b354300820476b54ca",
+    "DESIGN.md": "9b769d354d33757de78f38fa9b5741d0cea7015ecb6a9c1e94167e3dcf883ea8",
+    "screens.md": "3775fb2a604818a42724fc2540af6ce1a94626702d4cab1c5a6759191f91d0ae",
+    "components.md": "cb56f0ad29ec7771fd6ceb4d9fb7e10d9f6243b388a56354b72a143ff40df7ef",
+    "responsive.md": "6720ca9cec3a7417048d18dab35723cae0461c5cbe1b35dd46984c1b73725c20",
+    "accessibility.md": "1d3c895b1feed706115fa61db5bf444c4c74de013a572536062352ce344820ba",
+    "state.json": "fb34ac476308523279afb5a0e60b30ffb27a7ddba352624b3dfaa3222e80a128"
+  },
+  "history": [
+    {
+      "at": "2026-09-26T16:43:11Z",
+      "event": "approved",
+      "detail": "via dashboard"
+    },
+    {
+      "at": "2026-09-26T16:44:18Z",
+      "event": "reopened",
+      "detail": "PG-009, PG-017: Selected Fresh and Bright (not editorial) and asked to copy Supply Master's visual style and section arrangement, not content"
+    },
+    {
+      "at": "2026-09-26T16:47:52Z",
+      "event": "approved",
+      "detail": "via dashboard"
+    },
+    {
+      "at": "2026-09-26T16:50:00Z",
+      "event": "reopened",
+      "detail": "PG-010, PG-016: Belis Bell logo supplied: brand colours are blue (#006cbc, #044788) and green (#43b14a), not teal"
+    },
+    {
+      "at": "2026-09-26T16:52:07Z",
+      "event": "approved",
+      "detail": "via dashboard"
+    },
+    {
+      "at": "2026-09-26T16:58:03Z",
+      "event": "reopened",
+      "detail": "PG-030: Updated logo supplied: descriptor now 'Cleaning Supplies & More, for homes, businesses and institutions'"
+    },
+    {
+      "at": "2026-09-26T17:22:33Z",
+      "event": "approved",
+      "detail": "via dashboard"
+    }
+  ]
+}

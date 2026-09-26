@@ -1,0 +1,131 @@
+@import "tailwindcss";
+@source "../../templates";
+
+/* Self-hosted variable fonts (copied by scripts/copy-fonts.mjs). No third-party font host, so the CSP stays strict. */
+@font-face {
+  font-family: "Figtree";
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url("/assets/fonts/figtree-latin-wght-normal.woff2") format("woff2-variations");
+}
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url("/assets/fonts/dm-sans-latin-wght-normal.woff2") format("woff2-variations");
+}
+
+/* Design tokens from .opskeep/project-gate/tokens.json (direction Bright Supply, logo colours PG-029, PG-031). */
+:root {
+  color-scheme: light;
+  --canvas: #f3f8fc;
+  --surface: #ffffff;
+  --band: #e6f0f8;
+  --ink: #0a1d33;
+  --muted: #4a5f75;
+  --line: #d3e2ee;
+  --action: #006cbc;
+  --action-ink: #ffffff;
+  --navy: #044788;
+  --leaf: #2b7d32;
+  --danger: #a11d12;
+  --inkbg: #0a1d33;
+  --navybg: #044788;   /* announcement bar and footer, white text 9.3:1 in both themes */
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --canvas: #0a1522;
+    --surface: #111f33;
+    --band: #0e1b2d;
+    --ink: #e7f0fa;
+    --muted: #a2b6cc;
+    --line: #22364f;
+    --action: #6ab7f5;
+    --action-ink: #04203a;
+    --navy: #6ab7f5;      /* text and links on dark surfaces */
+    --leaf: #66d19a;
+    --danger: #ff9d92;
+  }
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-band: var(--band);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-action: var(--action);
+  --color-navy: var(--navy);
+  --color-navybg: var(--navybg);
+  --color-leaf: var(--leaf);
+  --color-danger: var(--danger);
+  --font-display: "Figtree", "DM Sans", system-ui, sans-serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+}
+
+html { font-size: 106.25%; } /* 17px base text (PG-004) */
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible { outline: 3px solid var(--action); outline-offset: 2px; border-radius: 6px; }
+
+.skip-link { position: absolute; left: -9999px; top: 0; background: var(--surface); color: var(--ink); padding: .75rem 1rem; z-index: 50; }
+.skip-link:focus { left: 1rem; top: 1rem; }
+
+.nav-link { display: inline-block; padding: .5rem 0; color: var(--ink); }
+.nav-link:hover { color: var(--action); text-decoration: underline; }
+.footer-link:hover { text-decoration: underline; }
+
+/* Buttons: 48px minimum target, 12px radius (PG-004, PG-025). */
+.btn-primary, .btn-quiet, .btn-light, .btn-outline-light {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 3rem;
+  border-radius: 12px; padding: 0 1.25rem; font-weight: 700; text-align: center;
+}
+.btn-primary { background: var(--action); color: var(--action-ink); }
+.btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+.btn-quiet { border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.btn-light { background: #fff; color: #044788; }
+.btn-outline-light { border: 2px solid #fff; color: #fff; }
+button:disabled { opacity: .6; cursor: not-allowed; }
+
+.pill-tab { display: inline-block; white-space: nowrap; min-height: 2.75rem; line-height: 2.75rem; padding: 0 1rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-weight: 600; }
+.pill-tab:hover { border-color: var(--action); }
+
+.hero-panel {
+  border-radius: 20px; padding: 2rem; color: #fff; min-height: 22rem;
+  background: linear-gradient(135deg, rgba(4, 71, 136, .96), rgba(0, 108, 188, .9)), var(--navy);
+  display: flex; flex-direction: column; justify-content: flex-end;
+}
+
+.tile { display: flex; flex-direction: column; justify-content: flex-end; min-height: 9rem; border-radius: 16px; padding: 1rem; color: #fff; }
+.tile:hover { filter: brightness(1.08); }
+.tile-title { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; line-height: 1.2; }
+.tile-sub { font-size: .85rem; opacity: .92; }
+.tile-blue { background: #006cbc; }
+.tile-navy { background: #044788; }
+.tile-green { background: #2b7d32; }
+.tile-ink { background: #0a1d33; border: 1px solid #22364f; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 1rem; box-shadow: 0 1px 2px rgba(4, 71, 136, .08), 0 6px 18px rgba(4, 71, 136, .06); }
+.ph { display: grid; place-items: center; aspect-ratio: 4 / 3; border-radius: 12px; background: repeating-linear-gradient(135deg, var(--band), var(--band) 10px, var(--canvas) 10px, var(--canvas) 20px); color: var(--muted); font-size: .8rem; font-weight: 600; }
+.ph-short { aspect-ratio: 16 / 9; }
+
+.way { display: block; border-radius: 20px; padding: 1.75rem; min-height: 10rem; color: #fff; }
+.way h3 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; }
+.way p { margin-top: .5rem; opacity: .95; }
+.way:hover { filter: brightness(1.08); }
+.way-blue { background: #006cbc; }
+.way-navy { background: #044788; }
+.way-green { background: #2b7d32; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}

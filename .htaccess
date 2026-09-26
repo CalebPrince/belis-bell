@@ -1,0 +1,3 @@
+# Safety net: if this project folder is ever exposed as a web root by mistake, serve nothing.
+# The real web root is public/. Only public/ may be reachable from the internet.
+Require all denied

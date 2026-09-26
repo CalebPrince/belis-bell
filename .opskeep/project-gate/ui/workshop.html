@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Belis Bell Design Workshop</title>
+<style>
+:root{
+  --bg:#f6f6f3;--panel:#ffffff;--ink:#16181d;--muted:#565d6b;--line:#dfe1e6;--line-strong:#c7cad2;
+  --accent:#2447b8;--accent-ink:#ffffff;--accent-soft:#e8edfb;
+  --ok:#0f6a3b;--ok-bg:#e3f3ea;--warn:#7a4700;--warn-bg:#fcefd6;--bad:#a11d12;--bad-bg:#fbe7e4;
+  --info:#28449a;--info-bg:#e8edfb;--neutral:#3f4652;--neutral-bg:#eceef1;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 6px 20px rgba(16,24,40,.05);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1115;--panel:#171a20;--ink:#eceef2;--muted:#a3aab8;--line:#2a2f39;--line-strong:#3a4150;
+  --accent:#8fb0ff;--accent-ink:#0b1020;--accent-soft:#1c2540;
+  --ok:#66d19a;--ok-bg:#12301f;--warn:#f2c26b;--warn-bg:#33270d;--bad:#ff9d92;--bad-bg:#3a1714;
+  --info:#a9c0ff;--info-bg:#1c2540;--neutral:#c5cad4;--neutral-bg:#232833;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.3);}}
+:root[data-theme="dark"]{
+  --bg:#0f1115;--panel:#171a20;--ink:#eceef2;--muted:#a3aab8;--line:#2a2f39;--line-strong:#3a4150;
+  --accent:#8fb0ff;--accent-ink:#0b1020;--accent-soft:#1c2540;
+  --ok:#66d19a;--ok-bg:#12301f;--warn:#f2c26b;--warn-bg:#33270d;--bad:#ff9d92;--bad-bg:#3a1714;
+  --info:#a9c0ff;--info-bg:#1c2540;--neutral:#c5cad4;--neutral-bg:#232833;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.3);}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans)}
+button,input,textarea{font:inherit;color:inherit}
+h1,h2,h3{margin:0;line-height:1.2;letter-spacing:-.01em}
+p{margin:0}
+[hidden]{display:none!important}
+.mono{font-family:var(--mono)}
+.eyebrow{font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.hint,.why{color:var(--muted);font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+.btn{border:1px solid var(--line-strong);background:var(--panel);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:14px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn[disabled]{opacity:.5;cursor:not-allowed;filter:none}
+.link{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:13px}
+.link.on{color:var(--accent);font-weight:600}
+
+.pill{display:inline-block;font:600 11px/1 var(--mono);letter-spacing:.04em;text-transform:uppercase;padding:4px 7px;border-radius:999px;white-space:nowrap}
+.s-CONFIRMED{background:var(--ok-bg);color:var(--ok)}
+.s-INFERRED{background:var(--info-bg);color:var(--info)}
+.s-PROPOSED{background:var(--neutral-bg);color:var(--neutral)}
+.s-NEEDS_INPUT{background:var(--warn-bg);color:var(--warn)}
+.s-REJECTED{background:var(--bad-bg);color:var(--bad)}
+.s-SUPERSEDED{background:var(--neutral-bg);color:var(--muted);text-decoration:line-through}
+
+input[type=text],textarea{width:100%;padding:10px 12px;border:1px solid var(--line-strong);border-radius:8px;background:var(--panel)}
+textarea{resize:vertical;min-height:72px}
+
+.meter{height:8px;background:var(--neutral-bg);border-radius:99px;overflow:hidden}
+.meter>i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s ease}
+
+.mini{display:block;width:100%;height:auto;border-radius:6px}
+
+.result{margin-top:14px;padding:14px;border:1px solid var(--line-strong);border-radius:10px;background:var(--panel)}
+.result h3{font-size:15px;margin-bottom:4px}
+.result textarea{font:12px/1.4 var(--mono);min-height:110px;margin:10px 0}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.top{max-width:1180px;margin:0 auto;padding:28px 16px 8px}
+.top h1{font-size:28px;margin:8px 0 6px}
+.top p{color:var(--muted);max-width:60ch}
+.shell{max-width:1180px;margin:0 auto;padding:16px;display:grid;gap:24px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:980px){.shell{grid-template-columns:minmax(0,1fr) 380px;align-items:start}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px;box-shadow:var(--shadow)}
+.panel>header{margin-bottom:6px}
+.panel>header h2{font-size:20px;margin-top:8px}
+.ctl{padding:18px 0;border-top:1px solid var(--line)}
+.ctl:first-of-type{border-top:0}
+.ctl-q{font-weight:650;margin-bottom:10px;display:block}
+.ctl-q .why{display:block;font-weight:400;margin-top:2px}
+.cards{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.card{position:relative;text-align:left;border:1.5px solid var(--line);background:var(--panel);border-radius:12px;padding:10px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:border-color .15s,transform .15s,box-shadow .15s}
+.card:hover{border-color:var(--line-strong);transform:translateY(-1px)}
+.card b{font-size:14px}.card small{color:var(--muted);font-size:12px;line-height:1.3}
+.card.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.card.sel::after{content:"";position:absolute;top:8px;right:8px;width:18px;height:18px;border-radius:50%;background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M5 9.5l2.6 2.6L13 6.5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.cards.big{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line-strong);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--panel);padding:9px 14px;cursor:pointer;border-right:1px solid var(--line);font-size:14px}
+.seg button:last-child{border-right:0}
+.seg button.sel{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line-strong);background:var(--panel);border-radius:999px;padding:7px 14px;cursor:pointer;font-size:14px;transition:background .15s,border-color .15s}
+.chip:hover{border-color:var(--ink)}
+.chip.sel{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.stops{padding:4px 6px 0}
+.stops input[type=range],.dial input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+.ticks{display:flex;justify-content:space-between;margin-top:4px;gap:4px}
+.tick{background:none;border:0;color:var(--muted);cursor:pointer;font-size:13px;padding:4px 2px;flex:1;text-align:center}
+.tick:first-child{text-align:left}.tick:last-child{text-align:right}
+.tick.on{color:var(--ink);font-weight:700}
+.unset input[type=range]{opacity:.45}
+.dial{display:grid;grid-template-columns:96px 1fr 96px;gap:12px;align-items:center;padding:8px 0;font-size:14px}
+.dial span:last-child{text-align:right}
+.dial span{color:var(--muted)}.dial.set span.hot{color:var(--ink);font-weight:700}
+@media (max-width:520px){.dial{grid-template-columns:70px 1fr 70px;font-size:13px}}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.sw{width:38px;height:38px;border-radius:50%;background:var(--c);border:2px solid var(--panel);box-shadow:0 0 0 1.5px var(--line-strong);cursor:pointer;transition:transform .15s}
+.sw:hover{transform:scale(1.08)}
+.sw.sel{box-shadow:0 0 0 3px var(--accent)}
+.ctl-foot{margin-top:8px}
+.ctl.unsure .cards,.ctl.unsure .chips,.ctl.unsure .seg,.ctl.unsure .stops,.ctl.unsure .swatches{opacity:.4}
+
+.studio{position:sticky;top:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+@media (max-width:979px){.studio{position:static}}
+.stage{margin:10px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg);padding:8px}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0 0 14px;font-size:13px}
+.facts dt{color:var(--muted)}.facts dd{margin:0;font-weight:600;text-align:right}
+.clarity{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.studio h3{font-size:14px;margin:16px 0 8px}
+.feed{list-style:none;margin:0;padding:0;display:grid;gap:8px;max-height:260px;overflow:auto}
+.feed li{font-size:13px;line-height:1.4;padding:8px 10px;border-radius:8px;background:var(--neutral-bg);display:grid;gap:3px}
+.feed li.fresh{animation:pop .5s ease}
+@keyframes pop{from{opacity:0;transform:translateY(-6px);background:var(--accent-soft)}to{opacity:1;transform:none}}
+.feed .area{font:600 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.empty{font-size:13px;color:var(--muted);padding:8px 0}
+.send{width:100%;margin-top:14px;padding:11px}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="eyebrow">Opskeep · Project Gate · Design workshop</div>
+  <h1 id="title">Let's shape the design</h1>
+  <p>Click, drag and point. The preview on the right reshapes as you go, and I'll show what I'm learning. There are no wrong answers. Skip anything you don't care about and I'll decide.</p>
+</div>
+<div class="shell">
+  <main id="stage-col"></main>
+  <aside class="studio" id="studio" aria-label="Live studio"></aside>
+</div>
+<script>const DATA={"schema": "opskeep.project-gate/answers@1", "project": "Belis Bell", "key": "9fb121b26b", "sections": [{"id": "project", "label": "Project", "blurb": "What are we making?"}, {"id": "users", "label": "People", "blurb": "Who is it for, and how do they work?"}, {"id": "experience", "label": "Experience", "blurb": "How should it feel to use?"}, {"id": "visual", "label": "Look & feel", "blurb": "Point at what feels right."}], "controls": [{"id": "p_platform", "section": "project", "type": "segment", "prompt": "Where will people mostly use it?", "options": [{"value": "desktop", "label": "Desktop browser"}, {"value": "phone", "label": "Phone browser"}, {"value": "native", "label": "Native app"}, {"value": "both", "label": "Desktop and phone"}]}, {"id": "u_frequency", "section": "users", "type": "stops", "prompt": "How often will a typical person use it?", "why": "Frequency is the biggest driver of density, shortcuts and navigation depth.", "options": [{"value": "occasional", "label": "Occasionally"}, {"value": "weekly", "label": "Weekly"}, {"value": "daily", "label": "Daily"}, {"value": "allday", "label": "All day"}]}, {"id": "u_activity", "section": "users", "type": "chips", "max": 3, "prompt": "What will they spend most of their time doing?", "why": "Pick up to three. This decides whether tables, editors, feeds or charts lead the UI.", "options": [{"value": "reading", "label": "Reading"}, {"value": "searching", "label": "Searching"}, {"value": "creating", "label": "Creating"}, {"value": "monitoring", "label": "Monitoring"}, {"value": "managing", "label": "Managing records"}, {"value": "communicating", "label": "Communicating"}]}, {"id": "u_skill", "section": "users", "type": "stops", "prompt": "How comfortable are they with software like this?", "options": [{"value": "novice", "label": "First-timers"}, {"value": "mixed", "label": "Mixed"}, {"value": "expert", "label": "Power users"}]}, {"id": "u_context", "section": "users", "type": "chips", "prompt": "Where and how do they use it?", "options": [{"value": "desk", "label": "At a desk"}, {"value": "moving", "label": "On the move"}, {"value": "field", "label": "In the field"}, {"value": "shared", "label": "On a shared screen"}, {"value": "lowband", "label": "Slow or patchy internet"}]}, {"id": "x_feel", "section": "experience", "type": "chips", "max": 3, "prompt": "Pick up to three words for how it should feel.", "options": [{"value": "trustworthy", "label": "Trustworthy"}, {"value": "premium", "label": "Premium"}, {"value": "fast", "label": "Fast"}, {"value": "technical", "label": "Technical"}, {"value": "friendly", "label": "Friendly"}, {"value": "bold", "label": "Bold"}, {"value": "minimal", "label": "Minimal"}, {"value": "editorial", "label": "Editorial"}]}, {"id": "x_tone", "section": "experience", "type": "dials", "prompt": "Nudge the dials. Leave any you don't care about.", "why": "Position matters more than precision. Untouched dials mean no opinion.", "items": [{"id": "d_playful", "left": "Professional", "right": "Playful"}, {"id": "d_expressive", "left": "Quiet", "right": "Expressive"}, {"id": "d_spacious", "left": "Dense", "right": "Spacious"}, {"id": "d_distinct", "left": "Familiar", "right": "Distinctive"}]}, {"id": "x_stakes", "section": "experience", "type": "stops", "prompt": "When someone makes a mistake, how bad is it?", "why": "Drives confirmations, undo, audit trails and how destructive actions look.", "options": [{"value": "low", "label": "Easy to undo"}, {"value": "mod", "label": "Annoying to fix"}, {"value": "high", "label": "Costly: money, data or safety"}]}, {"id": "x_mobile", "section": "experience", "type": "cards", "prompt": "On a phone, what should people be able to do?", "show_if": {"p_platform": ["both"]}, "options": [{"value": "full", "label": "Everything", "hint": "Full management"}, {"value": "quick", "label": "Quick actions", "hint": "Approve, reply, update"}, {"value": "monitor", "label": "Watch only", "hint": "Status and alerts"}]}, {"id": "x_content", "section": "experience", "type": "cards", "prompt": "What carries the pages?", "show_if": {"p_type": ["website", "ecommerce"]}, "options": [{"value": "copy", "label": "Written content"}, {"value": "visual", "label": "Photos and visuals"}, {"value": "catalogue", "label": "Product grids"}, {"value": "mixed", "label": "A mix"}]}, {"id": "x_access", "section": "experience", "type": "chips", "prompt": "Anything specific for accessibility or language?", "why": "WCAG 2.2 AA is always the baseline. This adds to it.", "options": [{"value": "keyboard", "label": "Heavy keyboard use"}, {"value": "screenreader", "label": "Screen-reader users"}, {"value": "lowvision", "label": "Low-vision needs"}, {"value": "multilang", "label": "Several languages / RTL"}, {"value": "none", "label": "Just the baseline"}]}, {"id": "x_brand", "section": "experience", "type": "segment", "prompt": "Is there an existing brand to work with?", "options": [{"value": "full", "label": "Full brand guide"}, {"value": "partial", "label": "Logo and colours"}, {"value": "none", "label": "Starting fresh"}]}, {"id": "v_direction", "section": "visual", "type": "cards", "prompt": "Which of these feels closest?", "why": "A gut pick. I will tailor real directions to your project afterwards.", "options": [{"value": "minimal", "label": "Minimal", "hint": "Quiet, monochrome, lots of air", "preview": {"nav": "top", "density": 1, "radius": 6, "surface": "flat", "palette": {"bg": "#fafafa", "surface": "#ffffff", "accent": "#111111", "ink": "#111111", "line": "#e5e5e5"}}}, {"value": "technical", "label": "Technical", "hint": "Dense, dark, precise", "preview": {"nav": "sidebar", "density": 3, "radius": 4, "surface": "flat", "mono": true, "palette": {"bg": "#0f1216", "surface": "#171b21", "accent": "#4cc2ff", "ink": "#e6e9ee", "line": "#2a313a"}}}, {"value": "editorial", "label": "Editorial", "hint": "Serif type, paper tones", "preview": {"nav": "top", "density": 1, "radius": 2, "surface": "open", "serif": true, "palette": {"bg": "#f6f1e7", "surface": "#fffdf8", "accent": "#8a3b12", "ink": "#241c15", "line": "#ddd3c0"}}}, {"value": "friendly", "label": "Friendly", "hint": "Rounded, soft, approachable", "preview": {"nav": "top", "density": 2, "radius": 14, "surface": "elevated", "palette": {"bg": "#f4f8ff", "surface": "#ffffff", "accent": "#3b82f6", "ink": "#1c2333", "line": "#dbe6f7"}}}, {"value": "bold", "label": "Bold", "hint": "High contrast, loud accent", "preview": {"nav": "top", "density": 2, "radius": 8, "surface": "flat", "palette": {"bg": "#fff7e6", "surface": "#ffffff", "accent": "#e5391c", "ink": "#141414", "line": "#141414"}}}, {"value": "premium", "label": "Premium", "hint": "Dark, gold, thin lines", "preview": {"nav": "top", "density": 1, "radius": 3, "surface": "open", "serif": true, "palette": {"bg": "#0c0c0e", "surface": "#141417", "accent": "#c9a86a", "ink": "#f1ece2", "line": "#2b2a2e"}}}]}, {"id": "v_nav", "section": "visual", "type": "cards", "prompt": "Which navigation feels right?", "show_if": {"p_type": {"not": ["mobile"]}}, "options": [{"value": "sidebar", "label": "Sidebar", "hint": "Always visible, deep", "preview": {"nav": "sidebar", "density": 2, "radius": 6}}, {"value": "top", "label": "Top bar", "hint": "Light, familiar", "preview": {"nav": "top", "density": 2, "radius": 6}}, {"value": "tabs", "label": "Bottom tabs", "hint": "Thumb-friendly", "preview": {"nav": "tabs", "density": 2, "radius": 6}}]}, {"id": "v_surface", "section": "visual", "type": "cards", "prompt": "How should content sit on the page?", "options": [{"value": "flat", "label": "Flat and bordered", "hint": "Crisp edges", "preview": {"nav": "none", "density": 2, "radius": 6, "surface": "flat"}}, {"value": "elevated", "label": "Soft elevation", "hint": "Cards that lift", "preview": {"nav": "none", "density": 2, "radius": 10, "surface": "elevated"}}, {"value": "open", "label": "Open and airy", "hint": "No boxes, rules only", "preview": {"nav": "none", "density": 2, "radius": 0, "surface": "open"}}]}, {"id": "v_shape", "section": "visual", "type": "dials", "prompt": "Corners", "items": [{"id": "d_soft", "left": "Sharp corners", "right": "Soft corners"}]}, {"id": "v_theme", "section": "visual", "type": "segment", "prompt": "Light, dark, or both?", "options": [{"value": "light", "label": "Light"}, {"value": "dark", "label": "Dark"}, {"value": "both", "label": "Both, follow the device"}]}, {"id": "v_accent", "section": "visual", "type": "swatches", "prompt": "An accent colour, if you have a feeling.", "options": [{"value": "blue", "label": "Blue", "color": "#2f6feb"}, {"value": "green", "label": "Green", "color": "#1a8f5a"}, {"value": "violet", "label": "Violet", "color": "#7a4ff0"}, {"value": "orange", "label": "Orange", "color": "#e8710a"}, {"value": "red", "label": "Red", "color": "#d92d20"}, {"value": "teal", "label": "Teal", "color": "#0b8f9c"}, {"value": "ink", "label": "Ink", "color": "#1b1f24"}]}, {"id": "v_notes", "section": "visual", "type": "text", "multiline": true, "optional": true, "prompt": "Anything to copy or avoid? Sites you admire, things you hate.", "placeholder": "Optional"}], "rules": [{"id": "r01", "area": "ux", "when": {"u_frequency": ["daily", "allday"]}, "say": "Used daily: persistent navigation, keyboard shortcuts and fast repeated actions matter more than first-impression polish."}, {"id": "r02", "area": "ux", "when": {"u_frequency": ["occasional"]}, "say": "Used occasionally: screens must explain themselves. Guidance beats speed."}, {"id": "r03", "area": "ux", "when": {"u_activity": ["managing", "searching"]}, "say": "Records-heavy work: tables, filters and saved views become first-class."}, {"id": "r04", "area": "ux", "when": {"u_activity": ["monitoring"]}, "say": "Monitoring: glanceable status, alerts and data-freshness indicators."}, {"id": "r05", "area": "ux", "when": {"u_activity": ["creating"]}, "say": "Creation flows need autosave, undo and strong empty states."}, {"id": "r06", "area": "ux", "when": {"u_skill": ["expert"]}, "say": "Power users: density and shortcuts over hand-holding."}, {"id": "r07", "area": "ux", "when": {"u_skill": ["novice"]}, "say": "First-timers: guided onboarding, plain language, fewer options per screen."}, {"id": "r08", "area": "responsive", "when": {"u_context": ["lowband"]}, "say": "Slow connections: lean pages, skeleton loading and offline-tolerant error states."}, {"id": "r09", "area": "responsive", "when": {"u_context": ["moving", "field"]}, "say": "Used away from a desk: large touch targets, high contrast, quick actions."}, {"id": "r10", "area": "accessibility", "when": {"u_context": ["shared"]}, "say": "Shared screens: larger type and stronger contrast."}, {"id": "r11", "area": "ux", "when": {"x_stakes": ["high"]}, "say": "High stakes: confirm destructive actions, keep an audit trail, make undo obvious."}, {"id": "r12", "area": "ux", "when": {"x_stakes": ["low"]}, "say": "Low stakes: prefer undo over confirmation dialogs."}, {"id": "r13", "area": "visual", "when": {"d_spacious": {"lte": 30}}, "say": "Dense layout with tight rows."}, {"id": "r14", "area": "visual", "when": {"d_spacious": {"gte": 70}}, "say": "Airy layout with generous spacing."}, {"id": "r15", "area": "visual", "when": {"d_distinct": {"gte": 70}}, "say": "Strong identity: custom type and illustration, at higher design effort."}, {"id": "r16", "area": "visual", "when": {"d_distinct": {"lte": 30}}, "say": "Familiar patterns: borrow conventions users already know."}, {"id": "r17", "area": "responsive", "when": {"p_platform": ["desktop"]}, "say": "Desktop-first, with mobile as a deliberate adaptation."}, {"id": "r18", "area": "responsive", "when": {"p_platform": ["phone", "native"]}, "say": "Mobile-first: thumb-reach navigation, single column."}, {"id": "r19", "area": "responsive", "when": {"x_mobile": ["quick"]}, "say": "Mobile is for quick actions: a reduced, task-focused view."}, {"id": "r20", "area": "accessibility", "when": {"x_access": ["keyboard", "screenreader"]}, "say": "Keyboard and screen-reader paths are first-class, not retrofitted."}, {"id": "r21", "area": "accessibility", "when": {"x_access": ["multilang"]}, "say": "Layouts must tolerate text expansion and RTL."}, {"id": "r22", "area": "visual", "when": {"v_theme": ["dark"]}, "say": "Dark-first theme."}, {"id": "r23", "area": "screens", "when": {"p_type": ["saas", "dashboard", "internal"]}, "say": "Application shell with persistent navigation is the likely structure."}, {"id": "r24", "area": "visual", "when": {"d_playful": {"gte": 70}}, "say": "Playful tone: friendlier copy and rounder shapes."}, {"id": "r25", "area": "visual", "when": {"d_playful": {"lte": 30}}, "say": "Professional tone: restrained colour and precise copy."}, {"id": "r26", "area": "screens", "when": {"p_type": ["website", "ecommerce"]}, "say": "Content-led pages: hero, sections and a clear primary call to action."}], "prefill": {"p_name": "Belis Bell", "p_type": "ecommerce", "p_platform": "both", "u_context": ["desk", "moving", "lowband"], "u_skill": "mixed", "u_frequency": "weekly", "x_feel": ["trustworthy", "friendly"]}};</script>
+<script>
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+
+function lum(hex) {
+  const h = String(hex).replace('#', '');
+  const f = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+  const v = [0, 2, 4].map(i => parseInt(f.substr(i, 2), 16) / 255).map(c => c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4));
+  return .2126 * v[0] + .7152 * v[1] + .0722 * v[2];
+}
+
+/* Wireframe preview drawn from a small spec: nav, density(1-3), radius, surface, palette, serif/mono, title */
+function miniPreview(s) {
+  s = s || {};
+  const P = Object.assign({bg:'#f6f7f9', surface:'#ffffff', accent:'#2f6feb', ink:'#1b1f24', line:'#dfe3e8'}, s.palette || {});
+  const W = 200, H = 125;
+  const r = Math.max(0, Math.min(s.radius == null ? 6 : s.radius, 14));
+  const nav = s.nav || 'top', dens = s.density || 2, surf = s.surface || 'flat';
+  const f = (x, y, w, h, fill, o) => {
+    o = o || {};
+    return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${o.r || 0}" fill="${fill}"` +
+      (o.stroke ? ` stroke="${o.stroke}" stroke-width="1"` : '') + (o.op != null ? ` opacity="${o.op}"` : '') + '/>';
+  };
+  let g = f(0, 0, W, H, P.bg, {r: 6});
+  let x0 = 10, y0 = 10, x1 = W - 10, y1 = H - 10;
+  if (nav === 'sidebar') {
+    g += f(0, 0, 36, H, P.surface, {stroke: P.line}) + f(8, 10, 10, 10, P.accent, {r: 3});
+    for (let i = 0; i < 5; i++) g += f(8, 30 + i * 13, 20, 5, P.ink, {r: 2, op: i === 1 ? .9 : .25});
+    x0 = 46;
+  } else if (nav === 'top') {
+    g += f(0, 0, W, 18, P.surface, {stroke: P.line}) + f(8, 5, 8, 8, P.accent, {r: 3});
+    for (let i = 0; i < 3; i++) g += f(60 + i * 22, 7, 16, 4, P.ink, {r: 2, op: i === 0 ? .9 : .25});
+    y0 = 26;
+  } else if (nav === 'tabs') {
+    g += f(0, H - 20, W, 20, P.surface, {stroke: P.line});
+    for (let i = 0; i < 4; i++) g += f(24 + i * 40, H - 13, 10, 6, i === 0 ? P.accent : P.ink, {r: 2, op: i === 0 ? 1 : .3});
+    y1 = H - 28;
+  }
+  const font = s.serif ? 'Georgia,serif' : (s.mono ? 'ui-monospace,Menlo,monospace' : 'system-ui,sans-serif');
+  g += `<text x="${x0}" y="${y0 + 11}" font-family="${font}" font-size="12" font-weight="700" fill="${P.ink}">${esc((s.title || 'Aa').slice(0, 14))}</text>`;
+  g += f(x1 - 26, y0 + 1, 26, 10, P.accent, {r: Math.min(r, 5)});
+  const cy = y0 + 20, ch = y1 - cy;
+  if (dens === 3) {
+    const n = Math.max(3, Math.floor(ch / 11));
+    for (let i = 0; i < n; i++) {
+      const y = cy + i * 11;
+      g += f(x0, y, x1 - x0, 9, i === 0 ? P.line : P.surface, {r: Math.min(r, 3), stroke: P.line});
+      g += f(x0 + 4, y + 3, 18 + ((i * 7) % 14), 3, P.ink, {r: 1, op: .55}) + f(x0 + 70, y + 3, 24, 3, P.ink, {r: 1, op: .25});
+      g += f(x1 - 24, y + 3, 14, 3, P.accent, {r: 1, op: i % 2 ? .5 : .9});
+    }
+  } else {
+    const cols = dens === 2 ? 3 : 2, gap = dens === 2 ? 6 : 10, rows = dens === 2 ? 2 : 1;
+    const cw = (x1 - x0 - gap * (cols - 1)) / cols, h = (ch - (rows - 1) * gap) / rows;
+    for (let rr = 0; rr < rows; rr++) for (let c = 0; c < cols; c++) {
+      const x = x0 + c * (cw + gap), y = cy + rr * (h + gap);
+      if (surf === 'elevated') g += f(x, y + 2, cw, h, '#000', {r: r, op: .12}) + f(x, y, cw, h, P.surface, {r: r});
+      else if (surf === 'open') g += f(x, y, cw, 2, P.ink, {op: .6});
+      else g += f(x, y, cw, h, P.surface, {r: r, stroke: P.line});
+      g += f(x + 6, y + 8, cw * .5, 3, P.ink, {r: 1, op: .7}) + f(x + 6, y + 15, cw * .75, 3, P.ink, {r: 1, op: .25});
+      if (h > 34) g += f(x + 6, y + h - 14, cw * .3, 6, P.accent, {r: Math.min(r, 3)});
+    }
+  }
+  return `<svg class="mini" viewBox="0 0 ${W} ${H}" role="img" aria-label="Layout preview">${g}</svg>`;
+}
+
+/* Result hand-off: always selectable text + copy + download, because sandboxes may block either. */
+function resultPanel(obj, o) {
+  const txt = JSON.stringify(obj);
+  return `<section class="result" aria-live="polite"><h3>${esc(o.title)}</h3><p class="hint">${esc(o.lead)}</p>` +
+    `<textarea id="result-json" readonly rows="6" aria-label="Response to paste back to Claude">${esc(txt)}</textarea>` +
+    `<div class="row"><button type="button" class="btn primary" data-a="copy">Copy</button>` +
+    `<button type="button" class="btn" data-a="download" data-f="${esc(o.filename)}">Download .json</button></div>` +
+    `<p class="hint" id="copy-hint" style="margin-top:8px"></p></section>`;
+}
+function hintMsg(m) { const e = $('#copy-hint'); if (e) e.textContent = m; }
+async function copyResult() {
+  const t = $('#result-json'); if (!t) return;
+  try { await navigator.clipboard.writeText(t.value); hintMsg('Copied. Paste it back to Claude.'); }
+  catch (e) { t.focus(); t.select(); try { document.execCommand('copy'); hintMsg('Copied. Paste it back to Claude.'); } catch (_) { hintMsg('Select the text above and copy it.'); } }
+}
+function downloadResult(name) {
+  try {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([$('#result-json').value], {type: 'application/json'}));
+    a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    hintMsg('Downloaded. If nothing saved, copy the text instead.');
+  } catch (e) { hintMsg('Download is blocked here. Copy the text instead.'); }
+}
+
+</script>
+<script>
+const C = DATA.controls, RULES = DATA.rules;
+const answers = {}, touched = new Set(), unsure = new Set();
+let seenOrder = [], freshIds = new Set(), result = null;
+const KEY = 'pg-workshop:' + DATA.key;
+
+/* restore: prefill first, then any saved progress on top */
+Object.entries(DATA.prefill || {}).forEach(([k, v]) => { answers[k] = v; touched.add(k); });
+(function () {
+  const s = store.get(KEY);
+  if (s) { Object.assign(answers, s.answers || {}); (s.touched || []).forEach(k => touched.add(k)); (s.unsure || []).forEach(k => unsure.add(k)); }
+})();
+const persist = () => store.set(KEY, {answers, touched: [...touched], unsure: [...unsure]});
+
+const ctlIds = c => c.type === 'dials' ? c.items.map(i => i.id) : [c.id];
+const val = id => answers[id];
+function showIf(c) {
+  if (!c.show_if) return true;
+  return Object.entries(c.show_if).every(([k, spec]) => {
+    const v = answers[k], arr = Array.isArray(v) ? v : (v == null ? [] : [v]);
+    if (Array.isArray(spec)) return arr.some(x => spec.includes(x));
+    if (spec && spec.not) return !arr.some(x => spec.not.includes(x));
+    return true;
+  });
+}
+
+/* ---------- build controls once ---------- */
+function controlHTML(c) {
+  const q = `<span class="ctl-q">${esc(c.prompt)}${c.why ? `<span class="why">${esc(c.why)}</span>` : ''}</span>`;
+  let body = '';
+  if (c.type === 'text') {
+    const tag = c.multiline ? 'textarea' : 'input type="text"';
+    body = `<${tag} id="t-${c.id}" data-a="text" data-c="${c.id}" placeholder="${esc(c.placeholder || '')}" aria-label="${esc(c.prompt)}" ${c.multiline ? '></textarea>' : '>'}`;
+    return `<div class="ctl" data-ctl="${c.id}"><label class="ctl-q" for="t-${c.id}">${esc(c.prompt)}</label>${body}</div>`;
+  }
+  if (c.type === 'cards') {
+    const big = c.options.some(o => o.preview);
+    body = `<div class="cards ${big ? 'big' : ''}" role="group" aria-label="${esc(c.prompt)}">` + c.options.map(o =>
+      `<button type="button" class="card" data-a="pick" data-c="${c.id}" data-v="${esc(o.value)}" aria-pressed="false">` +
+      (o.preview ? miniPreview(o.preview) : '') + `<b>${esc(o.label)}</b>${o.hint ? `<small>${esc(o.hint)}</small>` : ''}</button>`).join('') + '</div>';
+  } else if (c.type === 'segment') {
+    body = `<div class="seg" role="group" aria-label="${esc(c.prompt)}">` + c.options.map(o =>
+      `<button type="button" data-a="pick" data-c="${c.id}" data-v="${esc(o.value)}" aria-pressed="false">${esc(o.label)}</button>`).join('') + '</div>';
+  } else if (c.type === 'chips') {
+    body = `<div class="chips" role="group" aria-label="${esc(c.prompt)}">` + c.options.map(o =>
+      `<button type="button" class="chip" data-a="toggle" data-c="${c.id}" data-v="${esc(o.value)}" aria-pressed="false">${esc(o.label)}</button>`).join('') + '</div>';
+  } else if (c.type === 'swatches') {
+    body = `<div class="swatches" role="group" aria-label="${esc(c.prompt)}">` + c.options.map(o =>
+      `<button type="button" class="sw" style="--c:${esc(o.color)}" data-a="pick" data-c="${c.id}" data-v="${esc(o.value)}" aria-label="${esc(o.label)}" title="${esc(o.label)}" aria-pressed="false"></button>`).join('') + '</div>';
+  } else if (c.type === 'stops') {
+    const n = c.options.length;
+    body = `<div class="stops unset" data-stops="${c.id}"><input type="range" min="0" max="${n - 1}" step="1" value="${Math.floor((n - 1) / 2)}" data-a="stop" data-c="${c.id}" aria-label="${esc(c.prompt)}">` +
+      `<div class="ticks">` + c.options.map((o, i) => `<button type="button" class="tick" data-a="stopset" data-c="${c.id}" data-i="${i}">${esc(o.label)}</button>`).join('') + '</div></div>';
+  } else if (c.type === 'dials') {
+    return `<div class="ctl" data-ctl="${c.id}">${q}` + c.items.map(it =>
+      `<div class="dial" data-dial="${it.id}"><span class="l">${esc(it.left)}</span>` +
+      `<input type="range" min="0" max="100" value="50" data-a="dial" data-c="${it.id}" aria-label="${esc(it.left)} to ${esc(it.right)}"><span class="r">${esc(it.right)}</span></div>`).join('') + '</div>';
+  }
+  const skip = c.optional ? '' : `<div class="ctl-foot"><button type="button" class="link" data-a="unsure" data-c="${c.id}">No strong feeling: you decide</button></div>`;
+  return `<div class="ctl" data-ctl="${c.id}">${q}${body}${skip}</div>`;
+}
+
+function build() {
+  $('#stage-col').innerHTML = DATA.sections.map((sec, n) => {
+    const cs = C.filter(c => c.section === sec.id);
+    if (!cs.length) return '';
+    return `<section class="panel"><header><div class="eyebrow">${String(n + 1).padStart(2, '0')} · ${esc(sec.label)}</div><h2>${esc(sec.blurb)}</h2></header>${cs.map(controlHTML).join('')}</section>`;
+  }).join('');
+  // restore text inputs
+  C.filter(c => c.type === 'text').forEach(c => { const el = $('#t-' + c.id); if (el && answers[c.id]) el.value = answers[c.id]; });
+  if (DATA.project && !answers.p_name) { const el = $('#t-p_name'); if (el) { el.value = DATA.project; answers.p_name = DATA.project; } }
+}
+
+/* ---------- state -> DOM ---------- */
+function syncControls() {
+  C.forEach(c => {
+    const box = $(`[data-ctl="${c.id}"]`); if (!box) return;
+    box.hidden = !showIf(c);
+    box.classList.toggle('unsure', unsure.has(c.id));
+    const u = $('[data-a="unsure"]', box); if (u) u.classList.toggle('on', unsure.has(c.id));
+    if (['cards', 'segment', 'swatches'].includes(c.type)) {
+      $$('[data-v]', box).forEach(b => { const on = val(c.id) === b.dataset.v; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
+    } else if (c.type === 'chips') {
+      const cur = val(c.id) || [];
+      $$('[data-v]', box).forEach(b => { const on = cur.includes(b.dataset.v); b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
+    } else if (c.type === 'stops') {
+      const wrap = $('[data-stops]', box), idx = c.options.findIndex(o => o.value === val(c.id));
+      wrap.classList.toggle('unset', idx < 0);
+      if (idx >= 0) $('input', wrap).value = idx;
+      $$('.tick', wrap).forEach((t, i) => t.classList.toggle('on', i === idx));
+    } else if (c.type === 'dials') {
+      c.items.forEach(it => {
+        const row = $(`[data-dial="${it.id}"]`), inp = $('input', row), t = touched.has(it.id);
+        row.classList.toggle('set', t); inp.parentElement.classList.toggle('unset', !t);
+        inp.style.opacity = t ? 1 : .45; if (t && answers[it.id] != null) inp.value = answers[it.id];
+        $('.l', row).classList.toggle('hot', t && answers[it.id] < 40); $('.r', row).classList.toggle('hot', t && answers[it.id] > 60);
+      });
+    }
+  });
+}
+
+/* ---------- inference: answers -> live design + feed ---------- */
+const ARCH = (C.find(c => c.id === 'v_direction') || {options: []}).options;
+const ACCENT = (C.find(c => c.id === 'v_accent') || {options: []}).options;
+const DARK = {bg: '#0f1216', surface: '#171b21', ink: '#e6e9ee', line: '#2a313a'};
+const LIGHT = {bg: '#f6f7f9', surface: '#ffffff', ink: '#1b1f24', line: '#dfe3e8'};
+
+function studioSpec() {
+  const arch = (ARCH.find(o => o.value === val('v_direction')) || {}).preview || {};
+  const spec = JSON.parse(JSON.stringify(arch)); spec.palette = spec.palette || {};
+  const t = val('p_type'), plat = val('p_platform'), fr = val('u_frequency');
+  spec.nav = val('v_nav') || ((t === 'mobile' || plat === 'phone' || plat === 'native') ? 'tabs' : (['saas', 'dashboard', 'internal'].includes(t) ? 'sidebar' : (t ? 'top' : spec.nav || 'top')));
+  const sp = val('d_spacious');
+  spec.density = sp != null ? (sp <= 33 ? 3 : sp >= 67 ? 1 : 2) : (fr === 'daily' || fr === 'allday' ? 3 : fr === 'occasional' ? 1 : (fr === 'weekly' ? 2 : (spec.density || 2)));
+  if (val('d_soft') != null) spec.radius = Math.round(val('d_soft') * .14);
+  spec.surface = val('v_surface') || spec.surface || 'flat';
+  const th = val('v_theme'), isDark = spec.palette.bg ? lum(spec.palette.bg) < .3 : false;
+  if (th === 'dark' && !isDark) Object.assign(spec.palette, DARK);
+  if (th === 'light' && isDark) Object.assign(spec.palette, LIGHT);
+  const ac = ACCENT.find(o => o.value === val('v_accent')); if (ac) spec.palette.accent = ac.color;
+  spec.title = (val('p_name') || '').trim() || 'Aa';
+  return spec;
+}
+function ruleMatch(r) {
+  return Object.entries(r.when).every(([k, spec]) => {
+    const v = answers[k]; if (v == null) return false;
+    if (Array.isArray(spec)) return (Array.isArray(v) ? v : [v]).some(x => spec.includes(x));
+    if (spec.gte != null && !(v >= spec.gte)) return false;
+    if (spec.lte != null && !(v <= spec.lte)) return false;
+    return true;
+  });
+}
+function clarity() {
+  let done = 0, total = 0;
+  C.forEach(c => {
+    if (c.optional || c.type === 'text' || !showIf(c)) return;
+    ctlIds(c).forEach(id => { total++; if ((answers[id] != null && (touched.has(id) || c.type !== 'dials') && !(Array.isArray(answers[id]) && !answers[id].length)) || unsure.has(c.id)) done++; });
+  });
+  return total ? Math.round(done / total * 100) : 0;
+}
+
+function renderStudio() {
+  const spec = studioSpec(), cl = clarity();
+  const matched = RULES.filter(ruleMatch);
+  const ids = matched.map(r => r.id);
+  freshIds = new Set(ids.filter(i => !seenOrder.includes(i)));
+  seenOrder = [...ids.filter(i => !seenOrder.includes(i)).reverse(), ...seenOrder.filter(i => ids.includes(i))];
+  const feed = seenOrder.map(id => matched.find(r => r.id === id)).filter(Boolean);
+  const name = (val('p_name') || '').trim();
+  $('#title').textContent = name ? `Shaping ${name}` : "Let's shape the design";
+  const facts = [['Navigation', {sidebar: 'Sidebar', top: 'Top bar', tabs: 'Bottom tabs'}[spec.nav] || spec.nav],
+    ['Density', ['', 'Airy', 'Balanced', 'Dense'][spec.density]],
+    ['Corners', (spec.radius == null ? 6 : spec.radius) + 'px'],
+    ['Surface', {flat: 'Flat, bordered', elevated: 'Soft elevation', open: 'Open, rules only'}[spec.surface]]];
+  $('#studio').innerHTML =
+    `<div class="eyebrow">Live studio</div><div class="stage">${miniPreview(spec)}</div>` +
+    `<dl class="facts">${facts.map(f => `<dt>${f[0]}</dt><dd>${esc(f[1])}</dd>`).join('')}</dl>` +
+    `<div class="clarity"><span>Clarity</span><b>${cl}%</b></div><div class="meter" role="progressbar" aria-valuenow="${cl}" aria-valuemin="0" aria-valuemax="100"><i style="width:${cl}%"></i></div>` +
+    `<h3>What I'm learning</h3>` +
+    (feed.length ? `<ul class="feed">${feed.map(r => `<li class="${freshIds.has(r.id) ? 'fresh' : ''}"><span class="area">${esc(r.area)}</span>${esc(r.say)}</li>`).join('')}</ul>` : `<p class="empty">Make a choice and I'll tell you what it implies for the design.</p>`) +
+    `<button type="button" class="btn primary send" data-a="send" ${name ? '' : 'disabled'}>${name ? 'Send to Claude' : 'Name the project to send'}</button>` +
+    (result ? resultPanel(result, {title: 'Ready to send', lead: 'Copy this and paste it into the chat with Claude. Nothing is saved until Claude reads it.', filename: 'workshop-answers.json'}) : '');
+}
+
+function refresh() { syncControls(); renderStudio(); persist(); }
+
+/* ---------- events ---------- */
+function setAns(id, v) { answers[id] = v; touched.add(id); result = null; }
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-a]'); if (!t) return;
+  const a = t.dataset.a, id = t.dataset.c, c = C.find(x => x.id === id);
+  if (a === 'pick') { unsure.delete(id); setAns(id, answers[id] === t.dataset.v ? null : t.dataset.v); if (answers[id] == null) touched.delete(id); refresh(); }
+  else if (a === 'toggle') {
+    unsure.delete(id); const cur = answers[id] || [], v = t.dataset.v, has = cur.includes(v);
+    if (!has && c.max && cur.length >= c.max) { t.animate([{transform: 'translateX(-3px)'}, {transform: 'translateX(3px)'}, {transform: 'none'}], {duration: 200}); return; }
+    setAns(id, has ? cur.filter(x => x !== v) : [...cur, v]); refresh();
+  }
+  else if (a === 'stopset') { unsure.delete(id); setAns(id, c.options[+t.dataset.i].value); refresh(); }
+  else if (a === 'unsure') { if (unsure.has(id)) unsure.delete(id); else { unsure.add(id); delete answers[id]; touched.delete(id); } result = null; refresh(); }
+  else if (a === 'send') { result = buildAnswers(); renderStudio(); const r = $('#result-json'); if (r) r.scrollIntoView({block: 'nearest', behavior: 'smooth'}); }
+  else if (a === 'copy') copyResult();
+  else if (a === 'download') downloadResult(t.dataset.f);
+});
+document.addEventListener('input', e => {
+  const t = e.target, a = t.dataset && t.dataset.a; if (!a) return;
+  const id = t.dataset.c, c = C.find(x => x.id === id);
+  if (a === 'text') { answers[id] = t.value; result = null; persist(); renderStudio(); }
+  else if (a === 'stop') { unsure.delete(id); setAns(id, c.options[+t.value].value); refresh(); }
+  else if (a === 'dial') { setAns(id, +t.value); refresh(); }
+});
+/* typing in a text box re-renders only the studio, so focus is never lost */
+
+function buildAnswers() {
+  const out = {}, uns = [];
+  C.forEach(c => {
+    if (!showIf(c)) return;
+    if (unsure.has(c.id)) { uns.push(c.id); return; }
+    ctlIds(c).forEach(id => {
+      const v = answers[id];
+      if (v == null || v === '' || (Array.isArray(v) && !v.length)) return;
+      if (c.type === 'dials' && !touched.has(id)) return;
+      out[id] = typeof v === 'string' ? v.trim() : v;
+    });
+  });
+  return {schema: DATA.schema, project: (out.p_name || '').trim(), key: DATA.key, answers: out, unsure: uns, clarity: clarity(), sent_at: new Date().toISOString()};
+}
+
+build(); refresh();
+</script>
+</body>
+</html>
