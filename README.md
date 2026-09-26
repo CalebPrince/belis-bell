@@ -19,10 +19,10 @@ Non-goals for v1: native apps, contract-price accounts, AI features, WhatsApp Bu
 - Home page following the owner's mockup (hero, six category cards, promo banner, audience cards, product carousel, Why Choose, closing banner), plus `/shop`, `/c/{slug}`, `/p/{slug}`, `/categories`, `/for-businesses`, `/about` and `/contact`. Data comes from the database with mock content; photos are placeholders until supplied. (`GUI.md`)
 - Catalogue migration, mock seed loader and purge script, release builder and release checker. (`database/`, `bin/`)
 - Image pipeline: originals in `resources/images/` become responsive WebP (`npm run build:images`), and `image_html()` renders them or a neutral placeholder. Slots are documented in `docs/IMAGES.md`. (`scripts/build-images.mjs`, `src/Support/Images.php`)
-- 100 security and unit tests in a dependency-free runner. (`tests/`)
+- 122 security and unit tests in a dependency-free runner. (`tests/`)
 - GitHub Actions for CI and a locked production deploy, written but not yet run. (`.github/`)
 
-Sign-in, register and emailed codes work locally (codes are written to `storage/logs/mail.log`; real email sending is not built). Staff accounts are created with `php bin/create-staff.php email "Name" staff|owner`. Not built: password recovery, orders and Paystack calls, admin management screens, search, quotes and uploads, real email, monitoring. See `GUI.md`.
+Sign-in, register and emailed codes work locally (codes are written to `storage/logs/mail.log`; real email sending is not built). Staff accounts are created with `php bin/create-staff.php email "Name" staff|owner`. Orders and Paystack test-mode payments exist but the Paystack calls have not been run against Paystack yet: local development uses `PAYMENTS_ADAPTER=mock`, a pretend payment page; set `PAYMENTS_ADAPTER=paystack` and a `sk_test_` key in `.env` to try the real service. Point Paystack's webhook at `/webhooks/paystack` and schedule `bin/reconcile-payments.php` daily (cron). Not built: password recovery, admin management screens, search, quotes and uploads, real email, monitoring. See `GUI.md`.
 
 ## Project records
 

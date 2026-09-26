@@ -1,14 +1,14 @@
 <?php
 /**
  * Order confirmation (PG-058). Four states: paid, pending, failed, cancelled. Shows only the person's own
- * order. Sample order in the local preview only; real orders are NOT BUILT.
+ * order. Real orders come from the database; the sample order BB-10482 appears only in the local preview.
  *
  * @var array<string,mixed> $order
  */
 $state = (string) $order['state'];
 $headline = [
-    'paid' => ['Thank you, your order is confirmed', 'We have emailed you the details and will let you know when it is on its way.'],
-    'pending' => ['We are waiting for your payment', 'This can take a few minutes. We will email you as soon as Paystack confirms it. Please do not pay twice.'],
+    'paid' => ['Thank you, your order is confirmed', 'We will contact you about delivery. Your order number is shown below.'],
+    'pending' => ['We are waiting for your payment', 'This can take a few minutes. Press Check payment status to look again. Please do not pay twice.'],
     'failed' => ['Your payment did not go through', 'You have not been charged for this order. You can go back to your cart and try again.'],
     'cancelled' => ['This order was cancelled', 'No payment was taken. You can start a new order from your cart.'],
 ][$state];
@@ -56,11 +56,16 @@ foreach ($order['lines'] as $l) {
         <p class="card-meta"><?= e($order['method']) ?></p>
       </div>
     </section>
+    <?php if (!empty($order['real']) && $state === 'pending') : ?>
+      <form method="post" action="/order/<?= e(rawurlencode((string) $order['ref'])) ?>/refresh" class="inline-form"><?= csrf_field() ?><button type="submit" class="btn-primary">Check payment status</button></form>
+      <a class="btn-outline" href="/pay/<?= e(rawurlencode((string) $order['ref'])) ?>">Pay now</a>
+      <form method="post" action="/order/<?= e(rawurlencode((string) $order['ref'])) ?>/cancel" class="inline-form"><?= csrf_field() ?><button type="submit" class="btn-quiet">Cancel this order</button></form>
+    <?php endif; ?>
     <p class="btn-row">
       <?php if ($state === 'failed' || $state === 'cancelled') : ?><a class="btn-primary" href="/cart">Back to cart<?= icon('arrow-right') ?></a><?php endif; ?>
       <a class="btn-outline" href="/shop">Continue Shopping</a>
       <a class="btn-quiet" href="/account">My account</a>
     </p>
-    <?php if (is_mock_mode()) : ?><p class="mock-note">Sample order. Add ?status=pending, failed or cancelled to the address to see the other states.</p><?php endif; ?>
+    <?php if (empty($order['real']) && is_mock_mode()) : ?><p class="mock-note">Sample order. Add ?status=pending, failed or cancelled to the address to see the other states.</p><?php endif; ?>
   </aside>
 </div>

@@ -64,7 +64,7 @@ final class Router
             }
             $status = Policy::evaluate($route['policy'], $request);
             if ($status !== 200) {
-                return self::deny($status, $request->path);
+                return self::deny($status, $request->path, $route['policy']);
             }
             if ($route['csrf'] && !Csrf::verify($request)) {
                 return new Response(419, 'Your session expired. Go back, reload the page and try again.', ['Content-Type' => 'text/plain; charset=utf-8']);
@@ -81,8 +81,11 @@ final class Router
             : Response::html(View::render('pages/404', ['title' => 'Page not found']), 404);
     }
 
-    private static function deny(int $status, string $path): Response
+    private static function deny(int $status, string $path, string $policy): Response
     {
+        if ($status === 401 && str_starts_with($policy, 'webhook:')) {
+            return new Response(401, 'Unauthorized', ['Content-Type' => 'text/plain; charset=utf-8']);
+        }
         return $status === 401
             ? Response::redirect(str_starts_with($path, '/admin') ? '/admin/sign-in' : '/account/sign-in', 302)
             : new Response(403, 'Forbidden', ['Content-Type' => 'text/plain; charset=utf-8']);

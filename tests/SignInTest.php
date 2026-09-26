@@ -56,7 +56,7 @@ function auth_done(): void
 
 function post(string $path, array $data = [], string $ip = '10.0.0.1'): \Belis\Core\Response
 {
-    return App::router()->dispatch(new Request('POST', $path, [], $data + ['_csrf' => Csrf::token()], [], $ip));
+    return App::router()->dispatch(new Request("POST", $path, [], $data + ["_csrf" => Csrf::token()], [], null, $ip));
 }
 
 const GOOD_PW = 'correct horse battery';

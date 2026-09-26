@@ -5,6 +5,7 @@ use Belis\Controllers\AccountController;
 use Belis\Controllers\AdminController;
 use Belis\Controllers\AuthController;
 use Belis\Controllers\CartController;
+use Belis\Controllers\CheckoutController;
 use Belis\Controllers\CatalogueController;
 use Belis\Controllers\HomeController;
 use Belis\Controllers\PageController;
@@ -13,7 +14,7 @@ use Belis\Core\Router;
 /**
  * Route table. Every route declares a policy (see src/Core/Policy.php). Unsafe methods are
  * CSRF-checked unless a reason is given as the last argument.
- * Not built yet (see GUI.md): search, quotes, orders, Paystack, admin functions, policy pages.
+ * Not built yet (see GUI.md): search, quotes, admin functions, refunds, policy pages.
  * Signed-in pages use the customer or staff policy (password plus emailed code, or the local preview).
  */
 return static function (Router $router): void {
@@ -40,7 +41,15 @@ return static function (Router $router): void {
     $router->add('POST', '/account/sign-out', [AuthController::class, 'customerSignOut'], 'public');
     $router->add('GET', '/account', [AccountController::class, 'dashboard'], 'customer');
     $router->add('GET', '/checkout', [AccountController::class, 'checkout'], 'customer');
+    $router->add('POST', '/checkout', [CheckoutController::class, 'place'], 'customer');
+    $router->add('GET', '/pay/{ref}', [CheckoutController::class, 'pay'], 'customer');
+    $router->add('GET', '/payment/callback', [CheckoutController::class, 'callback'], 'customer');
     $router->add('GET', '/order/{ref}', [AccountController::class, 'order'], 'customer');
+    $router->add('POST', '/order/{ref}/refresh', [CheckoutController::class, 'refresh'], 'customer');
+    $router->add('POST', '/order/{ref}/cancel', [CheckoutController::class, 'cancel'], 'customer');
+    $router->add('POST', '/webhooks/paystack', [CheckoutController::class, 'webhook'], 'webhook:paystack', 'Called by Paystack, not a browser: authenticated by the HMAC signature of the raw body instead of a CSRF token');
+    $router->add('GET', '/mock-pay/{reference}', [CheckoutController::class, 'mockPage'], 'public');
+    $router->add('POST', '/mock-pay/{reference}', [CheckoutController::class, 'mockSettle'], 'public');
     $router->add('GET', '/admin/sign-in', [AdminController::class, 'signIn'], 'public');
     $router->add('GET', '/admin/verify', [AdminController::class, 'verify'], 'public');
     $router->add('POST', '/admin/sign-in', [AuthController::class, 'staffSignIn'], 'public');
