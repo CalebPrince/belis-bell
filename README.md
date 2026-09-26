@@ -19,10 +19,10 @@ Non-goals for v1: native apps, contract-price accounts, AI features, WhatsApp Bu
 - Home page following the owner's mockup (hero, six category cards, promo banner, audience cards, product carousel, Why Choose, closing banner), plus `/shop`, `/c/{slug}`, `/p/{slug}`, `/categories`, `/for-businesses`, `/about` and `/contact`. Data comes from the database with mock content; photos are placeholders until supplied. (`GUI.md`)
 - Catalogue migration, mock seed loader and purge script, release builder and release checker. (`database/`, `bin/`)
 - Image pipeline: originals in `resources/images/` become responsive WebP (`npm run build:images`), and `image_html()` renders them or a neutral placeholder. Slots are documented in `docs/IMAGES.md`. (`scripts/build-images.mjs`, `src/Support/Images.php`)
-- 151 security and unit tests in a dependency-free runner. (`tests/`)
+- 166 security and unit tests in a dependency-free runner. (`tests/`)
 - GitHub Actions for CI and a locked production deploy, written but not yet run. (`.github/`)
 
-Sign-in, register and emailed codes work locally (codes are written to `storage/logs/mail.log`; real email sending is not built). Staff accounts are created with `php bin/create-staff.php email "Name" staff|owner`. The owner (Super Admin) manages the Paystack, SMTP and WhatsApp settings at `/admin/settings` (fresh emailed code each time, values write-only); values saved there win over the environment file, which stays the fallback and holds `SETTINGS_KEY` and the database login. Orders and Paystack test-mode payments exist but the Paystack calls have not been run against Paystack yet: local development uses `PAYMENTS_ADAPTER=mock`, a pretend payment page; set `PAYMENTS_ADAPTER=paystack` and a `sk_test_` key in `.env` to try the real service. Point Paystack's webhook at `/webhooks/paystack` and schedule `bin/reconcile-payments.php` daily (cron). Staff and the owner see and progress orders at `/admin/orders` (packing and delivery, all audited). Not built: password recovery, admin management screens, search, quotes and uploads, real email, monitoring. See `GUI.md`.
+Sign-in, register and emailed codes work locally (codes are written to `storage/logs/mail.log`; real email sending is not built). Staff accounts are created with `php bin/create-staff.php email "Name" staff|owner`. The owner (Super Admin) manages the Paystack, SMTP and WhatsApp settings at `/admin/settings` (fresh emailed code each time, values write-only); values saved there win over the environment file, which stays the fallback and holds `SETTINGS_KEY` and the database login. Orders and Paystack test-mode payments exist but the Paystack calls have not been run against Paystack yet: local development uses `PAYMENTS_ADAPTER=mock`, a pretend payment page; set `PAYMENTS_ADAPTER=paystack` and a `sk_test_` key in `.env` to try the real service. Point Paystack's webhook at `/webhooks/paystack` and schedule `bin/reconcile-payments.php` daily (cron). Staff and the owner see and progress orders at `/admin/orders` (packing and delivery, all audited). Staff edit product details and stock, and the owner manages sizes, prices and bulk prices, at `/admin/products` (price changes need a fresh emailed code and are kept in an append-only history). Not built: password recovery, admin management screens, search, quotes and uploads, real email, monitoring. See `GUI.md`.
 
 ## Project records
 
@@ -50,6 +50,31 @@ php tests/run.php           # security and unit tests
 ```
 
 Use two database users: the app user (`SELECT, INSERT, UPDATE, DELETE` only) in `.env`, and a migration user in `.env.migrate` (both are git-ignored). Point `BELIS_ENV_FILE` at the migration file when running `bin/migrate.php`.
+
+### Start the dev server
+
+First time only (see the commands above): install with `npm ci`, copy `.env.example` to `.env` and fill it in, create the database and its two users, then run the migrations and the seed.
+
+Every time:
+
+1. **Start MySQL or MariaDB** (XAMPP Control Panel, or your own service) so the database in `.env` (`DB_HOST`, `DB_PORT`, `DB_NAME`) is reachable.
+2. **Build the CSS and images** when styles or photos changed: `npm run build`. While editing styles, keep `npm run watch:css` running in a second terminal so the CSS rebuilds when you save. PHP and JavaScript changes need no build.
+3. **Run the site** from the project folder:
+
+   ```bash
+   php -S 127.0.0.1:8090 -t public
+   ```
+
+   Open http://127.0.0.1:8090. Stop it with Ctrl+C. Any free port works, but set `APP_URL` in `.env` to the same address (Paystack return links and emails use it). Port 8080 is often taken on Windows, so this project uses 8090.
+4. **Local settings worth knowing** (all in `.env`):
+   - `MOCK_DATA=1` allows the sample catalogue (`php bin/seed.php`). Production refuses it.
+   - `PAYMENTS_ADAPTER=mock` uses a pretend payment page instead of Paystack. It works only when `APP_ENV=local`.
+   - `MAIL_DRIVER=log` writes emails, including sign-in codes, to `storage/logs/mail.log`. Read the newest code there.
+   - `AUTH_PEPPER` and `SETTINGS_KEY` must be set (see `.env.example` for the command that makes one). Sessions and encrypted settings will not work without them.
+5. **Sign in as staff:** create an account with `php bin/create-staff.php you@example.com "Your Name" owner` (it asks for the password), then sign in at http://127.0.0.1:8090/admin/sign-in and read the emailed code from `storage/logs/mail.log`.
+6. **Just look at the signed-in pages, no account:** set `PREVIEW_LOGIN=customer`, `staff` or `owner` in `.env` (local with `MOCK_DATA=1` only), restart the server, and the pages open with a sample person. Sample people cannot place orders or change data.
+
+Run the tests any time with `php tests/run.php` (they use an in-memory database and never touch your local data).
 
 Release build: `npm run build && php bin/build-release.php && php bin/check-release.php`. This copies an allowlist into `dist/` and fails if seed data, tests, tools, design records, keys or mock markers are present.
 

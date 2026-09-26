@@ -28,7 +28,7 @@ function settings_env(array $extra = []): OutboxMailer
     Env::fake($extra + ['APP_ENV' => 'local', 'MOCK_DATA' => '1', 'PREVIEW_LOGIN' => '', 'AUTH_PEPPER' => 'test-pepper-with-at-least-32-characters', 'SETTINGS_KEY' => KEY_A, 'APP_URL' => 'http://localhost', 'PAYMENTS_ADAPTER' => 'paystack']);
     $pdo = Db::fromEnv()->pdo();
     $pdo->exec('CREATE TABLE settings (name TEXT PRIMARY KEY, value_enc TEXT NOT NULL, updated_by INTEGER, updated_at INTEGER NOT NULL)');
-    $pdo->exec('CREATE TABLE audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, action TEXT, target TEXT, ip TEXT, created_at INTEGER)');
+    $pdo->exec('CREATE TABLE audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, action TEXT, target TEXT, detail TEXT, ip TEXT, created_at INTEGER)');
     Settings::forget();
     Payments::useForTests(null);
     return $mail;
@@ -333,9 +333,11 @@ function smtp_replies(bool $tls = true): array
 
 test('the SMTP client follows the protocol, uses TLS, authenticates and cleans the message', function (): void {
     $c = new ScriptedSmtp(smtp_replies());
-    $smtp = new Smtp('mail.example.com', 587, 'tls', 'user@example.com', 'p@ss', 'shop@example.com', "Belis
+    $smtp = new Smtp('mail.example.com', 587, 'tls', 'user@example.com', 'p@ss', 'shop@example.com', "Belis
+
 Bcc: evil@example.com", fn () => $c);
-    $smtp->send('ama@example.test', "Your code
+    $smtp->send('ama@example.test', "Your code
+
 Bcc: x@y.test", "Line one
 .leading dot
 end");
@@ -345,7 +347,8 @@ end");
     assert_contains('AUTH LOGIN', $all);
     assert_contains(base64_encode('user@example.com'), $all);
     assert_contains('RCPT TO:<ama@example.test>', $all);
-    assert_true(preg_match('/
+    assert_true(preg_match('/
+
 Bcc:/i', $all) !== 1, 'a header was injected');
     assert_true(strpos($all, 'STARTTLS') < strpos($all, 'AUTH LOGIN'), 'authenticated before TLS');
 });
@@ -354,7 +357,8 @@ test('an address with line breaks is refused before any connection', function ()
     $c = new ScriptedSmtp(smtp_replies());
     $threw = false;
     try {
-        (new Smtp('mail.example.com', 587, 'tls', 'u@example.com', 'p', 'shop@example.com', 'Belis', fn () => $c))->send("ama@example.test
+        (new Smtp('mail.example.com', 587, 'tls', 'u@example.com', 'p', 'shop@example.com', 'Belis', fn () => $c))->send("ama@example.test
+
 Bcc: evil@example.test", 'Hi', 'x');
     } catch (RuntimeException) {
         $threw = true;

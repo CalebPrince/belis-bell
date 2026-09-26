@@ -10,7 +10,7 @@
     <ul>
       <li><a href="/admin"<?= flag($active === 'overview', 'aria-current="page"') ?>><?= icon('house') ?>Overview</a></li>
       <li><a href="/admin/orders"<?= flag($active === 'orders', 'aria-current="page"') ?>><?= icon('cart') ?>Orders</a></li>
-      <li><span class="nav-off"><?= icon('tag') ?>Products <small>soon</small></span></li>
+      <li><a href="/admin/products"<?= flag($active === 'products', 'aria-current="page"') ?>><?= icon('tag') ?>Products</a></li>
       <li><span class="nav-off"><?= icon('mail') ?>Quotes <small>soon</small></span></li>
       <li><span class="nav-off"><?= icon('users') ?>Customers <small>soon</small></span></li>
       <?php if (($staff['role'] ?? '') === 'Owner') : ?><li><a href="/admin/settings"<?= flag($active === 'settings', 'aria-current="page"') ?>><?= icon('lock') ?>Settings</a></li><?php endif; ?>

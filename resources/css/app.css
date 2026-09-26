@@ -115,7 +115,7 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 .lw-green { color: var(--green); }
 .primary-nav { display: none; margin-inline: auto; }
 .primary-nav ul { display: flex; gap: 1.75rem; list-style: none; margin: 0; padding: 0; }
-.primary-nav a { display: inline-block; padding: .6rem 0; font-weight: 600; text-decoration: none; border-bottom: 3px solid transparent; }
+.primary-nav a { display: inline-block; white-space: nowrap; padding: .6rem 0; font-weight: 600; text-decoration: none; border-bottom: 3px solid transparent; }
 .primary-nav a:hover { color: var(--blue); }
 .primary-nav a[aria-current="page"] { color: var(--green); border-bottom-color: var(--green); }
 .header-tools { display: flex; align-items: center; gap: .15rem; margin-left: auto; }

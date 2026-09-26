@@ -2,7 +2,9 @@
 declare(strict_types=1);
 
 use Belis\Controllers\AccountController;
+use Belis\Controllers\AdminConfirmController;
 use Belis\Controllers\AdminController;
+use Belis\Controllers\AdminProductsController;
 use Belis\Controllers\AdminOrdersController;
 use Belis\Controllers\AuthController;
 use Belis\Controllers\CartController;
@@ -61,6 +63,17 @@ return static function (Router $router): void {
     $router->add('GET', '/admin/orders', [AdminOrdersController::class, 'index'], 'staff');
     $router->add('GET', '/admin/orders/{ref}', [AdminOrdersController::class, 'show'], 'staff');
     $router->add('POST', '/admin/orders/{ref}/fulfilment', [AdminOrdersController::class, 'fulfilment'], 'staff');
+    $router->add('GET', '/admin/products', [AdminProductsController::class, 'index'], 'staff');
+    $router->add('GET', '/admin/products/new', [AdminProductsController::class, 'newForm'], 'owner');
+    $router->add('POST', '/admin/products/new', [AdminProductsController::class, 'create'], 'owner');
+    $router->add('GET', '/admin/products/{id}', [AdminProductsController::class, 'show'], 'staff');
+    $router->add('POST', '/admin/products/{id}', [AdminProductsController::class, 'update'], 'staff');
+    $router->add('POST', '/admin/products/{id}/size/{size}', [AdminProductsController::class, 'updateSize'], 'staff');
+    $router->add('POST', '/admin/products/{id}/tiers/{size}', [AdminProductsController::class, 'updateTiers'], 'owner');
+    $router->add('POST', '/admin/products/{id}/addsize', [AdminProductsController::class, 'addSize'], 'owner');
+    $router->add('GET', '/admin/confirm', [AdminConfirmController::class, 'show'], 'staff');
+    $router->add('POST', '/admin/confirm/code', [AdminConfirmController::class, 'sendCode'], 'staff');
+    $router->add('POST', '/admin/confirm', [AdminConfirmController::class, 'verify'], 'staff');
     $router->add('GET', '/admin/settings', [SettingsController::class, 'show'], 'owner');
     $router->add('POST', '/admin/settings', [SettingsController::class, 'save'], 'owner');
     $router->add('POST', '/admin/settings/code', [SettingsController::class, 'sendCode'], 'owner');

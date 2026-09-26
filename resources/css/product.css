@@ -1,10 +1,5 @@
-/* Header search field (wide screens, PG-044) and the product page (PG-039). Imported by app.css. */
-.header-search { display: none; position: relative; flex: 0 1 18rem; }
-.header-search input { width: 100%; height: 2.75rem; border: 1px solid var(--line); border-radius: 999px; background: var(--canvas); padding: 0 2.75rem 0 1rem; font-size: .9rem; color: var(--ink); }
-.header-search input::placeholder { color: var(--muted); }
-.header-search .icon { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
-@media (min-width: 1100px) { .header-search { display: block; } .icon-search { display: none; } }
-
+/* The product page (PG-039). Imported by app.css. */
+@media (min-width: 1100px) { 
 .pdp-head { padding-bottom: .5rem; }
 .pdp { display: grid; gap: 1.75rem; padding-block: .5rem 2rem; }
 @media (min-width: 1024px) { .pdp { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 2.5rem; } }
