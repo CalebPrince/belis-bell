@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "project": "Belis Bell",
   "status": "approved",
-  "approved_at": "2026-09-26T17:59:32Z",
-  "approval_method": "dashboard",
+  "approved_at": "2026-09-26T19:51:46Z",
+  "approval_method": "chat",
   "implementation_authorized": false,
   "next_gate": "opskeep-security",
   "direction": {
@@ -12,25 +12,25 @@
     "name": "Bright Supply"
   },
   "decisions": {
-    "confirmed": 26,
+    "confirmed": 56,
     "inferred": 0,
     "open": 0,
     "blocking": 0,
-    "confirmed_explicitly": 26,
-    "confirmed_by_gate_approval": 0
+    "confirmed_explicitly": 39,
+    "confirmed_by_gate_approval": 17
   },
-  "state_hash": "bc316e592b3a55f0",
+  "state_hash": "ab7c1e217d053d49",
   "files": {
     "PROJECT.md": "669b3855ac8169e23fca2abec673ab063c87201e6cf5d604a75dc85d4a16255d",
-    "assumptions.md": "890239f0e29db2246c217d0ef2aadb78e0134a6d7f772e49f5e699152760a128",
-    "decisions.yaml": "186b9042aab5aa538b6eeb4bb0ce9f8b95c29ea4ba0e9b930745d12a18a090b1",
+    "assumptions.md": "014b411c46aadea831a1dca8194025ecddbc5feb66f321f0a000a1c03b3ddb9d",
+    "decisions.yaml": "c5f682efb5ba558cb2df4a901b278fb690a53cdb2a9bb59caa21fb546ef888dd",
     "tokens.json": "70a47091316ee11808bd47e2d4b27e6e6c9e68b538775baede82965efc630228",
-    "DESIGN.md": "81792d4e00f8d362a751f11221750d2024ce01cf73534dd64a3a00d82e8a628a",
-    "screens.md": "b31944e913292ff2fd57c746bfa6ee7b3d6fd330df49e7399c674f11690e9a2e",
-    "components.md": "fd6137d533def8eebbc1affca43fe4ff442c9891d97a5b945855a60edcccf15e",
+    "DESIGN.md": "4dd6f6091e9d15a398077c6d1ddfd0223745014e7ba329149c8272b498337fdf",
+    "screens.md": "d105c4ee79e0f7744ea7514cd630892be1cbd9d6d0e2af55a236a631811b155e",
+    "components.md": "004ed6fdf4d533619b24cb35d6f4f3f7f51ab70bead1d6a977fc5ae78ab88f56",
     "responsive.md": "89863ce2ba7960ff61c00dff5f9a4927eb0839f646b1d0c02ca6781d163f3dc8",
     "accessibility.md": "9f8fb07721472cc446221c2fc1ce441aa1deccd6f44edbef91dadf790defe368",
-    "state.json": "d2acc26ae7e80c6ec1762c905f3881798be6b3476c75dadf664cc1c1087fb3e8"
+    "state.json": "086c64a8932dfa62abc094ad7015e16b7e01b5baed5fdb017808bf4b99b36a84"
   },
   "history": [
     {
@@ -77,6 +77,21 @@
       "at": "2026-09-26T17:59:32Z",
       "event": "approved",
       "detail": "via dashboard"
+    },
+    {
+      "at": "2026-09-26T18:42:15Z",
+      "event": "reopened",
+      "detail": "PG-020: Owner supplied a single product page mockup and asked for bulk purchase ordering"
+    },
+    {
+      "at": "2026-09-26T18:47:03Z",
+      "event": "approved",
+      "detail": "via chat"
+    },
+    {
+      "at": "2026-09-26T19:51:46Z",
+      "event": "approved",
+      "detail": "via chat"
     }
   ]
 }

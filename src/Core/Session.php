@@ -33,7 +33,7 @@ final class Session
             'httponly' => true,
             'samesite' => 'Lax',
         ]);
-        session_name($secure ? '__Host-belis' : 'belis');
+        session_name(self::name());
         session_save_path(self::savePath());
         session_start();
 
@@ -48,6 +48,17 @@ final class Session
             $_SESSION['_started'] = $now;
         }
         $_SESSION['_seen'] = $now;
+    }
+
+    public static function name(): string
+    {
+        return str_starts_with(Env::get('APP_URL', '') ?? '', 'https://') ? '__Host-belis' : 'belis';
+    }
+
+    /** True when the visitor already has a session cookie. Used so we never create a session just to read it. */
+    public static function hasCookie(): bool
+    {
+        return PHP_SAPI === 'cli' ? isset($_SESSION) : isset($_COOKIE[self::name()]);
     }
 
     /** Call after sign-in and after any role change. */

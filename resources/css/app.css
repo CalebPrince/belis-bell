@@ -1,5 +1,8 @@
 @import "tailwindcss";
 @source "../../templates";
+@import "./product.css";
+@import "./pages.css";
+@import "./account.css";
 
 /* Self-hosted variable fonts (copied by scripts/copy-fonts.mjs). No third-party font host, so the CSP stays strict. */
 @font-face {

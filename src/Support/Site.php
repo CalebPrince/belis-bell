@@ -44,6 +44,34 @@ final class Site
         return $items;
     }
 
+    /** @return list<array{icon:string,title:string,line:string}> Trust row on category pages (mock wording, PG-049). */
+    public static function categoryTrust(): array
+    {
+        return [
+            ['icon' => 'shield-check', 'title' => 'Trusted', 'line' => 'Quality'],
+            ['icon' => 'truck', 'title' => 'Fast Delivery', 'line' => 'Across Ghana'],
+            ['icon' => 'award', 'title' => 'Wide Product', 'line' => 'Range'],
+            ['icon' => 'tag', 'title' => 'Great Value', 'line' => 'for Homes & Businesses'],
+        ];
+    }
+
+    /** @return list<array{icon:string,title:string,line:string}> Closing strip on the shop page (mock wording). */
+    public static function shopStrip(): array
+    {
+        return array_merge(self::trust(), [['icon' => 'tag', 'title' => 'Great Value', 'line' => 'Competitive prices']]);
+    }
+
+    /** @return list<array{icon:string,title:string,line:string}> Closing strip on category pages (mock wording). */
+    public static function categoryStrip(): array
+    {
+        return [
+            ['icon' => 'sparkles', 'title' => 'Effective & Reliable', 'line' => 'Sample wording.'],
+            ['icon' => 'shield-check', 'title' => 'Safe for Everyday Use', 'line' => 'Sample wording.'],
+            ['icon' => 'award', 'title' => 'Wide Selection', 'line' => 'Everything you need in one place.'],
+            ['icon' => 'tag', 'title' => 'Great Value', 'line' => 'Sample wording.'],
+        ];
+    }
+
     /** @return list<array{icon:string,title:string,line:string}> */
     public static function why(): array
     {
@@ -65,6 +93,77 @@ final class Site
                 'line' => 'Reliable supplies for offices, shops, hotels, restaurants and more.', 'alt' => 'A bright, modern office', 'focus' => 'focus-mid'],
             ['slot' => 'home/audience-institutions', 'icon' => 'users', 'title' => 'Institutions',
                 'line' => 'Trusted by schools, churches, hospitals and public facilities across Ghana.', 'alt' => 'A school building with a Ghana flag', 'focus' => 'focus-top'],
+        ];
+    }
+
+    /**
+     * Delivery fee in pesewas for the cart summary. Mock (GHS 20.00) in mock mode only; otherwise null, which
+     * the page shows as "calculated at checkout". The real fee comes from the delivery address and option (PG-054).
+     */
+    public static function deliveryFeePesewas(): ?int
+    {
+        return Env::bool('MOCK_DATA') ? 2000 : null;
+    }
+
+    /** @return list<string> Delivery information for the cart. Sample text in mock mode only. */
+    public static function deliveryInfo(): array
+    {
+        return Env::bool('MOCK_DATA')
+            ? ['Sample text. Standard delivery: 1 to 3 working days in Accra and 2 to 5 in other regions.', 'Sample text. Delivery fees and areas will be set by Belis Bell.']
+            : [];
+    }
+
+    /**
+     * Payment channel logos for the cart. Only official marks the owner has supplied are shown (PG-059), and
+     * only channels enabled on the Paystack account. A channel with no supplied logo is simply not shown.
+     *
+     * @return list<array{slot:string,name:string}>
+     */
+    public static function paymentChannels(): array
+    {
+        $all = [
+            ['slot' => 'payments/mtn-momo', 'name' => 'MTN MoMo'],
+            ['slot' => 'payments/telecel-cash', 'name' => 'Telecel Cash'],
+            ['slot' => 'payments/airteltigo-money', 'name' => 'AirtelTigo Money'],
+            ['slot' => 'payments/visa', 'name' => 'Visa'],
+            ['slot' => 'payments/mastercard', 'name' => 'Mastercard'],
+        ];
+        return array_values(array_filter($all, static fn (array $c): bool => Images::exists($c['slot'])));
+    }
+
+    /** @return list<string> Ghana's 16 regions, for the delivery address. */
+    public static function regions(): array
+    {
+        return ['Greater Accra', 'Ashanti', 'Western', 'Western North', 'Central', 'Eastern', 'Volta', 'Oti', 'Northern', 'Savannah', 'North East', 'Upper East', 'Upper West', 'Bono', 'Bono East', 'Ahafo'];
+    }
+
+    /**
+     * Delivery options. Mock until the owner supplies real rules (PG-054).
+     *
+     * @return list<array{key:string,name:string,fee:int,line:string}>
+     */
+    public static function deliveryOptions(): array
+    {
+        return [
+            ['key' => 'standard', 'name' => 'Standard Delivery', 'fee' => 2000, 'line' => '1 to 3 working days (Accra), 2 to 5 working days (other regions)'],
+            ['key' => 'express', 'name' => 'Express Delivery', 'fee' => 4000, 'line' => 'Same day (Accra only). Order before 12pm'],
+        ];
+    }
+
+    /**
+     * Delivery and Returns tab text. Real policy text comes from the owner (PG-043), so it only exists
+     * as clearly labelled sample text in mock mode.
+     *
+     * @return list<string>
+     */
+    public static function deliveryReturns(): array
+    {
+        if (!Env::bool('MOCK_DATA')) {
+            return [];
+        }
+        return [
+            'Sample text. Delivery areas, times and fees will be added by Belis Bell.',
+            'Sample text. Returns and refunds terms will be added by Belis Bell.',
         ];
     }
 

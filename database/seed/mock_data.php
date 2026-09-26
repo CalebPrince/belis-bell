@@ -19,6 +19,13 @@ return [
         ['cleaning-tools-accessories', 'Cleaning Tools & Accessories', 'Mops, buckets and brushes', 5],
         ['general-supplies', 'General Supplies', 'Everyday extras for any space', 6],
     ],
+    // [parent category slug, slug, name, sort order]. Names come from the owner's mockup; they are mock.
+    'subcategories' => [
+        ['cleaning-products', 'surface-cleaners', 'Surface Cleaners', 1],
+        ['cleaning-products', 'disinfectants', 'Disinfectants', 2],
+        ['cleaning-products', 'bleach-stain-removers', 'Bleach & Stain Removers', 3],
+        ['cleaning-products', 'hand-care-hygiene', 'Hand Care & Hygiene', 4],
+    ],
     // [category slug, product slug, name, pack size, price in pesewas, stock status, description, usage notes]
     'products' => [
         ['cleaning-products', 'sample-bleach-5l', 'Household bleach', '5 litre', 6200, 'in_stock',

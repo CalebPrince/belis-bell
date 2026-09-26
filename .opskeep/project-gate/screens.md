@@ -16,7 +16,7 @@ Job: narrow to the right product. Layout: filter column on desktop, filter sheet
 
 ## Product
 
-Job: confirm it is the right product and pack size. Layout: large photo with zoom, name, pack size and unit price, stock status, safety and usage notes, downloadable spec or safety data sheet where relevant, WhatsApp button, add-to-cart and add-to-quote (PG-020). Sticky add-to-cart bar on phone.
+Job: confirm it is the right product and size, and buy one or many (PG-039, PG-040, PG-042). Layout: breadcrumb; gallery with a vertical strip of thumbnails beside a large photo with an expand button; category label, name, short description, price, Size options (each with a price), quantity stepper, Add to Cart (green, large), save-for-later heart; trust row; a highlights box of three benefits; a bulk purchase panel (quantity price tiers, an estimated total for a chosen quantity, and a Request bulk quote button); tabs for Description, Specifications, How to Use and Delivery & Returns, with a Key Features list; You May Also Like with a View All link; and a Common Uses strip of five photo tiles. WhatsApp link when configured, add-to-quote, and a data sheet download where a file exists. No ratings, review counts or sold counts until a real reviews system exists (PG-041). Add to Cart, save and Request bulk quote are switched off until the cart, saved lists and quote flow are built. Sticky add-to-cart bar on phone. All text beyond name, size and price is mock until supplied (PG-043).
 
 ## Cart and checkout
 
@@ -53,3 +53,31 @@ Job: know where an order is. Layout: reference lookup or account order page, ste
 ## Content pages
 
 Buying guides, hygiene advice, about, contact, FAQ. Layout: readable single column, images optional, clear links back to products. The contact page lists phone, WhatsApp and address.
+
+## Shop and category (PG-045, PG-046, PG-050)
+
+Job: find products fast. Layout: hero banner with breadcrumb, title, description, a trust row and a faded photo; a left filter panel; a results bar with "Showing 1 to 12 of N products" and Sort by; a grid (two across on phones up to six on very wide screens, 12 per page); numbered pagination; and a closing strip. Category pages list subcategories with counts and end with a category-specific "Why choose" strip. Empty results explain how to clear filters.
+
+## Cart (PG-052)
+
+Job: review the order before paying. Layout as described in PG-052. One Proceed to Checkout button; no mobile money button. Empty cart shows a friendly message and links to categories.
+
+## Checkout (PG-053, PG-054)
+
+Job: give delivery details and pay. Requires sign-in. Sections: Contact Information, Delivery Address, Delivery Option, then the Order Summary sidebar with a Pay with Paystack button. No payment method section.
+
+## Order confirmation (PG-055, PG-056)
+
+Job: confirm the order and its progress. States: paid, pending, failed, cancelled. Only the owner of the order can open it.
+
+## Register, sign in and code entry (PG-064 to PG-068)
+
+Job: get in safely. Register has Account Type, Your Details and Complete (enter the emailed code). Sign-in is email and password, then the emailed code. Errors are uniform. The admin login is separate, unlinked from the storefront, and has no Remember me or Google button.
+
+## Account (PG-057, PG-058)
+
+Job: manage orders, addresses, saved products and details. Sidebar, four tiles, recent orders, saved products, addresses, quick actions and account details.
+
+## Admin (PG-060 to PG-063)
+
+Job: run the store. Sidebar, top bar, stat tiles, charts, quick actions, recent orders and low stock. Pages and figures depend on the role.

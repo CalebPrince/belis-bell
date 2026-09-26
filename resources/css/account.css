@@ -1,0 +1,83 @@
+/* Sign-in, register, checkout, order, account and admin pages (PG-053, PG-055 to PG-060). Imported by app.css. */
+.eyebrow { margin: 0 0 .25rem; font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--blue); }
+
+/* Sign-in, register, code entry */
+.auth { display: grid; gap: 1.5rem; padding-block: 1.5rem 3rem; }
+.auth > * { min-width: 0; }
+@media (min-width: 900px) { .auth { grid-template-columns: minmax(0, 32rem) minmax(0, 1fr); align-items: stretch; } }
+.auth-panel { padding: 1.5rem; }
+@media (min-width: 720px) { .auth-panel { padding: 2rem; } }
+.auth-side { display: none; overflow: hidden; border-radius: 16px; background: var(--band); }
+@media (min-width: 900px) { .auth-side { display: block; } }
+.auth-side img, .auth-side .ph-auth { width: 100%; height: 100%; min-height: 24rem; object-fit: cover; display: block; }
+.auth-alt { margin-top: 1.25rem; color: var(--muted); }
+.auth-alt a { color: var(--blue); font-weight: 700; }
+.form { display: grid; gap: 1rem; margin-top: 1.25rem; }
+.field { display: grid; gap: .3rem; }
+.field label, .form-section legend { font-weight: 700; font-size: .95rem; }
+.field input, .field select, .field textarea {
+  width: 100%; min-height: 3rem; padding: .6rem .8rem; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--canvas); color: var(--ink); font: inherit; font-size: 1rem;
+}
+.field textarea { min-height: 5rem; resize: vertical; }
+.field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { outline: 3px solid var(--blue); outline-offset: 1px; }
+.field .hint { margin: 0; }
+.code-input { font-family: var(--font-display); font-size: 1.6rem !important; letter-spacing: .5em; text-align: center; }
+.btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+.btn-quiet:disabled { opacity: .55; cursor: not-allowed; }
+
+/* Checkout */
+.checkout-main { display: grid; gap: 1rem; min-width: 0; }
+.form-section h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: .75rem; }
+.form-section .field + .field, .form-section .field-grid + .field { margin-top: .9rem; }
+.field-grid { display: grid; gap: .9rem; }
+@media (min-width: 720px) { .field-grid { grid-template-columns: 1fr 1fr; } }
+.opt-card { align-items: flex-start; padding: .8rem; border: 1px solid var(--line); border-radius: 12px; margin-top: .6rem; }
+.opt-card > span:nth-child(2) { flex: 1; }
+.opt-price { font-family: var(--font-display); font-weight: 800; }
+.sum-items { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .75rem; }
+.sum-items li { display: flex; align-items: center; gap: .75rem; }
+.sum-items .cart-photo { width: 3.5rem; }
+.sum-name { flex: 1; font-weight: 600; min-width: 0; }
+.sum-line { font-weight: 700; }
+
+/* Order confirmation */
+.order-banner { display: flex; gap: 1rem; align-items: flex-start; margin-top: .75rem; padding: 1.25rem; border-radius: 16px; border: 1px solid var(--line); background: var(--band); }
+.order-banner h1 { font-size: clamp(1.4rem, 3.5vw, 2rem); }
+.order-banner p { margin: .35rem 0 0; color: var(--muted); }
+.order-banner.state-paid { border-color: var(--green); }
+.order-banner.state-pending { border-color: var(--blue); }
+.order-banner.state-failed, .order-banner.state-cancelled { border-color: var(--danger); }
+
+/* Account and admin */
+.account-grid, .admin-grid { display: grid; gap: 1.25rem; padding-bottom: 3rem; }
+.account-grid > *, .admin-grid > * { min-width: 0; }
+@media (min-width: 900px) { .account-grid, .admin-grid { grid-template-columns: 15rem minmax(0, 1fr); align-items: start; } }
+.account-nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .25rem; }
+@media (min-width: 900px) { .account-nav ul { flex-direction: column; } }
+.account-nav a, .nav-off { display: flex; align-items: center; gap: .6rem; min-height: 2.75rem; padding: .5rem .75rem; border-radius: 10px; text-decoration: none; font-weight: 600; }
+.account-nav a:hover { background: var(--band); }
+.account-nav a[aria-current="page"] { background: color-mix(in srgb, var(--blue) 10%, var(--surface)); color: var(--blue); }
+.nav-off { color: var(--muted); cursor: default; }
+.nav-off small { margin-left: auto; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; }
+.account-main { display: grid; gap: 1rem; min-width: 0; }
+.account-main h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: .75rem; }
+.detail-list { display: grid; gap: .5rem; margin: 0 0 1rem; }
+.detail-list div { display: flex; justify-content: space-between; gap: 1rem; padding-block: .35rem; border-bottom: 1px solid var(--line); }
+.detail-list dt { color: var(--muted); }
+.detail-list dd { margin: 0; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+.addr-list { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: .75rem; }
+.addr-list li { padding: .8rem; border: 1px solid var(--line); border-radius: 12px; }
+.table-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; min-width: 30rem; }
+.data-table th, .data-table td { padding: .7rem .5rem; text-align: left; border-bottom: 1px solid var(--line); }
+.data-table thead th { font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.data-table tbody th { font-weight: 700; }
+.badge { display: inline-block; padding: .15rem .55rem; border-radius: 999px; background: var(--band); font-size: .8rem; font-weight: 700; }
+.badge.state-paid { background: color-mix(in srgb, var(--green) 16%, var(--surface)); color: var(--green); }
+.badge.state-pending { background: color-mix(in srgb, var(--blue) 14%, var(--surface)); color: var(--blue); }
+.badge.state-failed, .badge.state-cancelled { background: color-mix(in srgb, var(--danger) 14%, var(--surface)); color: var(--danger); }
+.stat-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+@media (min-width: 1100px) { .stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.stat { display: grid; gap: .2rem; }
+.stat strong { font-family: var(--font-display); font-size: 1.5rem; overflow-wrap: anywhere; }

@@ -42,7 +42,7 @@ What it deliberately is not:
 4. Headlines are navy, with blue and green emphasis words. Eyebrow labels are small, spaced capitals. Banners use deep navy (#00346e, #002b61) with the photo on the right. The footer is #001b38 (PG-036).
 5. Every photo is a named slot in `docs/IMAGES.md`, rendered by `image_html()`. A slot with no photo shows a neutral placeholder and keeps its shape (PG-035).
 6. Product cards show photo, name, pack size, price in GHS, stock status and an Add to Cart button. Cards use a soft shadow and 16px radius; page sections stay flat (PG-011, PG-020).
-7. Every product page offers add-to-cart and add-to-quote, plus a WhatsApp link when a number is configured (PG-020, PG-006).
+7. Product pages follow PG-039: gallery, size options with prices, quantity, Add to Cart, trust row, highlights, a bulk panel, tabs, You May Also Like and Common Uses. Add-to-quote and a WhatsApp link (when a number is configured) stay (PG-006). Sizes each carry their own price and stock (PG-040). The bulk panel shows quantity price tiers plus a Request bulk quote button, and the server sets every price and total (PG-042). No ratings, review counts or sold counts appear until a real reviews system exists, and benefit claims are mock until the owner confirms them (PG-041).
 8. Institutions use the For Businesses path: quote from a cart or list, optional requirements upload, a quote thread with messages, then approve into an order. Repeat orders reuse past quotes (PG-018, PG-023). Until the quote flow exists, its button is switched off (PG-037).
 9. Orders and quotes always have a review step, a confirmation with a reference number, and an audit trail. Edits or cancellations after submit are deliberate and recorded (PG-007).
 10. Checkout supports online payment through Paystack. Details are in the security baseline (PG-022).
@@ -54,6 +54,13 @@ What it deliberately is not:
 16. Use the supplied logo (`brand/logo-primary.webp`, PG-030). Its descriptor is "Cleaning Supplies & More" with the line "For homes, businesses and institutions". The header needs a transparent PNG or SVG lockup, produced before launch.
 17. The first build uses clearly labelled mock data for products, prices, stock, categories, brands, delivery figures, contact details and customer content. It lives in one seed file, is never presented as real, and is removed before launch (PG-032, AS-08).
 18. Meet every rule in `accessibility.md` (PG-015).
+
+19. Shop and category pages follow PG-045 and PG-050: a hero banner with a photo that fades in from the left, a filter panel (categories or subcategories with counts, price range, availability, brand, Clear Filters), a results bar with Sort by, a grid of 12 per page, numbered pagination and a trust strip. Filters are checked on the server and kept in the address (PG-046). There are no star ratings or rating filters (PG-047).
+20. The cart page has one green Proceed to Checkout button and no mobile money button. Payment channel logos are official marks supplied by the owner and only for channels enabled on the Paystack account (PG-052, PG-059).
+21. Checkout requires sign-in. It has no payment method section: the last button reads Pay with Paystack and sends the customer to Paystack's own page. No payment details are ever entered on our pages (PG-053). Delivery fees and rules are mock until supplied (PG-054).
+22. The order confirmation page shows Total Paid and Payment Successful only after the payment is confirmed with Paystack, has states for pending, failed and cancelled, and is visible only to the customer who owns the order (PG-055, PG-056).
+23. Customer pages follow PG-057 to PG-058. Sign-in is the password plus an emailed one-time code every time, for customers and staff (PG-064, PG-069). Register sends a verification code and then a confirmation email (PG-066, PG-068). Google and Apple sign-in, Remember me on the admin login, and staff self-service password reset are not built (PG-063, PG-065).
+24. The admin follows PG-060 to PG-063 and is not linked from the storefront. It shows only what its role may see (PG-061).
 
 ## Do and don't
 

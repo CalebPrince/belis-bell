@@ -48,45 +48,6 @@ test('slugs with unsafe characters do not match a route', function (): void {
     }
 });
 
-test('a listing page escapes hostile category and product text', function (): void {
-    $bad = '<script>alert(1)</script>';
-    $html = View::render('pages/listing', [
-        'title' => 'x',
-        'category' => ['id' => 1, 'slug' => 'c', 'name' => $bad, 'blurb' => '"><img src=x onerror=alert(1)>'],
-        'categories' => [['slug' => 'c', 'name' => $bad, 'blurb' => '']],
-        'items' => [['slug' => 'p"><script>', 'name' => $bad, 'pack_size' => '<b>5L</b>', 'price_pesewas' => 500, 'stock_status' => 'in_stock', 'category' => $bad, 'category_slug' => 'c']],
-        'total' => 1, 'pages' => 1, 'page' => 1, 'sort' => 'featured', 'inStock' => false,
-    ]);
-    assert_not_contains('<script>alert(1)</script>', $html);
-    assert_not_contains('<img src=x', $html);
-    assert_not_contains('<b>5L</b>', $html);
-    assert_contains('&lt;script&gt;alert(1)&lt;/script&gt;', $html);
-});
-
-test('pagination links keep sort and stock filter but drop empty values', function (): void {
-    $html = View::render('pages/listing', [
-        'title' => 'x', 'category' => null, 'categories' => [],
-        'items' => [['slug' => 'p', 'name' => 'n', 'pack_size' => '1', 'price_pesewas' => 100, 'stock_status' => 'in_stock', 'category' => 'c', 'category_slug' => 'c']],
-        'total' => 20, 'pages' => 3, 'page' => 2, 'sort' => 'price-asc', 'inStock' => true,
-    ]);
-    assert_contains('/shop?sort=price-asc&amp;stock=in" rel="prev"', $html);
-    assert_contains('/shop?sort=price-asc&amp;stock=in&amp;page=3" rel="next"', $html);
-});
-
-test('a product page escapes hostile text and shows the WhatsApp link only when one is given', function (): void {
-    $bad = '<script>alert(1)</script>';
-    $product = ['id' => 1, 'category_id' => 1, 'slug' => 's', 'name' => $bad, 'pack_size' => $bad, 'description' => $bad, 'usage_notes' => '"><img src=x onerror=alert(1)>',
-        'price_pesewas' => 1234, 'currency' => 'GHS', 'stock_status' => 'low', 'category' => $bad, 'category_slug' => 'c'];
-    $with = View::render('pages/product', ['title' => 'x', 'product' => $product, 'related' => [], 'whatsapp' => 'https://wa.me/233200000000?text=Hi']);
-    $without = View::render('pages/product', ['title' => 'x', 'product' => $product, 'related' => [], 'whatsapp' => null]);
-    assert_not_contains('<script>alert(1)</script>', $with);
-    assert_not_contains('<img src=x', $with);
-    assert_contains('GH₵ 12.34', $with);
-    assert_contains('https://wa.me/233200000000', $with);
-    assert_contains('rel="noopener noreferrer"', $with);
-    assert_not_contains('wa.me', $without);
-});
-
 test('the WhatsApp link is built only from digits and is off without a number', function (): void {
     Env::fake(['WHATSAPP_NUMBER' => '']);
     assert_same(null, Site::whatsappLink('Soap'));

@@ -74,3 +74,25 @@ test('a missing APP_ENV is treated as production, not local', function (): void 
     Env::fake([]);
     assert_true(Guard::violations() !== [], 'default must be the strictest environment');
 });
+
+test('preview login works only in local with mock data', function (): void {
+    Env::fake(['APP_ENV' => 'local', 'MOCK_DATA' => '1', 'PREVIEW_LOGIN' => 'customer']);
+    assert_same([], Guard::violations());
+    assert_same('customer', Belis\Core\Auth::previewRole());
+    assert_true(Belis\Core\Auth::customer() !== null && Belis\Core\Auth::staff() === null);
+    Env::fake(['APP_ENV' => 'local', 'MOCK_DATA' => '1', 'PREVIEW_LOGIN' => 'owner']);
+    assert_true(Belis\Core\Auth::owner() !== null && Belis\Core\Auth::staff() !== null);
+    foreach ([['APP_ENV' => 'staging', 'MOCK_DATA' => '1'], ['APP_ENV' => 'production', 'MOCK_DATA' => '0', 'APP_URL' => 'https://x.test'], ['APP_ENV' => 'local', 'MOCK_DATA' => '0']] as $env) {
+        Env::fake($env + ['PREVIEW_LOGIN' => 'owner']);
+        assert_true(Guard::violations() !== [], 'preview login allowed in ' . json_encode($env));
+        assert_same(null, Belis\Core\Auth::previewRole(), 'preview role active outside local mock mode');
+        assert_same(null, Belis\Core\Auth::owner(), 'a mock person was signed in outside local mock mode');
+    }
+});
+
+test('with preview login off nobody is signed in', function (): void {
+    Env::fake(['APP_ENV' => 'local', 'MOCK_DATA' => '1', 'PREVIEW_LOGIN' => '']);
+    assert_same(null, Belis\Core\Auth::customer());
+    Env::fake(['APP_ENV' => 'local', 'MOCK_DATA' => '1', 'PREVIEW_LOGIN' => 'admin']);
+    assert_same(null, Belis\Core\Auth::previewRole(), 'unknown roles are ignored');
+});

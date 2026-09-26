@@ -11,5 +11,15 @@ $href = '/p/' . rawurlencode((string) $p['slug']);
   <p class="card-meta"><?= e($p['pack_size']) ?></p>
   <p class="card-price"><?= e(money((int) $p['price_pesewas'])) ?></p>
   <p class="card-stock <?= e($p['stock_status'] === 'out' ? 'is-out' : 'is-in') ?>"><?= e($stockLabel[$p['stock_status']] ?? '') ?></p>
-  <button type="button" disabled class="btn-primary btn-block"><?= icon('cart') ?>Add to Cart</button>
+  <?php if (!empty($p['variant_id']) && $p['stock_status'] !== 'out') : ?>
+    <form method="post" action="/cart/add" class="card-form">
+      <?= csrf_field() ?>
+      <input type="hidden" name="variant" value="<?= e($p['variant_id']) ?>">
+      <input type="hidden" name="qty" value="1">
+      <input type="hidden" name="return_to" value="<?= e(current_url()) ?>">
+      <button type="submit" class="btn-primary btn-block"><?= icon('cart') ?>Add to Cart</button>
+    </form>
+  <?php else : ?>
+    <button type="button" disabled class="btn-primary btn-block"><?= icon('cart') ?><?= e($p['stock_status'] === 'out' ? 'Out of stock' : 'Unavailable') ?></button>
+  <?php endif; ?>
 </article>

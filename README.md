@@ -1,6 +1,6 @@
 # Belis Bell Online Store
 
-Status: DRAFT scaffold. Design gate sealed. Security baseline 0.3.0 approved for development and staging only (mock data, Paystack test keys). Production is locked.  
+Status: DRAFT scaffold. Design gate sealed. Security baseline 0.4.0 (emailed sign-in codes, CHG-001) is approved for development and staging only. Production is locked.  
 Owner: Prince Caleb (Super Admin); a Belis Bell business owner is still to be named (DEC-010, DEC-013)  
 Last reviewed: 2026-09-26
 
@@ -19,7 +19,7 @@ Non-goals for v1: native apps, contract-price accounts, AI features, WhatsApp Bu
 - Home page following the owner's mockup (hero, six category cards, promo banner, audience cards, product carousel, Why Choose, closing banner), plus `/shop`, `/c/{slug}`, `/p/{slug}`, `/categories`, `/for-businesses`, `/about` and `/contact`. Data comes from the database with mock content; photos are placeholders until supplied. (`GUI.md`)
 - Catalogue migration, mock seed loader and purge script, release builder and release checker. (`database/`, `bin/`)
 - Image pipeline: originals in `resources/images/` become responsive WebP (`npm run build:images`), and `image_html()` renders them or a neutral placeholder. Slots are documented in `docs/IMAGES.md`. (`scripts/build-images.mjs`, `src/Support/Images.php`)
-- 61 security and unit tests in a dependency-free runner. (`tests/`)
+- 82 security and unit tests in a dependency-free runner. (`tests/`)
 - GitHub Actions for CI and a locked production deploy, written but not yet run. (`.github/`)
 
 Not built: sign-in and accounts, staff admin, search, cart, checkout and Paystack calls, quotes and uploads, notifications, monitoring. See `GUI.md`.
@@ -67,7 +67,7 @@ Not done yet, and locked by the approved baseline (production is out of scope). 
 
 ## Security approval
 
-The approved baseline digest is `66848a5d526cfb5a3fdd714a829a039a4e53f3dc2c66979ff3df2fa2de6fa352` (baseline 0.3.0). Store it as the GitHub repository variable `APPROVED_DIGEST` so CI compares the baseline against a value a pull request cannot edit. Until the repository is pushed and the checks are made required on a protected branch, the approval lock is checked by the validator but not enforced by a pipeline.
+The approved baseline digest is `d60e5d34e8d59b4c57b111cf2476d2ab8614eadd0daa8bc11e76d0c68e5c529e` (baseline 0.4.0). Store it as the GitHub repository variable `APPROVED_DIGEST` so CI compares the baseline against a value a pull request cannot edit. Until the repository is pushed and the checks are made required on a protected branch, the approval lock is checked by the validator but not enforced by a pipeline.
 
 ## Repository map
 

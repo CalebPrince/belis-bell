@@ -64,3 +64,15 @@ document.querySelectorAll('[data-carousel]').forEach(function (root) {
   window.addEventListener('resize', buildDots);
   buildDots();
 });
+
+// Filters start closed on small screens (they are open in the HTML so everything works without JavaScript).
+document.querySelectorAll('[data-filters]').forEach(function (box) {
+  if (window.matchMedia('(max-width: 1023px)').matches) box.removeAttribute('open');
+});
+
+// Forms marked data-autosubmit submit when their select or number changes (the button is hidden with JavaScript on).
+document.querySelectorAll('[data-autosubmit]').forEach(function (form) {
+  form.querySelectorAll('select, input[type="number"]').forEach(function (field) {
+    field.addEventListener('change', function () { form.submit(); });
+  });
+});

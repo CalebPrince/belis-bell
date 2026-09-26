@@ -22,6 +22,9 @@ final class Guard
         if (!in_array($env, self::ENVIRONMENTS, true)) {
             $v[] = 'APP_ENV must be local, staging or production';
         }
+        if ((Env::get('PREVIEW_LOGIN', '') ?? '') !== '' && ($env !== 'local' || !Env::bool('MOCK_DATA'))) {
+            $v[] = 'PREVIEW_LOGIN is only allowed in a local environment with mock data';
+        }
         if ($env !== 'production' && str_starts_with($key, 'sk_live_')) {
             $v[] = 'A live Paystack key is configured outside production';
         }

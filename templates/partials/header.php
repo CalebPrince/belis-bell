@@ -17,10 +17,16 @@
       </ul>
     </nav>
 
+    <form class="header-search" role="search" aria-label="Search products">
+      <label for="site-search" class="sr-only">Search products</label>
+      <input id="site-search" type="search" disabled placeholder="Search products (not built yet)">
+      <?= icon('search') ?>
+    </form>
+
     <div class="header-tools">
-      <button type="button" class="icon-btn" disabled aria-label="Search (not built yet)"><?= icon('search') ?></button>
-      <button type="button" class="icon-btn" disabled aria-label="Account (not built yet)"><?= icon('user') ?></button>
-      <button type="button" class="icon-btn cart-btn" disabled aria-label="Cart, 0 items (not built yet)"><?= icon('cart') ?><span class="cart-count">0</span></button>
+      <button type="button" class="icon-btn icon-search" disabled aria-label="Search (not built yet)"><?= icon('search') ?></button>
+      <a class="icon-btn" href="<?= e(account_href()) ?>" aria-label="Account"><?= icon('user') ?></a>
+      <a class="icon-btn cart-btn" href="/cart" aria-label="Cart, <?= e(cart_count()) ?> items"><?= icon('cart') ?><span class="cart-count"><?= e(cart_count()) ?></span></a>
       <details class="mobile-menu">
         <summary class="icon-btn" aria-label="Menu"><?= icon('menu') ?></summary>
         <nav class="mobile-panel" aria-label="Mobile">

@@ -31,7 +31,13 @@ final class View
         $render = static function () use ($file, $vars): string {
             extract($vars, EXTR_SKIP);
             ob_start();
-            include $file;
+            try {
+                include $file;
+            } catch (\Throwable $e) {
+                // Never let a half-rendered page reach the visitor when a template fails.
+                ob_end_clean();
+                throw $e;
+            }
             return (string) ob_get_clean();
         };
         return $render();

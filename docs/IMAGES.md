@@ -6,7 +6,7 @@ The site is built with named image slots. Until a photo arrives the slot shows a
 
 - `home/hero`, `home/promo`, `home/cta` and the six category photos (`categories/<slug>`), supplied 2026-09-26. The six categories came as one grid image and were cut into separate files. They are about 490 px wide, so a larger original of each would look sharper on high-resolution phones.
 - Ten product photos (`products/<slug>/main`) for the first ten mock products, cut from one grid image. They are only about 275 px wide, so they look soft when shown large on the product page. Larger originals would fix that.
-- Still to supply: photos for the other six mock products (pedal bin, microfibre cloths, disposable gloves, wet floor sign, mop and bucket set, toilet brush set). The real catalogue will replace the mock one.
+- Still to supply: `auth/side` (the tall photo beside sign-in, register and code pages),  the five Common Uses photos, extra gallery photos for products, and photos for the other six mock products (pedal bin, microfibre cloths, disposable gloves, wet floor sign, mop and bucket set, toilet brush set). The real catalogue will replace the mock one.
 
 ## How it works
 
@@ -44,7 +44,8 @@ Product photos:
 | Slot | Where it appears | Shape and minimum width | Notes |
 |---|---|---|---|
 | `products/<product-slug>/main` | Product cards and the top of the product page | Portrait 3:4 (keep the same shape for every product), 1200 px | Single product or pack on a plain light background |
-| `products/<product-slug>/2`, `/3`, `/4` | Extra photos on the product page | Same shape as the main photo | Optional: back label, size, in use |
+| `products/<product-slug>/2`, `/3`, `/4`, `/5` | Extra photos: thumbnails beside the large photo on the product page | Same shape as the main photo | Optional: back label, size, in use |
+| `uses/laundry`, `uses/bathrooms`, `uses/kitchens`, `uses/floors`, `uses/bins` | "Common Uses" tiles on product pages, shared by all products | Landscape 4:3, 800 px | One photo per use, no text in the picture |
 
 The product slug is the item's web address name, for example `products/sample-bleach-5l/main` for `/p/sample-bleach-5l`.
 

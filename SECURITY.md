@@ -1,7 +1,7 @@
 # Security
 
-Status: APPROVED for development and staging only (2026-09-26, Prince Caleb, Super Admin). Production is locked.  
-Baseline version: 0.3.0 (design digest 66848a5d526cf...)  
+Status: APPROVED for development and staging only (baseline 0.4.0, 2026-09-26, Prince Caleb, Super Admin). Production is locked.
+Baseline version: 0.4.0 (design digest d60e5d34e8d5...)
 Canonical record: `security-baseline.yaml`  
 Owner: Belis Bell owner (name pending, DEC-010); developer: Prince Caleb  
 Last reviewed: 2026-09-26
@@ -27,6 +27,10 @@ Built and unit-tested locally, but not run in CI and not independently verified,
 
 Not built at all: authentication and MFA, authorisation on real objects, uploads and scanning, rate limiting, audit log, monitoring, backups, CI runs, branch protection.
 
+## Change 0.4.0 (CHG-001, approved)
+
+The owner asked for emailed verification codes at every customer and admin sign-in, and confirmation emails on register. This replaces the earlier requirement that staff use a passkey or authenticator app, so it is a material change to authentication and the approval is suspended until the owner approves 0.4.0. An emailed code is only as safe as the mailbox that receives it and depends on email delivery, so the new threat THR-022 is rated HIGH residual. Compensating controls: staff mailboxes need MFA, short-lived single-use hashed codes with attempt limits, no remember-me for staff, uniform error messages, a fresh code for sensitive actions, and admin sign-in monitoring (MON-002). A passkey or authenticator app for the owner account is recommended before live payments.
+
 ## Baseline controls
 
 All controls are proposed (REQUIRED). Evidence is NOT_YET_BUILT for every one.
@@ -34,8 +38,8 @@ All controls are proposed (REQUIRED). Evidence is NOT_YET_BUILT for every one.
 | Control ID | Requirement (short) | Owner | Status | Evidence | Next step |
 |---|---|---|---|---|---|
 | CTL-GOV-001 | No build or deploy until the owner approves this baseline version | Owner | PLANNED | EVD-001 / NOT_YET_BUILT | Owner approval, then CI gate |
-| CTL-AUTH-001 | Verified accounts, strong password or passkey, throttling, uniform recovery | Developer | REQUIRED | EVD-008 / NOT_YET_BUILT | Design after DEC-011 |
-| CTL-AUTH-002 | Staff MFA, least-privilege roles, step-up for sensitive actions | Developer | REQUIRED | EVD-006 / NOT_YET_BUILT | DEC-003, DEC-007 |
+| CTL-AUTH-001 | Customers sign in with password plus an emailed one-time code every time; account creation sends a verification code and a confirmation email; throttling and uniform responses | Developer | REQUIRED | EVD-008 / NOT_YET_BUILT | Email delivery must work (CTL-ACCT-001) |
+| CTL-AUTH-002 | Staff sign in with password plus an emailed one-time code every time (5 minute code), short sessions, no remember-me, least-privilege roles, fresh code for sensitive actions; passkey or authenticator recommended for the owner | Developer | REQUIRED | EVD-006 / NOT_YET_BUILT | DEC-003 decided, DEC-007 |
 | CTL-SESS-001 | Secure cookies, rotation, timeouts, CSRF tokens | Developer | REQUIRED | EVD-008 / NOT_YET_BUILT | Build with framework (DEC-011) |
 | CTL-AUTHZ-001 | Server-side ownership and organisation checks on every object | Developer | REQUIRED | EVD-002 / NOT_YET_BUILT | Cross-account tests first |
 | CTL-ORG-001 | Confirmed organisation membership, roles, approval limits | Developer | REQUIRED | EVD-008 / NOT_YET_BUILT | DEC-004 |
