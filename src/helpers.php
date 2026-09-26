@@ -153,7 +153,7 @@ function account_href(): string
     return Belis\Core\Auth::customer() !== null ? '/account' : '/account/sign-in';
 }
 
-/** @return list<string> */
+/** @return list<array{text:string,cart:bool}> */
 function flash_messages(): array
 {
     return Belis\Support\Flash::take();

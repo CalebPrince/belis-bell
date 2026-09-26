@@ -81,3 +81,8 @@
 @media (min-width: 1100px) { .stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .stat { display: grid; gap: .2rem; }
 .stat strong { font-family: var(--font-display); font-size: 1.5rem; overflow-wrap: anywhere; }
+.form-error, .field-error { color: var(--danger); font-weight: 600; margin: .5rem 0 0; }
+.form-error { padding: .75rem 1rem; border: 1px solid var(--danger); border-radius: 10px; background: color-mix(in srgb, var(--danger) 8%, var(--surface)); }
+.field input[aria-invalid="true"] { border-color: var(--danger); }
+.resend { margin-top: .75rem; }
+.inline-form { display: inline-block; margin: .5rem 0 0 .5rem; }

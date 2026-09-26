@@ -21,6 +21,9 @@ final class AdminController
     /** @param array<string,string> $params */
     public function verify(Request $request, array $params = []): Response
     {
+        if (!AuthController::hasPending(true)) {
+            return Response::redirect('/admin/sign-in');
+        }
         return Response::html(View::render('pages/auth/verify', ['title' => 'Enter your code | Belis Bell', 'admin' => true]));
     }
 
@@ -29,7 +32,7 @@ final class AdminController
     {
         return Response::html(View::render('pages/admin/dashboard', [
             'title' => 'Admin | Belis Bell',
-            'staff' => Auth::staff() ?? [],
+            'staff' => array_replace(Auth::staff() ?? [], ['role' => ucfirst((string) (Auth::staff()['role'] ?? ''))]),
             'stats' => PreviewData::adminStats(),
             'orders' => PreviewData::adminOrders(),
             'low' => PreviewData::lowStock(),

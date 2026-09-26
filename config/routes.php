@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use Belis\Controllers\AccountController;
 use Belis\Controllers\AdminController;
+use Belis\Controllers\AuthController;
 use Belis\Controllers\CartController;
 use Belis\Controllers\CatalogueController;
 use Belis\Controllers\HomeController;
@@ -12,8 +13,8 @@ use Belis\Core\Router;
 /**
  * Route table. Every route declares a policy (see src/Core/Policy.php). Unsafe methods are
  * CSRF-checked unless a reason is given as the last argument.
- * Not built yet (see GUI.md): search, quotes, real sign-in, orders, Paystack, admin functions, policy pages.
- * Signed-in pages use the customer or staff policy, which only allows the local preview until sign-in exists.
+ * Not built yet (see GUI.md): search, quotes, orders, Paystack, admin functions, policy pages.
+ * Signed-in pages use the customer or staff policy (password plus emailed code, or the local preview).
  */
 return static function (Router $router): void {
     $router->add('GET', '/', [HomeController::class, 'index'], 'public');
@@ -32,10 +33,19 @@ return static function (Router $router): void {
     $router->add('GET', '/account/sign-in', [AccountController::class, 'signIn'], 'public');
     $router->add('GET', '/account/register', [AccountController::class, 'register'], 'public');
     $router->add('GET', '/account/verify', [AccountController::class, 'verify'], 'public');
+    $router->add('POST', '/account/sign-in', [AuthController::class, 'customerSignIn'], 'public');
+    $router->add('POST', '/account/register', [AuthController::class, 'register'], 'public');
+    $router->add('POST', '/account/verify', [AuthController::class, 'customerVerify'], 'public');
+    $router->add('POST', '/account/resend', [AuthController::class, 'customerResend'], 'public');
+    $router->add('POST', '/account/sign-out', [AuthController::class, 'customerSignOut'], 'public');
     $router->add('GET', '/account', [AccountController::class, 'dashboard'], 'customer');
     $router->add('GET', '/checkout', [AccountController::class, 'checkout'], 'customer');
     $router->add('GET', '/order/{ref}', [AccountController::class, 'order'], 'customer');
     $router->add('GET', '/admin/sign-in', [AdminController::class, 'signIn'], 'public');
     $router->add('GET', '/admin/verify', [AdminController::class, 'verify'], 'public');
+    $router->add('POST', '/admin/sign-in', [AuthController::class, 'staffSignIn'], 'public');
+    $router->add('POST', '/admin/verify', [AuthController::class, 'staffVerify'], 'public');
+    $router->add('POST', '/admin/resend', [AuthController::class, 'staffResend'], 'public');
+    $router->add('POST', '/admin/sign-out', [AuthController::class, 'staffSignOut'], 'public');
     $router->add('GET', '/admin', [AdminController::class, 'dashboard'], 'staff');
 };

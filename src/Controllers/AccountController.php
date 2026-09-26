@@ -36,6 +36,9 @@ final class AccountController
     /** @param array<string,string> $params */
     public function verify(Request $request, array $params = []): Response
     {
+        if (!AuthController::hasPending(false)) {
+            return Response::redirect('/account/sign-in');
+        }
         return Response::html(View::render('pages/auth/verify', ['title' => 'Enter your code | Belis Bell', 'admin' => false]));
     }
 

@@ -25,13 +25,16 @@ test('signed-in pages send a visitor to sign in, and staff pages to the staff si
     assert_same('/admin/sign-in', $res->headers['Location'] ?? '');
 });
 
-test('sign-in, register and code pages are public and their buttons are disabled', function (): void {
+test('sign-in and register pages are public forms with a CSRF token; the code page needs step one first', function (): void {
     Env::fake(local());
-    foreach (['/account/sign-in', '/account/register', '/account/verify', '/admin/sign-in', '/admin/verify'] as $path) {
+    foreach (['/account/sign-in', '/account/register', '/admin/sign-in'] as $path) {
         $res = App::router()->dispatch(new Request('GET', $path));
         assert_same(200, $res->status, $path);
-        assert_true(str_contains($res->body, 'type="submit" class="btn-primary btn-block" disabled'), $path . ' has an active submit button');
+        assert_true(str_contains($res->body, 'method="post"') && str_contains($res->body, 'name="_csrf" value="'), $path);
         assert_true(!str_contains($res->body, 'name="_csrf" value=""'), $path);
+    }
+    foreach (['/account/verify', '/admin/verify'] as $path) {
+        assert_same(302, App::router()->dispatch(new Request('GET', $path))->status, $path);
     }
 });
 

@@ -12,6 +12,7 @@
 <div class="wrap page-head">
   <p class="eyebrow">Staff area</p>
   <h1 class="page-title page-title-lg">Dashboard</h1>
+  <form method="post" action="/admin/sign-out" class="inline-form"><?= csrf_field() ?><button type="submit" class="btn-outline">Sign out</button></form>
   <p class="lead">Signed in as <?= e($staff['name'] ?? '') ?> (<?= e($staff['role'] ?? '') ?>).</p>
 </div>
 
@@ -59,6 +60,6 @@
       </ul>
     </section>
 
-    <p class="mock-note">Sample figures. Order, product and quote management are not built yet, so nothing here can be changed.</p>
+    <p class="mock-note">Order, product and quote management are not built yet, so nothing here can be changed. Sample figures appear only in the local preview.</p>
   </div>
 </div>

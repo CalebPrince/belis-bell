@@ -19,8 +19,19 @@ final class Db
         $this->pdo = $pdo;
     }
 
+    private static ?self $override = null;
+
+    /** Tests only: use this connection (for example in-memory SQLite) instead of the configured database. */
+    public static function useForTests(?self $db): void
+    {
+        self::$override = $db;
+    }
+
     public static function fromEnv(): self
     {
+        if (self::$override !== null) {
+            return self::$override;
+        }
         $host = Env::get('DB_HOST', '127.0.0.1');
         $port = Env::get('DB_PORT', '3306');
         $name = Env::get('DB_NAME', '');

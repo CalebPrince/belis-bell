@@ -1,10 +1,14 @@
 <?php
 /**
  * Customer and staff sign-in (PG-055, PG-057). Email and password, then a one-time code emailed to the person
- * (CTL-AUTH-001, CTL-AUTH-002). Sign-in is NOT BUILT: the button is disabled and the form posts nowhere.
+ * (CTL-AUTH-001, CTL-AUTH-002). The page never says which part was wrong.
  *
  * @var bool $admin
+ * @var string $error
+ * @var string $oldEmail
  */
+$error = $error ?? '';
+$oldEmail = $oldEmail ?? '';
 $self = $admin ? '/admin/sign-in' : '/account/sign-in';
 ?>
 <div class="wrap auth">
@@ -18,19 +22,19 @@ $self = $admin ? '/admin/sign-in' : '/account/sign-in';
       <p class="lead">Sign in to check out, track orders and manage your details.</p>
     <?php endif; ?>
 
+    <?php if ($error !== '') : ?><p class="form-error" role="alert"><?= e($error) ?></p><?php endif; ?>
     <form method="post" action="<?= e($self) ?>" class="form" novalidate>
       <?= csrf_field() ?>
       <div class="field">
         <label for="email">Email address</label>
-        <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required>
+        <input id="email" name="email" type="email" autocomplete="email" inputmode="email" value="<?= e($oldEmail) ?>" required>
       </div>
       <div class="field">
         <label for="password">Password</label>
         <input id="password" name="password" type="password" autocomplete="current-password" required>
       </div>
-      <button type="submit" class="btn-primary btn-block" disabled><?= icon('lock') ?>Sign in</button>
+      <button type="submit" class="btn-primary btn-block"><?= icon('lock') ?>Sign in</button>
     </form>
-    <p class="mock-note">Sign-in is not available yet. This page shows the layout only.</p>
 
     <?php if (!$admin) : ?>
       <p class="auth-alt">New to Belis Bell? <a href="/account/register">Create an account</a></p>

@@ -15,7 +15,7 @@
 <?php include __DIR__ . '/partials/header.php'; ?>
 <main id="main">
 <?php foreach (flash_messages() as $msg) : ?>
-<div class="flash" role="status"><div class="wrap"><?= e($msg) ?> <a href="/cart">View cart</a></div></div>
+<div class="flash" role="status"><div class="wrap"><?= e($msg['text']) ?><?php if ($msg['cart']) : ?> <a href="/cart">View cart</a><?php endif; ?></div></div>
 <?php endforeach; ?>
 <?= raw($content) ?>
 </main>

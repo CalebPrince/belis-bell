@@ -25,7 +25,9 @@ Built and unit-tested locally, but not run in CI and not independently verified,
 - Partial CTL-PAY-002: Paystack webhook signature check with tests. The verify-transaction call, order handling and reconciliation are not built.
 - Partial CTL-DATA-001: log redaction.
 
-Not built at all: authentication and MFA, authorisation on real objects, uploads and scanning, rate limiting, audit log, monitoring, backups, CI runs, branch protection.
+Built and tested locally only (unit tests with an in-memory database, and a manual run against the local database; no CI run, no penetration test): customer and staff sign-in with password plus emailed one-time code (single use, expiry, 5 tries, HMAC-stored, uniform answers, database rate limits, argon2id passwords, rotation on sign-in, staff idle and total session limits, deactivation takes effect at once). Email goes to storage/logs/mail.log only, and the environment guard refuses that in production. Gaps against CTL-AUTH-001/002: no password recovery, no full breached-password check (a short built-in common-password list only), no real email delivery, no fresh code for sensitive actions, no audit log of sign-ins, no admin sign-in monitoring (MON-002), no staff management screen (staff are created with `bin/create-staff.php`).
+
+Not built at all: authorisation on real objects (there are none yet), uploads and scanning, audit log, monitoring, backups, CI runs, branch protection.
 
 ## Change 0.4.0 (CHG-001, approved)
 

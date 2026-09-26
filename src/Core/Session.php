@@ -65,11 +65,18 @@ final class Session
     public static function rotate(): void
     {
         self::start();
-        session_regenerate_id(true);
+        unset($_SESSION['_csrf']);
+        if (PHP_SAPI !== 'cli') {
+            session_regenerate_id(true);
+        }
     }
 
     public static function destroy(): void
     {
+        if (PHP_SAPI === 'cli') {
+            $_SESSION = [];
+            return;
+        }
         if (session_status() === PHP_SESSION_ACTIVE) {
             $_SESSION = [];
             session_destroy();

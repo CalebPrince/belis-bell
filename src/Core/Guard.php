@@ -44,6 +44,12 @@ final class Guard
             if ((Env::get('PAYMENTS_ADAPTER', 'paystack') ?? 'paystack') === 'mock') {
                 $v[] = 'The mock payment adapter is enabled in production';
             }
+            if (strlen(Env::get('AUTH_PEPPER', '') ?? '') < 32) {
+                $v[] = 'AUTH_PEPPER must be set to at least 32 random characters';
+            }
+            if ((Env::get('MAIL_DRIVER', 'log') ?? 'log') === 'log') {
+                $v[] = 'The log mail driver is enabled in production, so no email would be sent';
+            }
             if (!str_starts_with(Env::get('APP_URL', '') ?? '', 'https://')) {
                 $v[] = 'APP_URL must start with https:// in production';
             }

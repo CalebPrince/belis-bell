@@ -15,6 +15,8 @@ function prod(array $over = []): array
         'MOCK_DATA' => '0',
         'PAYSTACK_SECRET_KEY' => '',
         'PAYMENTS_ADAPTER' => 'paystack',
+        'AUTH_PEPPER' => 'a-long-random-value-for-tests-0123456789',
+        'MAIL_DRIVER' => 'smtp',
     ];
 }
 
@@ -95,4 +97,11 @@ test('with preview login off nobody is signed in', function (): void {
     assert_same(null, Belis\Core\Auth::customer());
     Env::fake(['APP_ENV' => 'local', 'MOCK_DATA' => '1', 'PREVIEW_LOGIN' => 'admin']);
     assert_same(null, Belis\Core\Auth::previewRole(), 'unknown roles are ignored');
+});
+
+test('production refuses a missing pepper and the log mail driver', function (): void {
+    Env::fake(prod(['AUTH_PEPPER' => 'short']));
+    assert_true(Guard::violations() !== []);
+    Env::fake(prod(['MAIL_DRIVER' => 'log']));
+    assert_true(Guard::violations() !== []);
 });

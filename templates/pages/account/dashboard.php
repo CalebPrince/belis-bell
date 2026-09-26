@@ -34,6 +34,7 @@
         <div><dt>Member since</dt><dd><?= e($customer['member_since'] ?? '') ?></dd></div>
       </dl>
       <button type="button" class="btn-quiet" disabled>Edit details</button>
+      <form method="post" action="/account/sign-out" class="inline-form"><?= csrf_field() ?><button type="submit" class="btn-outline">Sign out</button></form>
     </section>
 
     <section id="orders" class="card" aria-labelledby="acc-orders">
@@ -73,6 +74,6 @@
       <button type="button" class="btn-quiet" disabled>Add an address</button>
     </section>
 
-    <?php if (is_mock_mode()) : ?><p class="mock-note">Sample account. Real accounts, orders and addresses are not built yet.</p><?php endif; ?>
+    <?php if (is_mock_mode()) : ?><p class="mock-note">Orders and saved addresses are not built yet. Sample rows appear only in the local preview.</p><?php endif; ?>
   </div>
 </div>
