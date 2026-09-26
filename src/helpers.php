@@ -41,7 +41,7 @@ function money(int $pesewas): string
 /** Adds a fixed boolean attribute. Only names on the allowlist are accepted, so this can never print user text. */
 function flag(bool $on, string $attribute): string
 {
-    $allowed = ['selected', 'checked', 'aria-current="page"', 'aria-current="true"'];
+    $allowed = ['selected', 'checked', 'disabled', 'aria-current="page"', 'aria-current="true"'];
     if (!in_array($attribute, $allowed, true)) {
         throw new InvalidArgumentException('Attribute not allowed');
     }

@@ -86,3 +86,8 @@
 .field input[aria-invalid="true"] { border-color: var(--danger); }
 .resend { margin-top: .75rem; }
 .inline-form { display: inline-block; margin: .5rem 0 0 .5rem; }
+.filter-bar { display: grid; gap: .8rem; align-items: end; }
+@media (min-width: 900px) { .filter-bar { grid-template-columns: 2fr 1fr 1fr auto; } }
+.filter-actions { display: flex; gap: .5rem; }
+.form-inline { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+.form-inline select { min-height: 3rem; padding: 0 .8rem; border: 1px solid var(--line); border-radius: 10px; background: var(--canvas); color: var(--ink); font: inherit; }

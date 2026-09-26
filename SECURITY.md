@@ -29,7 +29,9 @@ Built and tested locally only (unit tests with an in-memory database, and a manu
 
 Orders and payments (built, local tests only): prices and delivery fees rebuilt on the server; order lines frozen at order time; an order becomes paid only after the server's own verify call to the provider returns success with the exact amount, currency and reference; browser redirects and webhook bodies alone never change status; webhooks need a valid HMAC signature, are replay-safe (paid once) and answer 500 so the provider retries when the lookup fails; customers can read and act on only their own orders (404 otherwise); a reconcile script checks unpaid orders and expires them after 24 hours; only the provider's own hosts can be linked from the pay step; no card or mobile money field exists in our pages and only references and status are stored. Gaps against CTL-PAY-001/002: the Paystack calls were written from memory of the documentation and have NOT been run against Paystack or checked against the current docs (the docs could not be fetched), no test key has been used, the reconcile job is not scheduled anywhere yet, refunds are not built, there is no order confirmation email and no audit log entry for order actions.
 
-Not built at all: authorisation on staff order actions, uploads and scanning, audit log, monitoring, backups, CI runs, branch protection.
+Admin order view (built, local tests only): only signed-in staff or the owner can list, open and progress orders; customers and visitors are redirected; opening an order and each packing or delivery change writes an audit entry (customer details are personal data); staff can move only paid orders through packing and delivery and cannot change payment status, amounts or prices. Gaps: all staff see every order (no separate sales or fulfilment roles yet), no refunds, no export, and staff-side reading of customer data is logged but not yet monitored (MON-002).
+
+Not built at all: refunds, role-specific staff permissions, uploads and scanning, audit log, monitoring, backups, CI runs, branch protection.
 
 ## Change 0.4.0 (CHG-001, approved)
 

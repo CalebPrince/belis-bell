@@ -12,6 +12,8 @@
  */
 $sourceLabel = ['settings' => 'Saved in Settings', 'environment' => 'From the environment file', 'none' => 'Not set'];
 $group = '';
+$active = 'settings';
+$staff = ['role' => 'Owner'];
 ?>
 <div class="wrap page-head">
   <p class="eyebrow">Staff area</p>
@@ -20,12 +22,7 @@ $group = '';
 </div>
 
 <div class="wrap admin-grid">
-  <nav class="account-nav card" aria-label="Admin">
-    <ul>
-      <li><a href="/admin"><?= icon('house') ?>Overview</a></li>
-      <li><a href="/admin/settings" aria-current="page"><?= icon('lock') ?>Settings</a></li>
-    </ul>
-  </nav>
+  <?php include __DIR__ . '/../../partials/admin_nav.php'; ?>
 
   <div class="account-main">
     <?php if (!$fresh) : ?>

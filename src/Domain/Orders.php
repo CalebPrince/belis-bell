@@ -84,6 +84,76 @@ final class Orders
         return ['ref' => $ref, 'payment_reference' => $payRef, 'total' => $total, 'id' => $id];
     }
 
+    public const FULFILMENT = ['new' => 'To pack', 'packed' => 'Packed', 'out_for_delivery' => 'Out for delivery', 'delivered' => 'Delivered'];
+    public const PAGE_SIZE = 20;
+
+    /**
+     * Staff order list with optional filters. Every filter is a bound value.
+     *
+     * @param array{status?:string,fulfilment?:string,q?:string,page?:int} $f
+     * @return array{items:list<array<string,mixed>>,total:int,pages:int,page:int}
+     */
+    public function adminList(array $f): array
+    {
+        $status = in_array($f['status'] ?? '', ['pending', 'paid', 'failed', 'cancelled'], true) ? (string) $f['status'] : '';
+        $ful = array_key_exists($f['fulfilment'] ?? '', self::FULFILMENT) ? (string) $f['fulfilment'] : '';
+        $q = trim((string) ($f['q'] ?? ''));
+        $like = $q === '' ? '' : '%' . str_replace(['!', '%', '_'], ['!!', '!%', '!_'], mb_substr($q, 0, 60)) . '%';
+        $params = [$status, $status, $ful, $ful, $like, $like, $like, $like];
+        $row = $this->db->one(
+            "SELECT COUNT(*) AS n FROM orders o JOIN users u ON u.id = o.user_id WHERE (? = '' OR o.status = ?) AND (? = '' OR o.fulfilment = ?) AND (? = '' OR o.ref LIKE ? ESCAPE '!' OR u.email LIKE ? ESCAPE '!' OR o.ship_name LIKE ? ESCAPE '!')",
+            $params,
+        );
+        $total = (int) ($row['n'] ?? 0);
+        $pages = max(1, (int) ceil($total / self::PAGE_SIZE));
+        $page = max(1, min((int) ($f['page'] ?? 1), $pages));
+        $items = $this->db->all(
+            "SELECT o.ref, o.status, o.fulfilment, o.needs_review, o.total_pesewas, o.created_at, o.ship_name, u.email FROM orders o JOIN users u ON u.id = o.user_id WHERE (? = '' OR o.status = ?) AND (? = '' OR o.fulfilment = ?) AND (? = '' OR o.ref LIKE ? ESCAPE '!' OR u.email LIKE ? ESCAPE '!' OR o.ship_name LIKE ? ESCAPE '!') ORDER BY o.id DESC LIMIT ? OFFSET ?",
+            array_merge($params, [self::PAGE_SIZE, ($page - 1) * self::PAGE_SIZE]),
+        );
+        return ['items' => $items, 'total' => $total, 'pages' => $pages, 'page' => $page];
+    }
+
+    /** @return array<string,mixed>|null a full order for staff: customer, lines and the payment history */
+    public function adminDetail(string $ref): ?array
+    {
+        $o = $this->db->one('SELECT o.*, u.email AS customer_email, u.name AS customer_name FROM orders o JOIN users u ON u.id = o.user_id WHERE o.ref = ?', [$ref]);
+        if ($o === null) {
+            return null;
+        }
+        $o['items'] = $this->db->all('SELECT product_name, size_label, qty, unit_pesewas, line_pesewas FROM order_items WHERE order_id = ? ORDER BY id', [(int) $o['id']]);
+        $o['events'] = $this->db->all('SELECT source, outcome, created_at FROM payment_events WHERE order_id = ? ORDER BY id', [(int) $o['id']]);
+        return $o;
+    }
+
+    /** Set packing or delivery progress. Only a paid order can move. @return bool false when refused */
+    public function setFulfilment(string $ref, string $value): bool
+    {
+        if (!array_key_exists($value, self::FULFILMENT)) {
+            return false;
+        }
+        return $this->db->run("UPDATE orders SET fulfilment = ? WHERE ref = ? AND status = 'paid'", [$value, $ref]) > 0
+            || $this->db->one("SELECT id FROM orders WHERE ref = ? AND status = 'paid' AND fulfilment = ?", [$ref, $value]) !== null;
+    }
+
+    /**
+     * Figures for the admin dashboard, from real orders.
+     *
+     * @return array{today:int,week_pesewas:int,to_pack:int,review:int,unpaid:int}
+     */
+    public function adminFigures(): array
+    {
+        $now = $this->now();
+        $one = fn (string $sql, array $p = []): int => (int) (array_values($this->db->one($sql, $p) ?? [0])[0] ?? 0);
+        return [
+            'today' => $one('SELECT COUNT(*) FROM orders WHERE created_at >= ?', [$now - ($now % 86400)]),
+            'week_pesewas' => $one("SELECT COALESCE(SUM(total_pesewas), 0) FROM orders WHERE status = 'paid' AND paid_at >= ?", [$now - 7 * 86400]),
+            'to_pack' => $one("SELECT COUNT(*) FROM orders WHERE status = 'paid' AND fulfilment = 'new'"),
+            'review' => $one('SELECT COUNT(*) FROM orders WHERE needs_review = 1'),
+            'unpaid' => $one("SELECT COUNT(*) FROM orders WHERE status = 'pending'"),
+        ];
+    }
+
     /** @return array<string,mixed>|null only the person's own order */
     public function forUser(string $ref, int $userId): ?array
     {

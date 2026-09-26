@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use Belis\Controllers\AccountController;
 use Belis\Controllers\AdminController;
+use Belis\Controllers\AdminOrdersController;
 use Belis\Controllers\AuthController;
 use Belis\Controllers\CartController;
 use Belis\Controllers\CheckoutController;
@@ -57,6 +58,9 @@ return static function (Router $router): void {
     $router->add('POST', '/admin/verify', [AuthController::class, 'staffVerify'], 'public');
     $router->add('POST', '/admin/resend', [AuthController::class, 'staffResend'], 'public');
     $router->add('POST', '/admin/sign-out', [AuthController::class, 'staffSignOut'], 'public');
+    $router->add('GET', '/admin/orders', [AdminOrdersController::class, 'index'], 'staff');
+    $router->add('GET', '/admin/orders/{ref}', [AdminOrdersController::class, 'show'], 'staff');
+    $router->add('POST', '/admin/orders/{ref}/fulfilment', [AdminOrdersController::class, 'fulfilment'], 'staff');
     $router->add('GET', '/admin/settings', [SettingsController::class, 'show'], 'owner');
     $router->add('POST', '/admin/settings', [SettingsController::class, 'save'], 'owner');
     $router->add('POST', '/admin/settings/code', [SettingsController::class, 'sendCode'], 'owner');

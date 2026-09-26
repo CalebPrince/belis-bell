@@ -60,7 +60,7 @@ function shop_env(string $stock = 'in_stock'): array
     $pdo->exec("INSERT INTO products VALUES (1, 1, 'bleach', 'Bleach', 1)");
     $pdo->exec("INSERT INTO product_variants VALUES (10, 1, '5 L', 4500, '" . $stock . "')");
     $pdo->exec('INSERT INTO bulk_tiers VALUES (10, 10, 4000)');
-    $pdo->exec('CREATE TABLE orders (id INTEGER PRIMARY KEY AUTOINCREMENT, ref TEXT UNIQUE, user_id INTEGER, status TEXT DEFAULT "pending", needs_review INTEGER DEFAULT 0, currency TEXT DEFAULT "GHS", subtotal_pesewas INTEGER, delivery_pesewas INTEGER, total_pesewas INTEGER, delivery_method TEXT, ship_name TEXT, ship_phone TEXT, ship_street TEXT, ship_city TEXT, ship_region TEXT, notes TEXT, payment_reference TEXT UNIQUE, created_at INTEGER, paid_at INTEGER)');
+    $pdo->exec('CREATE TABLE orders (id INTEGER PRIMARY KEY AUTOINCREMENT, ref TEXT UNIQUE, user_id INTEGER, status TEXT DEFAULT "pending", fulfilment TEXT DEFAULT "new", needs_review INTEGER DEFAULT 0, currency TEXT DEFAULT "GHS", subtotal_pesewas INTEGER, delivery_pesewas INTEGER, total_pesewas INTEGER, delivery_method TEXT, ship_name TEXT, ship_phone TEXT, ship_street TEXT, ship_city TEXT, ship_region TEXT, notes TEXT, payment_reference TEXT UNIQUE, created_at INTEGER, paid_at INTEGER)');
     $pdo->exec('CREATE TABLE order_items (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER, variant_id INTEGER, product_name TEXT, size_label TEXT, qty INTEGER, unit_pesewas INTEGER, line_pesewas INTEGER)');
     $pdo->exec('CREATE TABLE payment_events (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER, source TEXT, outcome TEXT, created_at INTEGER)');
     $fake = new FakeAdapter();
