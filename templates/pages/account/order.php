@@ -44,6 +44,7 @@ foreach ($order['lines'] as $l) {
       <div><dt>Subtotal</dt><dd><?= e(money($subtotal)) ?></dd></div>
       <div><dt>Delivery Fee</dt><dd><?= e(money((int) $order['delivery'])) ?></dd></div>
       <div class="sum-total"><dt>Total</dt><dd><?= e(money($subtotal + (int) $order['delivery'])) ?></dd></div>
+      <?php if ((int) ($order['refunded'] ?? 0) > 0) : ?><div><dt>Refunded</dt><dd><?= e(money((int) $order['refunded'])) ?></dd></div><?php endif; ?>
     </dl>
   </section>
 

@@ -7,6 +7,7 @@
  * @var array<string,mixed>|null $product
  * @var list<array{id:int,name:string,parent_id:?int}> $categories
  * @var list<array<string,mixed>> $history
+ * @var list<array<string,mixed>> $stockHistory
  * @var array<string,mixed> $old
  * @var array<string,string> $errors
  * @var bool $isOwner
@@ -108,10 +109,9 @@ $big = Belis\Domain\CatalogueAdmin::BIG_CHANGE_PERCENT;
             </div>
           </div>
           <div class="field">
-            <label for="pd-stock">Stock</label>
-            <select id="pd-stock" name="stock">
-              <?php foreach ($stockLabel as $k => $label) : ?><option value="<?= e($k) ?>"<?= flag($val('stock', 'in_stock') === $k, 'selected') ?>><?= e($label) ?></option><?php endforeach; ?>
-            </select>
+            <label for="pd-stock">How many in stock</label>
+            <input id="pd-stock" name="stock_qty" type="text" inputmode="numeric" value="<?= e($val('stock_qty')) ?>" placeholder="0" aria-invalid="<?= e(isset($errors['stock_qty']) ? 'true' : 'false') ?>" required>
+            <?php if (isset($errors['stock_qty'])) : ?><p class="field-error" role="alert"><?= e($errors['stock_qty']) ?></p><?php endif; ?>
           </div>
         </section>
       <?php endif; ?>
@@ -131,11 +131,13 @@ $big = Belis\Domain\CatalogueAdmin::BIG_CHANGE_PERCENT;
                 <input id="sz-l-<?= e($sid) ?>" name="label" type="text" maxlength="80" value="<?= e($s['label']) ?>" required>
               </div>
               <div class="field">
-                <label for="sz-s-<?= e($sid) ?>">Stock</label>
-                <select id="sz-s-<?= e($sid) ?>" name="stock">
-                  <?php foreach ($stockLabel as $k => $label) : ?><option value="<?= e($k) ?>"<?= flag($s['stock_status'] === $k, 'selected') ?>><?= e($label) ?></option><?php endforeach; ?>
-                </select>
+                <label for="sz-s-<?= e($sid) ?>">In stock (<?= e($stockLabel[$s['stock_status']] ?? '') ?>)</label>
+                <input id="sz-s-<?= e($sid) ?>" name="stock_qty" type="text" inputmode="numeric" value="<?= e($s['stock_qty']) ?>" required>
               </div>
+            </div>
+            <div class="field">
+              <label for="sz-r-<?= e($sid) ?>">Reason, if you change the count</label>
+              <input id="sz-r-<?= e($sid) ?>" name="stock_reason" type="text" maxlength="200" placeholder="Stock take, delivery received, damaged...">
             </div>
             <?php if ($isOwner) : ?>
               <div class="field">
@@ -183,14 +185,33 @@ $big = Belis\Domain\CatalogueAdmin::BIG_CHANGE_PERCENT;
               <div class="field"><label for="ad-price">Price (GH₵)</label><input id="ad-price" name="price" type="text" inputmode="decimal" value="<?= e($val('price')) ?>"></div>
             </div>
             <div class="field">
-              <label for="ad-stock">Stock</label>
-              <select id="ad-stock" name="stock"><?php foreach ($stockLabel as $k => $label) : ?><option value="<?= e($k) ?>"><?= e($label) ?></option><?php endforeach; ?></select>
+              <label for="ad-stock">How many in stock</label>
+              <input id="ad-stock" name="stock_qty" type="text" inputmode="numeric" value="<?= e($val('stock_qty')) ?>" placeholder="0">
             </div>
             <?php if (isset($errors['add'])) : ?><p class="field-error" role="alert"><?= e($errors['add']) ?></p><?php endif; ?>
             <p><button type="submit" class="btn-outline"<?= flag(!$canEdit, 'disabled') ?>>Add size</button></p>
           </form>
         </section>
       <?php endif; ?>
+
+      <section class="card" aria-labelledby="sh-title">
+        <h2 id="sh-title">Stock history</h2>
+        <p class="hint">Low stock means <?= e(Belis\Domain\CatalogueAdmin::LOW_STOCK) ?> or fewer. A paid order takes its items off automatically.</p>
+        <?php if ($stockHistory === []) : ?>
+          <p class="empty-note">No stock changes recorded yet.</p>
+        <?php else : ?>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th scope="col">When (UTC)</th><th scope="col">Size</th><th scope="col">Change</th><th scope="col">Now</th><th scope="col">Why</th><th scope="col">By</th></tr></thead>
+              <tbody>
+                <?php foreach ($stockHistory as $h) : ?>
+                  <tr><td><?= e(gmdate('d M Y H:i', (int) $h['created_at'])) ?></td><td><?= e($h['label']) ?></td><td><?= e((int) $h['delta'] > 0 ? '+' . $h['delta'] : (string) $h['delta']) ?></td><td><?= e($h['qty_after']) ?></td><td><?= e($h['reason']) ?></td><td><?= e($h['email'] ?? 'Automatic') ?></td></tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        <?php endif; ?>
+      </section>
 
       <section class="card" aria-labelledby="ph-title">
         <h2 id="ph-title">Price history</h2>

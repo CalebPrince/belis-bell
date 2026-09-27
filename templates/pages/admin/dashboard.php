@@ -7,6 +7,8 @@
  * @var list<array{label:string,value:string,note:string}> $stats
  * @var list<array{ref:string,customer:string,state:string,total:int}> $orders
  * @var list<array{name:string,left:int}> $low
+ * @var bool $showOrders
+ * @var string $roleName
  */
 $active = 'overview';
 ?>
@@ -21,12 +23,16 @@ $active = 'overview';
   <?php include __DIR__ . '/../../partials/admin_nav.php'; ?>
 
   <div class="account-main">
+    <?php if (!$showOrders) : ?>
+      <p class="empty-note"><?= e($roleName === '' && ($staff['role'] ?? '') !== 'Owner' ? 'You have no role yet. Ask the owner to give you one.' : 'Use the links on the left for your work.') ?></p>
+    <?php endif; ?>
     <ul class="stat-grid" aria-label="Key figures">
       <?php foreach ($stats as $s) : ?>
         <li class="card stat"><span class="card-meta"><?= e($s['label']) ?></span><strong><?= e($s['value']) ?></strong><span class="card-meta"><?= e($s['note']) ?></span></li>
       <?php endforeach; ?>
     </ul>
 
+    <?php if ($showOrders) : ?>
     <section class="card" aria-labelledby="ad-orders">
       <h2 id="ad-orders">Recent orders</h2>
       <p><a href="/admin/orders">See all orders</a></p>
@@ -46,6 +52,7 @@ $active = 'overview';
         </table>
       </div>
     </section>
+    <?php endif; ?>
 
     <?php if ($low !== []) : ?>
     <section class="card" aria-labelledby="ad-low">

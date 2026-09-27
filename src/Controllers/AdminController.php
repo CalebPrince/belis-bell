@@ -49,10 +49,12 @@ final class AdminController
     public function dashboard(Request $request, array $params = []): Response
     {
         $staff = Auth::staff() ?? [];
-        $stats = PreviewData::adminStats();
-        $orders = PreviewData::adminOrders();
-        $low = PreviewData::lowStock();
-        if (isset($staff['id'])) {
+        $preview = !isset($staff['id']);
+        $stats = $preview ? PreviewData::adminStats() : [];
+        $orders = $preview ? PreviewData::adminOrders() : [];
+        $low = $preview ? PreviewData::lowStock() : [];
+        $showOrders = Auth::can('orders');
+        if (isset($staff['id']) && $showOrders) {
             try {
                 $o = new Orders(Db::fromEnv());
                 $f = $o->adminFigures();
@@ -76,8 +78,10 @@ final class AdminController
             'title' => 'Admin | Belis Bell',
             'staff' => array_replace($staff, ['role' => ucfirst((string) ($staff['role'] ?? ''))]),
             'stats' => $stats,
-            'orders' => $orders,
+            'orders' => $showOrders ? $orders : [],
             'low' => $low,
+            'showOrders' => $showOrders,
+            'roleName' => (string) ($staff['role'] ?? '') === 'staff' ? (string) ($staff['staff_role'] ?? '') : '',
         ]));
     }
 }

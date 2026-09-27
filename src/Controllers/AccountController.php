@@ -140,6 +140,9 @@ final class AccountController
         if ($customer !== null && isset($customer['id'])) {
             try {
                 $row = (new Orders(Db::fromEnv()))->forUser($params['ref'] ?? '', (int) $customer['id']);
+                if ($row !== null) {
+                    $row['refunded'] = (new \Belis\Domain\Refunds(Db::fromEnv()))->refundedTotal((int) $row['id']);
+                }
             } catch (\Throwable $e) {
                 Logger::error('Order page failed', ['type' => $e::class]);
                 return Response::html(View::render('pages/unavailable', ['title' => 'Back shortly']), 503);
@@ -173,6 +176,7 @@ final class AccountController
             'address' => [(string) $row['ship_name'], (string) $row['ship_street'], $row['ship_city'] . ', ' . $row['ship_region'], (string) $row['ship_phone']],
             'lines' => $lines,
             'delivery' => (int) $row['delivery_pesewas'],
+            'refunded' => (int) ($row['refunded'] ?? 0),
             'real' => true,
         ];
     }

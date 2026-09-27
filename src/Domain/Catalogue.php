@@ -204,7 +204,7 @@ final class Catalogue
     public function variantWithProduct(int $variantId): ?array
     {
         return $this->db->one(
-            'SELECT v.id AS variant_id, v.label, v.price_pesewas, v.stock_status, p.slug, p.name '
+            'SELECT v.id AS variant_id, v.label, v.price_pesewas, v.stock_status, v.stock_qty, p.slug, p.name '
             . 'FROM product_variants v JOIN products p ON p.id = v.product_id JOIN categories c ON c.id = p.category_id '
             . 'WHERE v.id = ? AND p.is_published = 1 AND c.is_published = 1',
             [$variantId],

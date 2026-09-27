@@ -18,6 +18,7 @@ final class CatalogueAdmin
     public const BIG_CHANGE_PERCENT = 50;
     public const STOCK = ['in_stock' => 'In stock', 'low' => 'Low stock', 'out' => 'Out of stock'];
     public const PAGE_SIZE = 20;
+    public const LOW_STOCK = 10;
     private const LIST_WHERE = "WHERE (? = '' OR p.name LIKE ? ESCAPE '!' OR p.brand LIKE ? ESCAPE '!') AND (? = 0 OR p.category_id = ?) AND (? = '' OR p.is_published = ?)";
 
     public function __construct(private readonly Db $db, private readonly ?int $clock = null)
@@ -83,7 +84,7 @@ final class CatalogueAdmin
         if ($p === null) {
             return null;
         }
-        $p['sizes'] = $this->db->all('SELECT id, label, price_pesewas, stock_status FROM product_variants WHERE product_id = ? ORDER BY sort_order, id', [$id]);
+        $p['sizes'] = $this->db->all('SELECT id, label, price_pesewas, stock_status, stock_qty FROM product_variants WHERE product_id = ? ORDER BY sort_order, id', [$id]);
         foreach ($p['sizes'] as $i => $s) {
             $p['sizes'][$i]['tiers'] = $this->db->all('SELECT min_qty, unit_price_pesewas FROM bulk_tiers WHERE variant_id = ? ORDER BY min_qty', [(int) $s['id']]);
         }
@@ -176,15 +177,20 @@ final class CatalogueAdmin
      *
      * @return array{ok:bool,error:?string,changed:list<string>}
      */
-    public function updateSize(int $productId, int $sizeId, string $label, string $stock, ?int $newPrice, bool $confirmBig, ?int $by): array
+    public function updateSize(int $productId, int $sizeId, string $label, string $stockText, string $reason, ?int $newPrice, bool $confirmBig, ?int $by): array
     {
-        $row = $this->db->one('SELECT id, label, price_pesewas, stock_status FROM product_variants WHERE id = ? AND product_id = ?', [$sizeId, $productId]);
+        $row = $this->db->one('SELECT id, label, price_pesewas, stock_status, stock_qty FROM product_variants WHERE id = ? AND product_id = ?', [$sizeId, $productId]);
         $label = trim($label);
+        $reason = trim($reason);
         if ($row === null) {
             return ['ok' => false, 'error' => 'That size does not exist.', 'changed' => []];
         }
-        if ($label === '' || mb_strlen($label) > 80 || !array_key_exists($stock, self::STOCK)) {
-            return ['ok' => false, 'error' => 'Enter a size name (up to 80 characters) and choose a stock level.', 'changed' => []];
+        if ($label === '' || mb_strlen($label) > 80 || preg_match('/^\d{1,6}$/', trim($stockText)) !== 1) {
+            return ['ok' => false, 'error' => 'Enter a size name (up to 80 characters) and a stock count as a whole number.', 'changed' => []];
+        }
+        $qty = (int) trim($stockText);
+        if ($qty !== (int) $row['stock_qty'] && ($reason === '' || mb_strlen($reason) > 200)) {
+            return ['ok' => false, 'error' => 'Say why the stock count is changing (up to 200 characters).', 'changed' => []];
         }
         $changed = [];
         $price = (int) $row['price_pesewas'];
@@ -203,11 +209,12 @@ final class CatalogueAdmin
         if ($label !== $row['label']) {
             $changed[] = 'label';
         }
-        if ($stock !== $row['stock_status']) {
+        if ($qty !== (int) $row['stock_qty']) {
             $changed[] = 'stock';
+            $this->stockChange($sizeId, $qty - (int) $row['stock_qty'], $qty, 'adjust', $reason, null, $by);
         }
         if ($changed !== []) {
-            $this->db->run('UPDATE product_variants SET label = ?, price_pesewas = ?, stock_status = ? WHERE id = ?', [$label, $price, $stock, $sizeId]);
+            $this->db->run('UPDATE product_variants SET label = ?, price_pesewas = ?, stock_qty = ?, stock_status = ? WHERE id = ?', [$label, $price, $qty, self::labelFor($qty), $sizeId]);
             $this->sync($productId);
         }
         return ['ok' => true, 'error' => null, 'changed' => $changed];
@@ -277,20 +284,22 @@ final class CatalogueAdmin
      *
      * @return array{ok:bool,error:?string,id:int}
      */
-    public function addSize(int $productId, string $label, string $priceText, string $stock, ?int $by): array
+    public function addSize(int $productId, string $label, string $priceText, string $stockText, ?int $by): array
     {
         $label = trim($label);
         $price = self::parsePrice($priceText);
         if ($this->db->one('SELECT id FROM products WHERE id = ?', [$productId]) === null) {
             return ['ok' => false, 'error' => 'That product does not exist.', 'id' => 0];
         }
-        if ($label === '' || mb_strlen($label) > 80 || $price === null || !array_key_exists($stock, self::STOCK)) {
-            return ['ok' => false, 'error' => 'Enter a size name, a price such as 45.00, and a stock level.', 'id' => 0];
+        if ($label === '' || mb_strlen($label) > 80 || $price === null || preg_match('/^\d{1,6}$/', trim($stockText)) !== 1) {
+            return ['ok' => false, 'error' => 'Enter a size name, a price such as 45.00, and a stock count as a whole number.', 'id' => 0];
         }
+        $qty = (int) trim($stockText);
         $order = (int) ($this->db->one('SELECT COALESCE(MAX(sort_order), 0) AS m FROM product_variants WHERE product_id = ?', [$productId])['m'] ?? 0) + 1;
-        $this->db->run('INSERT INTO product_variants (product_id, label, price_pesewas, stock_status, sort_order, is_mock) VALUES (?, ?, ?, ?, ?, 0)', [$productId, $label, $price, $stock, $order]);
+        $this->db->run('INSERT INTO product_variants (product_id, label, price_pesewas, stock_status, stock_qty, sort_order, is_mock) VALUES (?, ?, ?, ?, ?, ?, 0)', [$productId, $label, $price, self::labelFor($qty), $qty, $order]);
         $id = (int) ($this->db->one('SELECT MAX(id) AS id FROM product_variants WHERE product_id = ?', [$productId])['id'] ?? 0);
         $this->record($id, 'created', null, self::plainPrice($price), $by);
+        $this->stockChange($id, $qty, $qty, 'initial', 'First count when the size was added', null, $by);
         $this->sync($productId);
         return ['ok' => true, 'error' => null, 'id' => $id];
     }
@@ -307,15 +316,15 @@ final class CatalogueAdmin
         $errors = $v['errors'];
         $price = self::parsePrice(is_string($in['price'] ?? null) ? $in['price'] : '');
         $label = trim(is_string($in['label'] ?? null) ? $in['label'] : '');
-        $stock = is_string($in['stock'] ?? null) ? $in['stock'] : '';
+        $stock = is_string($in['stock_qty'] ?? null) ? trim($in['stock_qty']) : '';
         if ($price === null) {
             $errors['price'] = 'Enter a price such as 45.00.';
         }
         if ($label === '' || mb_strlen($label) > 80) {
             $errors['label'] = 'Enter the first size or pack, for example 5 L.';
         }
-        if (!array_key_exists($stock, self::STOCK)) {
-            $errors['stock'] = 'Choose a stock level.';
+        if (preg_match('/^\d{1,6}$/', $stock) !== 1) {
+            $errors['stock_qty'] = 'Enter how many you have, as a whole number.';
         }
         if ($errors !== []) {
             return ['errors' => $errors, 'id' => 0];
@@ -324,7 +333,7 @@ final class CatalogueAdmin
         $slug = $this->uniqueSlug((string) $c['name']);
         $this->db->run(
             'INSERT INTO products (category_id, subcategory_id, brand, slug, name, pack_size, summary, description, usage_notes, price_pesewas, stock_status, is_published, is_mock) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)',
-            [$c['category_id'], (int) $c['subcategory_id'] === 0 ? null : (int) $c['subcategory_id'], $c['brand'] === '' ? null : $c['brand'], $slug, $c['name'], $label, $c['summary'] === '' ? null : $c['summary'], $c['description'] === '' ? null : $c['description'], $c['usage_notes'] === '' ? null : $c['usage_notes'], $price, $stock],
+            [$c['category_id'], (int) $c['subcategory_id'] === 0 ? null : (int) $c['subcategory_id'], $c['brand'] === '' ? null : $c['brand'], $slug, $c['name'], $label, $c['summary'] === '' ? null : $c['summary'], $c['description'] === '' ? null : $c['description'], $c['usage_notes'] === '' ? null : $c['usage_notes'], $price, self::labelFor((int) $stock)],
         );
         $id = (int) ($this->db->one('SELECT id FROM products WHERE slug = ?', [$slug])['id'] ?? 0);
         $this->addSize($id, $label, self::plainPrice((int) $price), $stock, $by);
@@ -345,6 +354,35 @@ final class CatalogueAdmin
             $slug = $base . '-' . $i;
         }
         return $slug;
+    }
+
+    /** The shop label that goes with a count: out at 0, low at 10 or fewer. */
+    public static function labelFor(int $qty): string
+    {
+        return $qty <= 0 ? 'out' : ($qty <= self::LOW_STOCK ? 'low' : 'in_stock');
+    }
+
+    /** Write one stock movement to the append-only history. */
+    public function stockChange(int $variantId, int $delta, int $qtyAfter, string $kind, string $reason, ?int $orderId, ?int $by): void
+    {
+        $this->db->run('INSERT INTO stock_history (variant_id, delta, qty_after, kind, reason, order_id, changed_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [$variantId, $delta, max(0, $qtyAfter), $kind, mb_substr($reason, 0, 200), $orderId, $by, $this->now()]);
+    }
+
+    /** Make the size's shop label and its product's label follow the stored count. */
+    public function applyStockLabel(int $variantId): void
+    {
+        $v = $this->db->one('SELECT product_id, stock_qty FROM product_variants WHERE id = ?', [$variantId]);
+        if ($v === null) {
+            return;
+        }
+        $this->db->run('UPDATE product_variants SET stock_status = ? WHERE id = ?', [self::labelFor((int) $v['stock_qty']), $variantId]);
+        $this->sync((int) $v['product_id']);
+    }
+
+    /** @return list<array<string,mixed>> newest first */
+    public function stockHistory(int $productId, int $limit = 15): array
+    {
+        return $this->db->all('SELECT h.delta, h.qty_after, h.kind, h.reason, h.created_at, v.label, u.email FROM stock_history h JOIN product_variants v ON v.id = h.variant_id LEFT JOIN users u ON u.id = h.changed_by WHERE v.product_id = ? ORDER BY h.id DESC LIMIT ?', [$productId, max(1, min($limit, 50))]);
     }
 
     /** Keep the product's "from" price, pack label and stock label in step with its sizes, because the shop lists them. */

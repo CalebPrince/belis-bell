@@ -20,6 +20,8 @@ spl_autoload_register(static function (string $class): void {
     }
 });
 require BASE_PATH . '/src/helpers.php';
+// Tests never call the real breached-password service. Tests that need it set their own fake.
+Belis\Support\BreachCheck::useForTests(static fn (string $prefix): string => '');
 
 $GLOBALS['__tests'] = [];
 

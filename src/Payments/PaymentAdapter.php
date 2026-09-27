@@ -24,4 +24,20 @@ interface PaymentAdapter
      * @throws \RuntimeException when the provider cannot be reached
      */
     public function verify(string $reference): array;
+
+    /**
+     * Ask the provider to refund part or all of a paid transaction, back to the original payment only.
+     *
+     * @return array{status:string} pending or processed (a refusal throws)
+     * @throws \RuntimeException when the provider cannot be reached or refuses
+     */
+    public function refund(string $paymentReference, int $amountPesewas, string $note): array;
+
+    /**
+     * What the provider says about the refunds of one transaction. The only source of truth for refund progress.
+     *
+     * @return list<array{amount:int,status:string}> status is pending, processed or failed
+     * @throws \RuntimeException when the provider cannot be reached
+     */
+    public function refunds(string $paymentReference): array;
 }

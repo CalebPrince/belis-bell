@@ -43,6 +43,7 @@ $stockLabel = ['in_stock' => 'In Stock', 'low' => 'Low Stock', 'out' => 'Out of 
               <div>
                 <a class="cart-name" href="/p/<?= e(rawurlencode((string) $l['slug'])) ?>"><?= e($l['name']) ?></a>
                 <p class="card-meta"><?= e($l['label']) ?></p>
+                <?php if ((int) $l['qty'] > (int) $l['stock_qty'] && $l['stock_status'] !== 'out') : ?><p class="field-error" role="alert">Only <?= e($l['stock_qty']) ?> left. Lower the quantity to check out.</p><?php endif; ?>
                 <p class="card-stock <?= e($l['stock_status'] === 'out' ? 'is-out' : 'is-in') ?>"><?= icon($l['stock_status'] === 'out' ? 'x' : 'check-circle', 'icon icon-sm') ?><?= e($stockLabel[$l['stock_status']] ?? '') ?></p>
               </div>
             </div>

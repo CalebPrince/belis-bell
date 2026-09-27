@@ -6,6 +6,7 @@ namespace Belis\Domain;
 use Belis\Core\Db;
 use Belis\Core\Env;
 use Belis\Core\Throttle;
+use Belis\Support\BreachCheck;
 use Belis\Support\CommonPasswords;
 use Belis\Support\Mailer;
 use Belis\Support\Validator;
@@ -53,6 +54,9 @@ final class Accounts
         }
         if (mb_strlen($name) >= 4 && str_contains($lower, strtolower($name))) {
             return 'Do not use your name as your password.';
+        }
+        if (BreachCheck::isBreached($password)) {
+            return 'That password has appeared in a known data breach. Choose a different one.';
         }
         return null;
     }
@@ -271,12 +275,12 @@ final class Accounts
     }
 
     /** Create a verified account directly (used by the staff creation script only). */
-    public function createVerified(string $email, string $name, string $phone, string $password, string $role): int
+    public function createVerified(string $email, string $name, string $phone, string $password, string $role, ?string $staffRole = null): int
     {
         $email = strtolower(trim($email));
         $this->db->run(
-            'INSERT INTO users (email, name, phone, password_hash, role, is_active, email_verified_at, created_at) VALUES (?, ?, ?, ?, ?, 1, ?, ?)',
-            [$email, trim($name), trim($phone), self::hash($password), $role, $this->now(), $this->now()],
+            'INSERT INTO users (email, name, phone, password_hash, role, staff_role, is_active, email_verified_at, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)',
+            [$email, trim($name), trim($phone), self::hash($password), $role, $role === 'staff' ? $staffRole : null, $this->now(), $this->now()],
         );
         return (int) ($this->db->one('SELECT id FROM users WHERE email = ?', [$email])['id'] ?? 0);
     }

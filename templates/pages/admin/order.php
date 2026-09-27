@@ -63,6 +63,35 @@ $ref = rawurlencode((string) $order['ref']);
       <?php endif; ?>
     </section>
 
+    <section class="card" aria-labelledby="ao-refund">
+      <h2 id="ao-refund">Refunds</h2>
+      <?php $left = (int) $order['total_pesewas'] - (int) $order['refunded']; ?>
+      <p>Refunded so far: <strong><?= e(money((int) $order['refunded'])) ?></strong> of <?= e(money((int) $order['total_pesewas'])) ?>.</p>
+      <?php if ($order['refunds'] !== []) : ?>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th scope="col">When (UTC)</th><th scope="col">Amount</th><th scope="col">Status</th><th scope="col">Reason</th><th scope="col">By</th></tr></thead>
+            <tbody>
+              <?php foreach ($order['refunds'] as $r) : ?>
+                <tr><td><?= e(gmdate('d M Y H:i', (int) $r['created_at'])) ?></td><td><?= e(money((int) $r['amount_pesewas'])) ?></td><td><span class="badge state-<?= e($r['status'] === 'processed' ? 'paid' : ($r['status'] === 'failed' ? 'failed' : 'pending')) ?>"><?= e(ucfirst((string) $r['status'])) ?></span></td><td><?= e($r['reason']) ?></td><td><?= e($r['by_email'] ?? '') ?></td></tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      <?php endif; ?>
+      <?php if ($status === 'paid' && $left > 0 && Belis\Core\Auth::owner() !== null) : ?>
+        <form method="post" action="/admin/orders/<?= e($ref) ?>/refund" class="form" novalidate>
+          <?= csrf_field() ?>
+          <div class="field-grid">
+            <div class="field"><label for="rf-amount">Amount to refund (GH₵)</label><input id="rf-amount" name="amount" type="text" inputmode="decimal" placeholder="<?= e(Belis\Domain\CatalogueAdmin::plainPrice($left)) ?>" required></div>
+            <div class="field"><label for="rf-reason">Reason</label><input id="rf-reason" name="reason" type="text" maxlength="200" required></div>
+          </div>
+          <p class="hint">Goes back to the customer's original payment through Paystack, up to <?= e(money($left)) ?>. Asks for an emailed code first. Only the owner can refund.</p>
+          <p><button type="submit" class="btn-outline"<?= flag($preview, 'disabled') ?>>Refund</button></p>
+        </form>
+      <?php endif; ?>
+    </section>
+
     <section class="card" aria-labelledby="ao-cust">
       <h2 id="ao-cust">Customer and delivery address</h2>
       <dl class="detail-list">

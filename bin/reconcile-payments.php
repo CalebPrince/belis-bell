@@ -8,8 +8,11 @@ require __DIR__ . '/_boot.php';
 
 use Belis\Core\Db;
 use Belis\Domain\Orders;
+use Belis\Domain\Refunds;
 use Belis\Payments\Payments;
 
-$r = (new Orders(Db::fromEnv()))->reconcile(Payments::adapter());
-echo sprintf("checked %d, marked paid %d, expired %d, lookup errors %d\n", $r['checked'], $r['paid'], $r['expired'], $r['errors']);
-exit($r['errors'] > 0 ? 1 : 0);
+$adapter = Payments::adapter();
+$r = (new Orders(Db::fromEnv()))->reconcile($adapter);
+$f = (new Refunds(Db::fromEnv()))->reconcile($adapter);
+echo sprintf("orders: checked %d, marked paid %d, expired %d, lookup errors %d\nrefunds: checked %d, lookup errors %d\n", $r['checked'], $r['paid'], $r['expired'], $r['errors'], $f['checked'], $f['errors']);
+exit($r['errors'] + $f['errors'] > 0 ? 1 : 0);

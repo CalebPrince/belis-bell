@@ -30,6 +30,20 @@ final class MockAdapter implements PaymentAdapter
         return ['status' => (string) $r['status'], 'amount' => (int) $r['amount'], 'currency' => 'GHS', 'reference' => $reference];
     }
 
+    public function refund(string $paymentReference, int $amountPesewas, string $note): array
+    {
+        $r = $this->read($paymentReference) ?? ['status' => 'success', 'amount' => 0];
+        $r['refunds'][] = ['amount' => $amountPesewas, 'status' => 'processed'];
+        $this->write($paymentReference, $r);
+        return ['status' => 'processed'];
+    }
+
+    public function refunds(string $paymentReference): array
+    {
+        $r = $this->read($paymentReference);
+        return is_array($r['refunds'] ?? null) ? $r['refunds'] : [];
+    }
+
     /** @return array<string,mixed>|null */
     public function read(string $reference): ?array
     {

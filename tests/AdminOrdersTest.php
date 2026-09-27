@@ -20,7 +20,7 @@ function admin_orders_env(): array
     $pdo->exec('CREATE TABLE settings (name TEXT PRIMARY KEY, value_enc TEXT NOT NULL, updated_by INTEGER, updated_at INTEGER NOT NULL)');
     $a = new Accounts(Db::fromEnv(), $mail);
     $customer = $a->createVerified('ama@example.test', 'Ama Mensah', '+233 24 000 0000', GOOD_PW, 'customer');
-    $staff = $a->createVerified('staff@example.test', 'Kojo Staff', 'n/a', GOOD_PW, 'staff');
+    $staff = $a->createVerified('staff@example.test', 'Kojo Staff', 'n/a', GOOD_PW, 'staff', 'fulfilment');
     return [$mail, $staff, $customer];
 }
 

@@ -93,7 +93,7 @@ final class Cart
             $unit = Pricing::unitPrice((int) $v['price_pesewas'], $tiers, $qty);
             $line = $unit * $qty;
             $lines[] = [
-                'variant_id' => $variantId, 'slug' => $v['slug'], 'name' => $v['name'], 'label' => $v['label'], 'stock_status' => $v['stock_status'],
+                'variant_id' => $variantId, 'slug' => $v['slug'], 'name' => $v['name'], 'label' => $v['label'], 'stock_status' => $v['stock_status'], 'stock_qty' => (int) ($v['stock_qty'] ?? 0),
                 'qty' => $qty, 'unit_pesewas' => $unit, 'line_pesewas' => $line,
             ];
             $items += $qty;

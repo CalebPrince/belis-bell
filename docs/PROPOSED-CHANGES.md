@@ -1,4 +1,4 @@
-# Baseline change CHG-003 (proposed as baseline 0.6.0, awaiting approval of that version, nothing built)
+# Baseline change CHG-003 (approved as baseline 0.6.0 on 2026-09-27, built)
 
 **Decisions recorded 2026-09-27 (DEC-016):** refunds full and partial with GHS 2,000.00 a day before a second code; roles content, fulfilment and sales; stock reduced when paid, low at 10 or fewer; Have I Been Pwned range check with fallback to the built-in list; bulk price changes with a second approver NOT wanted (dropped). The text below is the original proposal; the baseline (0.6.0) has the final wording (CTL-PAY-003, CTL-AUTHZ-002, CTL-BIZ-002, CTL-AUTH-003).
 

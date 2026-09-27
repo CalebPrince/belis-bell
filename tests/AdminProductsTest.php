@@ -23,15 +23,8 @@ function products_env(): array
     $pdo->exec('ALTER TABLE categories ADD COLUMN parent_id INTEGER');
     $pdo->exec("UPDATE categories SET name = 'Cleaning'");
     $pdo->exec("INSERT INTO categories (id, is_published, name, parent_id) VALUES (2, 1, 'Sub cleaning', 1), (3, 1, 'Washrooms', NULL)");
-    foreach (['brand TEXT', 'summary TEXT', 'description TEXT', 'usage_notes TEXT', 'subcategory_id INTEGER', 'pack_size TEXT', 'price_pesewas INTEGER', 'stock_status TEXT', 'is_mock INTEGER DEFAULT 0'] as $col) {
-        $pdo->exec('ALTER TABLE products ADD COLUMN ' . $col);
-    }
-    $pdo->exec('ALTER TABLE product_variants ADD COLUMN sort_order INTEGER DEFAULT 0');
-    $pdo->exec('ALTER TABLE product_variants ADD COLUMN is_mock INTEGER DEFAULT 0');
-    $pdo->exec('ALTER TABLE bulk_tiers ADD COLUMN is_mock INTEGER DEFAULT 0');
-    $pdo->exec("UPDATE products SET price_pesewas = 4500, pack_size = '5 L', stock_status = 'in_stock'");
     $a = new Accounts(Db::fromEnv(), $mail);
-    $staff = $a->createVerified('staff@example.test', 'Kojo Staff', 'n/a', GOOD_PW, 'staff');
+    $staff = $a->createVerified('staff@example.test', 'Kojo Staff', 'n/a', GOOD_PW, 'staff', 'content');
     $owner = $a->createVerified('owner@example.test', 'Boss', 'n/a', GOOD_PW, 'owner');
     return [$mail, $staff, $owner];
 }
@@ -97,7 +90,7 @@ test('staff can see the list and edit content, stock and size names, and it is a
     assert_same('FreshClean', $p['brand']);
     assert_same(2, (int) $p['subcategory_id']);
     assert_same(1, count_rows("action = 'product.update' AND user_id = " . $staff));
-    post('/admin/products/1/size/10', ['label' => '5 litres', 'stock' => 'low']);
+    post('/admin/products/1/size/10', ['label' => '5 litres', 'stock_qty' => '5', 'stock_reason' => 'stock take']);
     $v = variant();
     assert_same('5 litres', $v['label']);
     assert_same('low', $v['stock_status']);
@@ -120,10 +113,10 @@ test('content edits are validated: bad category, foreign subcategory, empty name
 test('staff cannot change prices, bulk prices, add sizes or create products, even by forging the form', function (): void {
     [$mail] = products_env();
     login_as($mail, 'staff');
-    post('/admin/products/1/size/10', ['label' => '5 L', 'stock' => 'in_stock', 'price' => '1.00']);
+    post('/admin/products/1/size/10', ['label' => '5 L', 'stock_qty' => '100', 'price' => '1.00']);
     assert_same(4500, (int) variant()['price_pesewas'], 'staff changed a price');
     assert_same(403, post('/admin/products/1/tiers/10', ['tier_min' => ['5'], 'tier_price' => ['30']])->status);
-    assert_same(403, post('/admin/products/1/addsize', ['label' => 'x', 'price' => '1', 'stock' => 'in_stock'])->status);
+    assert_same(403, post('/admin/products/1/addsize', ['label' => 'x', 'price' => '1', 'stock_qty' => '100'])->status);
     assert_same(403, post('/admin/products/new', ['name' => 'Evil'])->status);
     assert_same(403, App::router()->dispatch(new Request('GET', '/admin/products/new'))->status);
     assert_same(1, (int) Db::fromEnv()->one('SELECT COUNT(*) AS n FROM products')['n']);
@@ -136,11 +129,11 @@ test('staff cannot change prices, bulk prices, add sizes or create products, eve
 test('an owner price change needs a fresh code, is versioned and audited, and updates the shop price', function (): void {
     [$mail, , $owner] = products_env();
     login_as($mail, 'owner');
-    $res = post('/admin/products/1/size/10', ['label' => '5 L', 'stock' => 'in_stock', 'price' => '48.00']);
+    $res = post('/admin/products/1/size/10', ['label' => '5 L', 'stock_qty' => '100', 'price' => '48.00']);
     assert_contains('/admin/confirm', $res->headers['Location'] ?? '');
     assert_same(4500, (int) variant()['price_pesewas'], 'changed without the code');
     confirm_price($mail);
-    post('/admin/products/1/size/10', ['label' => '5 L', 'stock' => 'in_stock', 'price' => '48.00']);
+    post('/admin/products/1/size/10', ['label' => '5 L', 'stock_qty' => '100', 'price' => '48.00']);
     assert_same(4800, (int) variant()['price_pesewas']);
     assert_same(4800, (int) Db::fromEnv()->one('SELECT price_pesewas FROM products WHERE id = 1')['price_pesewas'], 'listing price not synced');
     $h = Db::fromEnv()->one('SELECT kind, old_value, new_value, changed_by FROM price_history');
@@ -156,11 +149,11 @@ test('a wrong code does not unlock price changes, and the confirmation expires',
     login_as($mail, 'owner');
     post('/admin/confirm/code', ['next' => '/admin/products/1'], '10.4.0.1');
     assert_same(422, post('/admin/confirm', ['next' => '/admin/products/1', 'code' => '000000'], '10.4.0.1')->status);
-    post('/admin/products/1/size/10', ['label' => '5 L', 'stock' => 'in_stock', 'price' => '48.00']);
+    post('/admin/products/1/size/10', ['label' => '5 L', 'stock_qty' => '100', 'price' => '48.00']);
     assert_same(4500, (int) variant()['price_pesewas']);
     post('/admin/confirm', ['next' => '/admin/products/1', 'code' => $mail->lastCode()], '10.4.0.1');
     $_SESSION['stepup']['at'] = time() - 601;
-    post('/admin/products/1/size/10', ['label' => '5 L', 'stock' => 'in_stock', 'price' => '48.00']);
+    post('/admin/products/1/size/10', ['label' => '5 L', 'stock_qty' => '100', 'price' => '48.00']);
     assert_same(4500, (int) variant()['price_pesewas'], 'expired confirmation still worked');
     shop_done();
 });
@@ -178,12 +171,12 @@ test('a price change of more than 50 percent needs the extra tick box, and bad p
     login_as($mail, 'owner');
     confirm_price($mail);
     Db::fromEnv()->run('DELETE FROM bulk_tiers');
-    assert_same(422, post('/admin/products/1/size/10', ['label' => '5 L', 'stock' => 'in_stock', 'price' => '4.50'])->status);
+    assert_same(422, post('/admin/products/1/size/10', ['label' => '5 L', 'stock_qty' => '100', 'price' => '4.50'])->status);
     assert_same(4500, (int) variant()['price_pesewas'], 'a big drop went through unconfirmed');
-    post('/admin/products/1/size/10', ['label' => '5 L', 'stock' => 'in_stock', 'price' => '4.50', 'confirm_big' => '1']);
+    post('/admin/products/1/size/10', ['label' => '5 L', 'stock_qty' => '100', 'price' => '4.50', 'confirm_big' => '1']);
     assert_same(450, (int) variant()['price_pesewas']);
     foreach (['abc', '0', '-3', '1.999', '999999999'] as $bad) {
-        assert_same(422, post('/admin/products/1/size/10', ['label' => '5 L', 'stock' => 'in_stock', 'price' => $bad, 'confirm_big' => '1'])->status, $bad);
+        assert_same(422, post('/admin/products/1/size/10', ['label' => '5 L', 'stock_qty' => '100', 'price' => $bad, 'confirm_big' => '1'])->status, $bad);
     }
     assert_same(450, (int) variant()['price_pesewas']);
     shop_done();
@@ -218,7 +211,7 @@ test('a new base price cannot sit below an existing bulk price', function (): vo
     [$mail] = products_env();
     login_as($mail, 'owner');
     confirm_price($mail);
-    assert_same(422, post('/admin/products/1/size/10', ['label' => '5 L', 'stock' => 'in_stock', 'price' => '39.00', 'confirm_big' => '1'])->status);
+    assert_same(422, post('/admin/products/1/size/10', ['label' => '5 L', 'stock_qty' => '100', 'price' => '39.00', 'confirm_big' => '1'])->status);
     assert_same(4500, (int) variant()['price_pesewas']);
     shop_done();
 });
@@ -227,20 +220,20 @@ test('the owner can add a size and create a product, which starts hidden with a 
     [$mail, , $owner] = products_env();
     login_as($mail, 'owner');
     confirm_price($mail);
-    assert_same(302, post('/admin/products/1/addsize', ['label' => '1 L', 'price' => '12.50', 'stock' => 'in_stock'])->status);
+    assert_same(302, post('/admin/products/1/addsize', ['label' => '1 L', 'price' => '12.50', 'stock_qty' => '100'])->status);
     assert_same(2, (int) Db::fromEnv()->one('SELECT COUNT(*) AS n FROM product_variants WHERE product_id = 1')['n']);
     assert_same(1250, (int) Db::fromEnv()->one('SELECT price_pesewas FROM products WHERE id = 1')['price_pesewas'], 'listing price should be the cheapest size');
-    assert_same(422, post('/admin/products/1/addsize', ['label' => '', 'price' => 'x', 'stock' => 'in_stock'])->status);
-    $res = post('/admin/products/new', ['name' => 'Hand Soap', 'category_id' => '3', 'label' => '500 ml', 'price' => '18.00', 'stock' => 'in_stock', 'is_published' => '1']);
+    assert_same(422, post('/admin/products/1/addsize', ['label' => '', 'price' => 'x', 'stock_qty' => '100'])->status);
+    $res = post('/admin/products/new', ['name' => 'Hand Soap', 'category_id' => '3', 'label' => '500 ml', 'price' => '18.00', 'stock_qty' => '100', 'is_published' => '1']);
     assert_same(302, $res->status);
     $p = Db::fromEnv()->one("SELECT id, slug, is_published, is_mock, price_pesewas FROM products WHERE name = 'Hand Soap'");
     assert_same('hand-soap', $p['slug']);
     assert_same(0, (int) $p['is_published'], 'a new product went live');
     assert_same(0, (int) $p['is_mock']);
     assert_same(1800, (int) $p['price_pesewas']);
-    post('/admin/products/new', ['name' => 'Hand Soap', 'category_id' => '3', 'label' => '1 L', 'price' => '30', 'stock' => 'in_stock']);
+    post('/admin/products/new', ['name' => 'Hand Soap', 'category_id' => '3', 'label' => '1 L', 'price' => '30', 'stock_qty' => '100']);
     assert_same(1, (int) Db::fromEnv()->one("SELECT COUNT(*) AS n FROM products WHERE slug = 'hand-soap-2'")['n'], 'slug not made unique');
-    assert_same(422, post('/admin/products/new', ['name' => 'X', 'category_id' => '3', 'label' => '', 'price' => 'nope', 'stock' => 'bad'])->status);
+    assert_same(422, post('/admin/products/new', ['name' => 'X', 'category_id' => '3', 'label' => '', 'price' => 'nope', 'stock_qty' => 'bad'])->status);
     assert_true(count_rows("action = 'product.create' AND user_id = " . $owner) === 2);
     shop_done();
 });
@@ -249,7 +242,7 @@ test('history and audit never contain anything but prices and field names', func
     [$mail] = products_env();
     login_as($mail, 'owner');
     confirm_price($mail);
-    post('/admin/products/1/size/10', ['label' => '5 L', 'stock' => 'in_stock', 'price' => '48.00']);
+    post('/admin/products/1/size/10', ['label' => '5 L', 'stock_qty' => '100', 'price' => '48.00']);
     post('/admin/products/1', ['name' => 'Renamed', 'category_id' => '1', 'is_published' => '1']);
     foreach (Db::fromEnv()->all('SELECT action, target, detail FROM audit_log') as $r) {
         assert_true(!str_contains(implode(' ', array_map('strval', $r)), 'Renamed'), 'content leaked into the audit log');
@@ -265,7 +258,7 @@ test('the other product routes exist with the right policies and need a CSRF tok
         assert_same(419, App::router()->dispatch(new Request('POST', $p, [], ['_csrf' => 'bad']))->status, $p);
     }
     assert_same(404, App::router()->dispatch(new Request('GET', '/admin/products/999'))->status);
-    assert_same(404, post('/admin/products/1/size/999', ['label' => 'x', 'stock' => 'in_stock'])->status);
+    assert_same(404, post('/admin/products/1/size/999', ['label' => 'x', 'stock_qty' => '100'])->status);
     shop_done();
 });
 
@@ -277,7 +270,7 @@ test('the preview people can look at products but not change anything', function
     assert_same(200, $r->dispatch(new Request('GET', '/admin/products'))->status);
     assert_same(200, $r->dispatch(new Request('GET', '/admin/products/1'))->status);
     assert_same(302, post('/admin/products/1', ['name' => 'Hacked', 'category_id' => '1'])->status);
-    assert_same(302, post('/admin/products/1/size/10', ['label' => 'x', 'stock' => 'low', 'price' => '1'])->status);
+    assert_same(302, post('/admin/products/1/size/10', ['label' => 'x', 'stock_qty' => '5', 'stock_reason' => 'stock take', 'price' => '1'])->status);
     assert_same('Bleach', Db::fromEnv()->one('SELECT name FROM products WHERE id = 1')['name']);
     assert_same(4500, (int) variant()['price_pesewas']);
     shop_done();

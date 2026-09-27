@@ -41,6 +41,30 @@ final class FakeAdapter implements PaymentAdapter
         return $this->answer ?? ['status' => 'pending', 'amount' => 0, 'currency' => 'GHS', 'reference' => $reference];
     }
 
+    /** @var list<array{amount:int,note:string}> */
+    public array $refundsMade = [];
+    /** @var list<array{amount:int,status:string}> */
+    public array $refundList = [];
+    public string $refundStatus = 'processed';
+
+    public function refund(string $paymentReference, int $amountPesewas, string $note): array
+    {
+        if ($this->down) {
+            throw new RuntimeException('down');
+        }
+        $this->refundsMade[] = ['amount' => $amountPesewas, 'note' => $note];
+        $this->refundList[] = ['amount' => $amountPesewas, 'status' => $this->refundStatus];
+        return ['status' => $this->refundStatus];
+    }
+
+    public function refunds(string $paymentReference): array
+    {
+        if ($this->down) {
+            throw new RuntimeException('down');
+        }
+        return $this->refundList;
+    }
+
     public function say(string $status, int $amount, string $reference, string $currency = 'GHS'): void
     {
         $this->answer = ['status' => $status, 'amount' => $amount, 'currency' => $currency, 'reference' => $reference];
@@ -53,16 +77,19 @@ function shop_env(string $stock = 'in_stock'): array
     Env::fake(['APP_ENV' => 'local', 'MOCK_DATA' => '1', 'PREVIEW_LOGIN' => '', 'AUTH_PEPPER' => 'test-pepper-with-at-least-32-characters', 'PAYSTACK_SECRET_KEY' => 'sk_test_unit', 'APP_URL' => 'http://localhost', 'PAYMENTS_ADAPTER' => 'paystack']);
     $pdo = Db::fromEnv()->pdo();
     $pdo->exec('CREATE TABLE categories (id INTEGER PRIMARY KEY, is_published INTEGER)');
-    $pdo->exec('CREATE TABLE products (id INTEGER PRIMARY KEY, category_id INTEGER, slug TEXT, name TEXT, is_published INTEGER)');
-    $pdo->exec('CREATE TABLE product_variants (id INTEGER PRIMARY KEY, product_id INTEGER, label TEXT, price_pesewas INTEGER, stock_status TEXT)');
-    $pdo->exec('CREATE TABLE bulk_tiers (variant_id INTEGER, min_qty INTEGER, unit_price_pesewas INTEGER)');
+    $pdo->exec('CREATE TABLE products (id INTEGER PRIMARY KEY, category_id INTEGER, slug TEXT, name TEXT, is_published INTEGER, brand TEXT, summary TEXT, description TEXT, usage_notes TEXT, subcategory_id INTEGER, pack_size TEXT, price_pesewas INTEGER, stock_status TEXT, is_mock INTEGER DEFAULT 0)');
+    $pdo->exec('CREATE TABLE product_variants (id INTEGER PRIMARY KEY, product_id INTEGER, label TEXT, price_pesewas INTEGER, stock_status TEXT, stock_qty INTEGER DEFAULT 100, sort_order INTEGER DEFAULT 0, is_mock INTEGER DEFAULT 0)');
+    $pdo->exec('CREATE TABLE stock_history (id INTEGER PRIMARY KEY AUTOINCREMENT, variant_id INTEGER, delta INTEGER, qty_after INTEGER, kind TEXT, reason TEXT, order_id INTEGER, changed_by INTEGER, created_at INTEGER)');
+    $pdo->exec('CREATE TABLE bulk_tiers (variant_id INTEGER, min_qty INTEGER, unit_price_pesewas INTEGER, is_mock INTEGER DEFAULT 0)');
     $pdo->exec('INSERT INTO categories VALUES (1, 1)');
-    $pdo->exec("INSERT INTO products VALUES (1, 1, 'bleach', 'Bleach', 1)");
-    $pdo->exec("INSERT INTO product_variants VALUES (10, 1, '5 L', 4500, '" . $stock . "')");
-    $pdo->exec('INSERT INTO bulk_tiers VALUES (10, 10, 4000)');
+    $pdo->exec("INSERT INTO products (id, category_id, slug, name, is_published, price_pesewas, pack_size, stock_status) VALUES (1, 1, 'bleach', 'Bleach', 1, 4500, '5 L', 'in_stock')");
+    $pdo->exec("INSERT INTO product_variants (id, product_id, label, price_pesewas, stock_status, stock_qty) VALUES (10, 1, '5 L', 4500, '" . $stock . "', " . ($stock === 'out' ? 0 : 100) . ')');
+    $pdo->exec('INSERT INTO bulk_tiers (variant_id, min_qty, unit_price_pesewas) VALUES (10, 10, 4000)');
     $pdo->exec('CREATE TABLE orders (id INTEGER PRIMARY KEY AUTOINCREMENT, ref TEXT UNIQUE, user_id INTEGER, status TEXT DEFAULT "pending", fulfilment TEXT DEFAULT "new", needs_review INTEGER DEFAULT 0, currency TEXT DEFAULT "GHS", subtotal_pesewas INTEGER, delivery_pesewas INTEGER, total_pesewas INTEGER, delivery_method TEXT, ship_name TEXT, ship_phone TEXT, ship_street TEXT, ship_city TEXT, ship_region TEXT, notes TEXT, payment_reference TEXT UNIQUE, created_at INTEGER, paid_at INTEGER)');
     $pdo->exec('CREATE TABLE order_items (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER, variant_id INTEGER, product_name TEXT, size_label TEXT, qty INTEGER, unit_pesewas INTEGER, line_pesewas INTEGER)');
     $pdo->exec('CREATE TABLE payment_events (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER, source TEXT, outcome TEXT, created_at INTEGER)');
+    $pdo->exec('CREATE TABLE refunds (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER, amount_pesewas INTEGER, reason TEXT, requested_by INTEGER, created_at INTEGER)');
+    $pdo->exec('CREATE TABLE refund_events (id INTEGER PRIMARY KEY AUTOINCREMENT, refund_id INTEGER, status TEXT, source TEXT, created_at INTEGER)');
     $fake = new FakeAdapter();
     Payments::useForTests($fake);
     return [$mail, $fake];

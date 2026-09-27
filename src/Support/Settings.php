@@ -30,6 +30,7 @@ final class Settings
         'SMTP_PASSWORD' => ['label' => 'SMTP password', 'group' => 'Email', 'secret' => true, 'help' => 'The mailbox password. It is never shown again after saving.'],
         'MAIL_FROM_ADDRESS' => ['label' => 'Sender address', 'group' => 'Email', 'secret' => false, 'help' => 'The address emails come from.'],
         'MAIL_FROM_NAME' => ['label' => 'Sender name', 'group' => 'Email', 'secret' => false, 'help' => 'For example Belis Bell.'],
+        'REFUND_DAILY_LIMIT' => ['label' => 'Daily refund limit (GH₵)', 'group' => 'Refunds', 'secret' => false, 'help' => 'After more than this has been refunded in one day (UTC), every further refund needs its own fresh emailed code. Leave empty for GH₵ 2,000.00.'],
         'WHATSAPP_NUMBER' => ['label' => 'WhatsApp number', 'group' => 'Contact', 'secret' => false, 'help' => 'International format, digits only, for the click-to-chat button.'],
     ];
 
@@ -130,6 +131,8 @@ final class Settings
                 return filter_var($value, FILTER_VALIDATE_EMAIL) !== false ? null : 'Enter a valid email address.';
             case 'MAIL_FROM_NAME':
                 return preg_match('/^[^<>"]{1,80}$/u', $value) === 1 ? null : 'Use up to 80 characters, without < > or quotes.';
+            case 'REFUND_DAILY_LIMIT':
+                return preg_match('/^\d{1,7}(\.\d{1,2})?$/', $value) === 1 ? null : 'Enter an amount in cedis such as 2000 or 1500.50.';
             case 'WHATSAPP_NUMBER':
                 $digits = preg_replace('/\D+/', '', $value) ?? '';
                 return strlen($digits) >= 8 && strlen($digits) <= 15 ? null : 'Enter 8 to 15 digits in international format.';

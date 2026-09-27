@@ -147,7 +147,7 @@ final class AdminProductsController
                 }
             }
             $db->pdo()->beginTransaction();
-            $r = $admin->updateSize($pid, $sid, (string) ($request->post['label'] ?? ''), (string) ($request->post['stock'] ?? ''), $newPrice, ($request->post['confirm_big'] ?? '') === '1', $me);
+            $r = $admin->updateSize($pid, $sid, (string) ($request->post['label'] ?? ''), (string) ($request->post['stock_qty'] ?? ''), (string) ($request->post['stock_reason'] ?? ''), $newPrice, ($request->post['confirm_big'] ?? '') === '1', $me);
             if (!$r['ok']) {
                 $db->pdo()->rollBack();
                 return $this->editPage($pid, $request->post, ['size_' . $sid => (string) $r['error']], 422);
@@ -214,7 +214,7 @@ final class AdminProductsController
         try {
             $db = Db::fromEnv();
             $db->pdo()->beginTransaction();
-            $r = (new CatalogueAdmin($db))->addSize($pid, (string) ($request->post['label'] ?? ''), (string) ($request->post['price'] ?? ''), (string) ($request->post['stock'] ?? ''), $me);
+            $r = (new CatalogueAdmin($db))->addSize($pid, (string) ($request->post['label'] ?? ''), (string) ($request->post['price'] ?? ''), (string) ($request->post['stock_qty'] ?? ''), $me);
             if (!$r['ok']) {
                 $db->pdo()->rollBack();
                 return $this->editPage($pid, $request->post, ['add' => (string) $r['error']], 422);
@@ -258,12 +258,13 @@ final class AdminProductsController
             }
             $categories = $admin->categories();
             $history = $admin->history($id);
+            $stockHistory = $admin->stockHistory($id);
         } catch (\Throwable $e) {
             return $this->failed($e);
         }
         $me = Auth::staff()['id'] ?? null;
         return $this->view('pages/admin/product', [
-            'title' => $product['name'] . ' | Belis Bell', 'product' => $product, 'categories' => $categories, 'history' => $history, 'old' => $old, 'errors' => $errors,
+            'title' => $product['name'] . ' | Belis Bell', 'product' => $product, 'categories' => $categories, 'history' => $history, 'stockHistory' => $stockHistory, 'old' => $old, 'errors' => $errors,
             'isOwner' => self::isOwner(), 'fresh' => $me !== null && StepUp::fresh((int) $me), 'isNew' => false, 'canEdit' => $me !== null,
         ], $status);
     }
@@ -280,7 +281,7 @@ final class AdminProductsController
             return $this->failed($e);
         }
         return $this->view('pages/admin/product', [
-            'title' => 'New product | Belis Bell', 'product' => null, 'categories' => $categories, 'history' => [], 'old' => $old, 'errors' => $errors,
+            'title' => 'New product | Belis Bell', 'product' => null, 'categories' => $categories, 'history' => [], 'stockHistory' => [], 'old' => $old, 'errors' => $errors,
             'isOwner' => true, 'fresh' => false, 'isNew' => true, 'canEdit' => isset(Auth::staff()['id']),
         ], $status);
     }

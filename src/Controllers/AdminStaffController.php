@@ -57,6 +57,34 @@ final class AdminStaffController
     }
 
     /** @param array<string,string> $params */
+    public function setRole(Request $request, array $params = []): Response
+    {
+        $me = $this->actor();
+        $id = ctype_digit($params['id'] ?? '') ? (int) $params['id'] : 0;
+        if ($me === null) {
+            return Response::redirect('/admin/staff');
+        }
+        if (!StepUp::fresh($me)) {
+            Flash::notice('Confirm with an emailed code, then change the role again.');
+            return Response::redirect('/admin/confirm?next=' . rawurlencode('/admin/staff'));
+        }
+        $role = is_string($request->post['staff_role'] ?? null) ? $request->post['staff_role'] : '';
+        try {
+            $db = Db::fromEnv();
+            $db->pdo()->beginTransaction();
+            $problem = (new StaffAdmin($db, Mailer::fromEnv()))->setRole($id, $role);
+            if ($problem === null) {
+                Audit::add($db, $me, 'staff.role', 'user:' . $id, $request->ip, null, 'role set to ' . $role);
+            }
+            $db->pdo()->commit();
+        } catch (\Throwable $e) {
+            return $this->failed($e, $db ?? null);
+        }
+        Flash::notice($problem ?? 'Role changed. They are signed out on their next request.');
+        return Response::redirect('/admin/staff');
+    }
+
+    /** @param array<string,string> $params */
     public function setActive(Request $request, array $params = []): Response
     {
         $me = $this->actor();

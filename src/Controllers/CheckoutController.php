@@ -45,6 +45,11 @@ final class CheckoutController
                 return $this->form($cart, $customer, $request->post, $check['errors'], 422);
             }
             $orders = new Orders($db);
+            $short = $orders->stockProblem($cart);
+            if ($short !== null) {
+                Flash::notice($short);
+                return Response::redirect('/cart');
+            }
             $order = $orders->create((int) $customer['id'], $cart, $request->post, $check['delivery']);
             if ($order === null) {
                 Flash::notice('Something in your cart is out of stock. Please review it and try again.');
@@ -166,7 +171,18 @@ final class CheckoutController
     {
         $event = json_decode($request->rawBody(), true);
         $ref = is_array($event) && is_array($event['data'] ?? null) && is_string($event['data']['reference'] ?? null) ? $event['data']['reference'] : '';
-        if ($ref === '' || !is_string($event['event'] ?? null) || !str_starts_with($event['event'], 'charge.')) {
+        $refundRef = is_array($event) && is_array($event['data'] ?? null) && is_string($event['data']['transaction_reference'] ?? null) ? $event['data']['transaction_reference'] : '';
+        $kind = is_array($event) && is_string($event['event'] ?? null) ? $event['event'] : '';
+        if (str_starts_with($kind, 'refund.') && $refundRef !== '') {
+            try {
+                (new \Belis\Domain\Refunds(Db::fromEnv()))->sync($refundRef, Payments::adapter());
+            } catch (\Throwable $e) {
+                Logger::error('Refund webhook could not be processed', ['type' => $e::class]);
+                return new Response(500, 'retry', ['Content-Type' => 'text/plain; charset=utf-8']);
+            }
+            return new Response(200, 'ok', ['Content-Type' => 'text/plain; charset=utf-8']);
+        }
+        if ($ref === '' || !str_starts_with($kind, 'charge.')) {
             return new Response(200, 'ignored', ['Content-Type' => 'text/plain; charset=utf-8']);
         }
         try {

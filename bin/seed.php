@@ -89,8 +89,8 @@ foreach ($data['products'] as [$cat, $slug, $name, $pack, $price, $stock, $descr
     $db->run('DELETE FROM product_variants WHERE product_id = ? AND is_mock = 1', [$productId]);
     foreach ($variants as $i => [$label, $vPrice, $vStock]) {
         $db->run(
-            'INSERT INTO product_variants (product_id, label, price_pesewas, stock_status, sort_order, is_mock) VALUES (?, ?, ?, ?, ?, 1)',
-            [$productId, $label, $vPrice, $vStock, $i],
+            'INSERT INTO product_variants (product_id, label, price_pesewas, stock_status, stock_qty, sort_order, is_mock) VALUES (?, ?, ?, ?, ?, ?, 1)',
+            [$productId, $label, $vPrice, $vStock, $vStock === 'in_stock' ? 100 : ($vStock === 'low' ? 5 : 0), $i],
         );
         $variantId = (int) $db->pdo()->lastInsertId();
         foreach (Pricing::mockTiers((int) $vPrice) as $tier) {

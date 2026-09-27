@@ -20,6 +20,16 @@ final class StepUp
         return is_array($s) && (int) ($s['uid'] ?? 0) === $uid && time() - (int) ($s['at'] ?? 0) <= self::FRESH_SECONDS;
     }
 
+    /** Use up the confirmation: true when it was fresh (and is now spent), so the next sensitive action needs another code. */
+    public static function consume(int $uid): bool
+    {
+        if (!self::fresh($uid)) {
+            return false;
+        }
+        unset($_SESSION['stepup']);
+        return true;
+    }
+
     public static function mark(int $uid): void
     {
         Session::start();
@@ -29,6 +39,6 @@ final class StepUp
     /** Only admin pages that ask for a confirmation may be returned to. */
     public static function safeNext(mixed $next): string
     {
-        return is_string($next) && preg_match('#^/admin/(products(/[0-9]+|/new)?|settings|staff)$#', $next) === 1 ? $next : '/admin';
+        return is_string($next) && preg_match('#^/admin/(products(/[0-9]+|/new)?|settings|staff|orders/BB-[A-Z0-9]{10})$#', $next) === 1 ? $next : '/admin';
     }
 }

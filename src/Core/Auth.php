@@ -35,11 +35,11 @@ final class Auth
     }
 
     /** Record a completed sign-in (after the code). Rotates the session id. */
-    public static function signIn(int $uid, string $role): void
+    public static function signIn(int $uid, string $role, ?string $staffRole = null): void
     {
         Session::rotate();
         $now = time();
-        $_SESSION['auth'] = ['uid' => $uid, 'role' => $role, 'started' => $now, 'seen' => $now];
+        $_SESSION['auth'] = ['uid' => $uid, 'role' => $role, 'staff_role' => $staffRole ?? '', 'started' => $now, 'seen' => $now];
         unset($_SESSION['pending']);
         self::$cache = false;
     }
@@ -78,6 +78,29 @@ final class Auth
         return $u !== null && in_array($u['role'], ['staff', 'owner'], true) ? $u : null;
     }
 
+    /** What each staff role may open. The owner may open everything. */
+    public const ROLE_AREAS = ['content' => ['content'], 'fulfilment' => ['orders', 'fulfilment'], 'sales' => ['orders']];
+
+    /**
+     * May the signed-in staff member or owner use this area (content, orders or fulfilment)? A staff account with no
+     * role can use nothing. The local preview people can look at everything and change nothing.
+     */
+    public static function can(string $area): bool
+    {
+        $r = self::previewRole();
+        if ($r === 'staff' || $r === 'owner') {
+            return true;
+        }
+        $u = self::current();
+        if ($u === null) {
+            return false;
+        }
+        if ($u['role'] === 'owner') {
+            return true;
+        }
+        return $u['role'] === 'staff' && in_array($area, self::ROLE_AREAS[$u['staff_role']] ?? [], true);
+    }
+
     /** @return array<string,string>|null */
     public static function owner(): ?array
     {
@@ -111,11 +134,11 @@ final class Auth
             return self::$cache = null;
         }
         try {
-            $row = Db::fromEnv()->one('SELECT id, email, name, phone, role, is_active, created_at, pw_changed_at FROM users WHERE id = ?', [(int) $a['uid']]);
+            $row = Db::fromEnv()->one('SELECT id, email, name, phone, role, staff_role, is_active, created_at, pw_changed_at FROM users WHERE id = ?', [(int) $a['uid']]);
         } catch (\Throwable) {
             return self::$cache = null; // fail closed when the database cannot answer
         }
-        if ($row === null || (int) $row['is_active'] !== 1 || $row['role'] !== $a['role'] || (int) ($row['pw_changed_at'] ?? 0) > (int) $a['started']) {
+        if ($row === null || (int) $row['is_active'] !== 1 || $row['role'] !== $a['role'] || (string) ($row['staff_role'] ?? '') !== (string) ($a['staff_role'] ?? '') || (int) ($row['pw_changed_at'] ?? 0) > (int) $a['started']) {
             unset($_SESSION['auth']);
             return self::$cache = null;
         }
@@ -126,6 +149,7 @@ final class Auth
             'email' => (string) $row['email'],
             'phone' => (string) $row['phone'],
             'role' => (string) $row['role'],
+            'staff_role' => (string) ($row['staff_role'] ?? ''),
             'member_since' => gmdate('Y-m-d', (int) $row['created_at']),
             'type' => 'Individual',
         ];

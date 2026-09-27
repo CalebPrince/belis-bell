@@ -141,9 +141,9 @@ final class AuthController
                 return Response::redirect($home);
             }
             if ($ok) {
-                $user = Db::fromEnv()->one('SELECT id, role, is_active FROM users WHERE id = ?', [$pending['uid']]);
+                $user = Db::fromEnv()->one('SELECT id, role, staff_role, is_active FROM users WHERE id = ?', [$pending['uid']]);
                 if ($user !== null && (int) $user['is_active'] === 1 && (in_array($user['role'], ['staff', 'owner'], true)) === $staff) {
-                    Auth::signIn((int) $user['id'], (string) $user['role']);
+                    Auth::signIn((int) $user['id'], (string) $user['role'], $user['staff_role'] === null ? null : (string) $user['staff_role']);
                     $this->audit('auth.signin', $staff ? 'staff' : 'customer', (int) $user['id'], $request->ip);
                     return Response::redirect($staff ? '/admin' : '/account');
                 }

@@ -6,7 +6,8 @@ namespace Belis\Payments;
 /**
  * Paystack over HTTPS (redirect flow). Written from Paystack's documented Transaction API: initialize with
  * POST /transaction/initialize (amount in the smallest unit, currency GHS), verify with
- * GET /transaction/verify/:reference. NOT YET RUN against Paystack: no test key has been used, and the current
+ * GET /transaction/verify/:reference; refunds with POST /refund and GET /refund. The refund calls are the least certain
+ * part (written from memory, docs could not be fetched). NOT YET RUN against Paystack: no test key has been used, and the current
  * Paystack documentation must be re-checked at first use (CTL-PAY-002 says so). The secret key comes only from the
  * server environment. Every call has a timeout and verifies the TLS certificate.
  */
@@ -57,6 +58,42 @@ final class PaystackAdapter implements PaymentAdapter
             'currency' => (string) ($d['currency'] ?? ''),
             'reference' => (string) ($d['reference'] ?? ''),
         ];
+    }
+
+    public function refund(string $paymentReference, int $amountPesewas, string $note): array
+    {
+        if (preg_match('/^[A-Za-z0-9_-]{6,60}$/', $paymentReference) !== 1 || $amountPesewas < 1) {
+            throw new \RuntimeException('Bad refund request');
+        }
+        $data = $this->call('POST', '/refund', (string) json_encode(['transaction' => $paymentReference, 'amount' => $amountPesewas, 'currency' => 'GHS', 'merchant_note' => mb_substr($note, 0, 200)]));
+        if (($data['status'] ?? false) !== true || !is_array($data['data'] ?? null)) {
+            throw new \RuntimeException('Paystack did not accept the refund');
+        }
+        return ['status' => self::refundStatus((string) ($data['data']['status'] ?? ''))];
+    }
+
+    public function refunds(string $paymentReference): array
+    {
+        if (preg_match('/^[A-Za-z0-9_-]{6,60}$/', $paymentReference) !== 1) {
+            throw new \RuntimeException('Bad reference');
+        }
+        $data = $this->call('GET', '/refund?reference=' . $paymentReference . '&currency=GHS', null);
+        if (($data['status'] ?? false) !== true || !is_array($data['data'] ?? null)) {
+            throw new \RuntimeException('Paystack did not answer the refund lookup');
+        }
+        $out = [];
+        foreach ($data['data'] as $r) {
+            if (is_array($r) && is_int($r['amount'] ?? null)) {
+                $out[] = ['amount' => $r['amount'], 'status' => self::refundStatus((string) ($r['status'] ?? ''))];
+            }
+        }
+        return $out;
+    }
+
+    /** Paystack has several in-between words (pending, processing, needs-attention); only processed and failed are final. */
+    private static function refundStatus(string $raw): string
+    {
+        return $raw === 'processed' ? 'processed' : ($raw === 'failed' ? 'failed' : 'pending');
     }
 
     /** @return array<string,mixed> */

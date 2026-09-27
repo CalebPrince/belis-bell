@@ -50,6 +50,19 @@ final class Orders
         return ['errors' => $errors, 'delivery' => $delivery];
     }
 
+    /** A message when the cart asks for more than is in stock (checked again at checkout), else null. @param array{lines:list<array<string,mixed>>} $cart */
+    public function stockProblem(array $cart): ?string
+    {
+        foreach ($cart['lines'] as $l) {
+            $row = $this->db->one('SELECT stock_qty FROM product_variants WHERE id = ?', [(int) $l['variant_id']]);
+            $have = (int) ($row['stock_qty'] ?? 0);
+            if ((int) $l['qty'] > $have) {
+                return $have <= 0 ? $l['name'] . ' (' . $l['label'] . ') has just sold out.' : 'Only ' . $have . ' left of ' . $l['name'] . ' (' . $l['label'] . '). Please lower the quantity.';
+            }
+        }
+        return null;
+    }
+
     /**
      * Create a pending order from the cart lines (already priced by the server).
      *
@@ -240,7 +253,25 @@ final class Orders
                 Logger::error('Payment amount or currency mismatch', ['order' => $id]);
                 return (string) $o['status'];
             }
-            $n = $this->db->run("UPDATE orders SET status = 'paid', paid_at = ? WHERE id = ? AND status <> 'paid'", [$this->now(), $id]);
+            $pdo = $this->db->pdo();
+            $own = !$pdo->inTransaction();
+            if ($own) {
+                $pdo->beginTransaction();
+            }
+            try {
+                $n = $this->db->run("UPDATE orders SET status = 'paid', paid_at = ? WHERE id = ? AND status <> 'paid'", [$this->now(), $id]);
+                if ($n > 0) {
+                    $this->takeStock($id);
+                }
+                if ($own) {
+                    $pdo->commit();
+                }
+            } catch (\Throwable $e) {
+                if ($own && $pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                throw $e;
+            }
             $this->event($id, $source, $n > 0 ? 'paid' : 'already_paid');
             if ($n > 0) {
                 $this->emailCustomer((int) $id, 'Your Belis Bell order is confirmed', 'paid');
@@ -298,6 +329,33 @@ final class Orders
             }
         }
         return $out;
+    }
+
+    /**
+     * Reduce stock for a paid order, once (the caller only calls this when the order really became paid just now).
+     * Each size is reduced with one atomic statement that refuses to go below zero. If a size ran short, it is set to
+     * zero, the shortfall is recorded in the stock history and the order is flagged for staff to sort out.
+     */
+    private function takeStock(int $orderId): void
+    {
+        $admin = new CatalogueAdmin($this->db, $this->clock);
+        foreach ($this->db->all('SELECT variant_id, qty, product_name, size_label FROM order_items WHERE order_id = ? AND variant_id IS NOT NULL ORDER BY id', [$orderId]) as $i) {
+            $vid = (int) $i['variant_id'];
+            $need = (int) $i['qty'];
+            $took = $this->db->run('UPDATE product_variants SET stock_qty = stock_qty - ? WHERE id = ? AND stock_qty >= ?', [$need, $vid, $need]);
+            if ($took > 0) {
+                $after = (int) ($this->db->one('SELECT stock_qty FROM product_variants WHERE id = ?', [$vid])['stock_qty'] ?? 0);
+                $admin->stockChange($vid, -$need, $after, 'order', 'Order paid', $orderId, null);
+            } else {
+                $have = (int) ($this->db->one('SELECT stock_qty FROM product_variants WHERE id = ?', [$vid])['stock_qty'] ?? 0);
+                $this->db->run('UPDATE product_variants SET stock_qty = 0 WHERE id = ?', [$vid]);
+                $admin->stockChange($vid, -$have, 0, 'order', 'Order paid but stock was short by ' . ($need - $have), $orderId, null);
+                $this->flag($orderId);
+                $this->event($orderId, 'stock', 'stock_short');
+                Logger::error('Paid order could not be filled from stock', ['order' => $orderId]);
+            }
+            $admin->applyStockLabel($vid);
+        }
     }
 
     private function event(int $orderId, string $source, string $outcome): void

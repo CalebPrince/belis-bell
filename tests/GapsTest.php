@@ -218,18 +218,18 @@ test('only the owner can see staff and the activity log', function (): void {
 test('adding staff needs a fresh code, creates a verified account and emails how to set a password', function (): void {
     $mail = gaps_env();
     login_as($mail, 'owner');
-    $res = post('/admin/staff', ['name' => 'Efua Staff', 'email' => 'efua@example.test']);
+    $res = post('/admin/staff', ['name' => 'Efua Staff', 'email' => 'efua@example.test', 'staff_role' => 'content']);
     assert_contains('/admin/confirm', $res->headers['Location'] ?? '');
     assert_same(0, (int) Db::fromEnv()->one("SELECT COUNT(*) AS n FROM users WHERE email = 'efua@example.test'")['n']);
     post('/admin/confirm/code', ['next' => '/admin/staff'], '10.4.0.1');
     post('/admin/confirm', ['next' => '/admin/staff', 'code' => $mail->lastCode()], '10.4.0.1');
-    assert_same(302, post('/admin/staff', ['name' => 'Efua Staff', 'email' => 'Efua@Example.test'])->status);
+    assert_same(302, post('/admin/staff', ['name' => 'Efua Staff', 'email' => 'Efua@Example.test', 'staff_role' => 'content'])->status);
     $u = Db::fromEnv()->one("SELECT role, is_active, email_verified_at FROM users WHERE email = 'efua@example.test'");
     assert_same('staff', $u['role']);
     assert_true($u['email_verified_at'] !== null);
     assert_contains('/admin/forgot', end($mail->sent)['body']);
     assert_same(1, count_rows("action = 'staff.create'"));
-    assert_same(422, post('/admin/staff', ['name' => 'Again', 'email' => 'efua@example.test'])->status);
+    assert_same(422, post('/admin/staff', ['name' => 'Again', 'email' => 'efua@example.test', 'staff_role' => 'content'])->status);
     assert_same(422, post('/admin/staff', ['name' => '', 'email' => 'nope'])->status);
     // They choose a password with the reset code, then sign in.
     post('/admin/logout-not-a-route', [], '10.4.0.1');
@@ -271,7 +271,7 @@ test('switching staff off ends their access at once, and owners and yourself can
 test('the activity log shows entries by area, records that it was opened, and needs no secrets', function (): void {
     $mail = gaps_env();
     owner_login($mail);
-    post('/admin/products/1/size/10', ['label' => '5 L', 'stock' => 'low']);
+    post('/admin/products/1/size/10', ['label' => '5 L', 'stock_qty' => '5', 'stock_reason' => 'stock take']);
     $all = App::router()->dispatch(new Request('GET', '/admin/audit'));
     assert_same(200, $all->status);
     assert_contains('auth.signin', $all->body);
@@ -481,4 +481,63 @@ test('the preview people cannot change staff accounts, details or addresses', fu
     assert_same(0, (int) Db::fromEnv()->one('SELECT COUNT(*) AS n FROM users WHERE email = \'x@example.test\'')['n']);
     assert_same(0, (int) Db::fromEnv()->one('SELECT COUNT(*) AS n FROM addresses')['n']);
     shop_done();
+});
+
+/* ---------- breached-password check (CTL-AUTH-003) ---------- */
+
+test('only the 5 character hash prefix is sent, and a breached password is refused', function (): void {
+    $sent = [];
+    Belis\Support\BreachCheck::useForTests(function (string $prefix) use (&$sent): string {
+        $sent[] = $prefix;
+        $suffix = substr(strtoupper(sha1('correct horse battery')), 5);
+        return "0018A45C4D1DEF81644B54AB7F969B88D65:0\r\n{$suffix}:3861\r\n00D4F6E8FA6EECAD2A3AA415EEC418D38EC:2";
+    });
+    assert_same('That password has appeared in a known data breach. Choose a different one.', Accounts::passwordProblem('correct horse battery'));
+    assert_same([substr(strtoupper(sha1('correct horse battery')), 0, 5)], $sent);
+    assert_true(strlen($sent[0]) === 5);
+    Belis\Support\BreachCheck::useForTests(static fn (string $prefix): string => '');
+});
+
+test('padding rows with a count of zero never count, and a clean password passes', function (): void {
+    $suffix = substr(strtoupper(sha1('a very unusual phrase 8842')), 5);
+    Belis\Support\BreachCheck::useForTests(static fn (string $prefix): string => "{$suffix}:0\r\n0018A45C4D1DEF81644B54AB7F969B88D65:12");
+    assert_same(null, Accounts::passwordProblem('a very unusual phrase 8842'));
+    Belis\Support\BreachCheck::useForTests(static fn (string $prefix): string => '');
+});
+
+test('when the breach service is down the check falls back and nobody is blocked', function (): void {
+    Belis\Support\BreachCheck::useForTests(static function (string $prefix): string {
+        throw new RuntimeException('timeout');
+    });
+    assert_same(null, Accounts::passwordProblem('a very unusual phrase 8842'));
+    assert_same('That password is too common. Choose a different one.', Accounts::passwordProblem('password123'), 'the built-in list stopped applying');
+    Belis\Support\BreachCheck::useForTests(static fn (string $prefix): string => '');
+});
+
+test('the check can be switched off for offline development, and never runs on an empty password', function (): void {
+    $calls = 0;
+    Belis\Support\BreachCheck::useForTests(function (string $prefix) use (&$calls): string {
+        $calls++;
+        return '';
+    });
+    Env::fake(['BREACH_CHECK' => 'off']);
+    assert_same(false, Belis\Support\BreachCheck::isBreached('anything at all here'));
+    Env::fake([]);
+    assert_same(false, Belis\Support\BreachCheck::isBreached(''));
+    assert_same(0, $calls);
+    Belis\Support\BreachCheck::useForTests(static fn (string $prefix): string => '');
+});
+
+test('the real request only ever accepts a 5 character hex prefix and uses verified TLS', function (): void {
+    $threw = false;
+    try {
+        Belis\Support\BreachCheck::fetchRange('../../evil');
+    } catch (InvalidArgumentException) {
+        $threw = true;
+    }
+    assert_true($threw);
+    $src = (string) file_get_contents(BASE_PATH . '/src/Support/BreachCheck.php');
+    foreach (['CURLOPT_SSL_VERIFYPEER => true', 'CURLOPT_SSL_VERIFYHOST => 2', 'CURLOPT_TIMEOUT => 3', 'CURLPROTO_HTTPS'] as $must) {
+        assert_contains($must, $src);
+    }
 });

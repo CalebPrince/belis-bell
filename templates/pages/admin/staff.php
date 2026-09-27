@@ -32,11 +32,19 @@ $val = static fn (string $k): string => is_string($old[$k] ?? null) ? $old[$k] :
             <?php foreach ($members as $m) : ?>
               <tr>
                 <th scope="row"><?= e($m['name']) ?><br><span class="card-meta"><?= e($m['email']) ?></span></th>
-                <td><?= e(ucfirst((string) $m['role'])) ?></td>
+                <td><?= e($m['role'] === 'owner' ? 'Owner' : ($m['staff_role'] === null ? 'No role yet' : ucfirst((string) $m['staff_role']))) ?></td>
                 <td><?= e($m['last_signin'] === null ? 'Never' : gmdate('d M Y H:i', (int) $m['last_signin'])) ?></td>
                 <td><span class="badge<?= e((int) $m['is_active'] === 1 ? ' state-paid' : '') ?>"><?= e((int) $m['is_active'] === 1 ? 'On' : 'Off') ?></span></td>
                 <td>
                   <?php if ($m['role'] === 'staff' && (int) $m['id'] !== $myId) : ?>
+                    <form method="post" action="/admin/staff/<?= e($m['id']) ?>/role" class="inline-form">
+                      <?= csrf_field() ?>
+                      <label class="sr-only" for="role-<?= e($m['id']) ?>">Role for <?= e($m['name']) ?></label>
+                      <select id="role-<?= e($m['id']) ?>" name="staff_role">
+                        <?php foreach (['content' => 'Content', 'fulfilment' => 'Fulfilment', 'sales' => 'Sales'] as $k => $label) : ?><option value="<?= e($k) ?>"<?= flag($m['staff_role'] === $k, 'selected') ?>><?= e($label) ?></option><?php endforeach; ?>
+                      </select>
+                      <button type="submit" class="btn-quiet"<?= flag(!$canEdit, 'disabled') ?>>Set role</button>
+                    </form>
                     <form method="post" action="/admin/staff/<?= e($m['id']) ?>/active" class="inline-form">
                       <?= csrf_field() ?>
                       <input type="hidden" name="active" value="<?= e((int) $m['is_active'] === 1 ? '0' : '1') ?>">
@@ -66,7 +74,15 @@ $val = static fn (string $k): string => is_string($old[$k] ?? null) ? $old[$k] :
           <input id="sf-email" name="email" type="email" inputmode="email" value="<?= e($val('email')) ?>" required>
           <?php if (isset($errors['email'])) : ?><p class="field-error" role="alert"><?= e($errors['email']) ?></p><?php endif; ?>
         </div>
-        <p class="hint">They get an email explaining how to choose a password with a code. Staff can edit products, categories and orders. Only the owner changes prices, settings and staff.</p>
+        <div class="field">
+          <label for="sf-role">Role</label>
+          <select id="sf-role" name="staff_role" required>
+            <option value="">Choose a role</option>
+            <?php foreach (['content' => 'Content: products and categories', 'fulfilment' => 'Fulfilment: orders and delivery progress', 'sales' => 'Sales: orders (quotes later)'] as $k => $label) : ?><option value="<?= e($k) ?>"<?= flag($val('staff_role') === $k, 'selected') ?>><?= e($label) ?></option><?php endforeach; ?>
+          </select>
+          <?php if (isset($errors['staff_role'])) : ?><p class="field-error" role="alert"><?= e($errors['staff_role']) ?></p><?php endif; ?>
+        </div>
+        <p class="hint">They get an email explaining how to choose a password with a code. Each role sees only its own pages. Only the owner changes prices, settings, staff, roles and refunds.</p>
         <p><button type="submit" class="btn-primary"<?= flag(!$canEdit, 'disabled') ?>>Add staff member</button></p>
       </form>
     </section>
