@@ -21,6 +21,7 @@
     <ul>
       <li><a href="/account" aria-current="page"><?= icon('house') ?>Overview</a></li>
       <li><a href="#orders"><?= icon('cart') ?>My orders</a></li>
+      <li><a href="/quotes"><?= icon('mail') ?>My quotes</a></li>
       <li><a href="#addresses"><?= icon('map-pin') ?>Addresses</a></li>
       <li><a href="#details"><?= icon('user') ?>My details</a></li>
     </ul>

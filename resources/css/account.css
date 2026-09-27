@@ -96,3 +96,18 @@
 .fold summary::-webkit-details-marker { display: none; }
 .fold[open] summary { margin-bottom: 1rem; }
 .sub-row { padding-left: 1.5rem !important; }
+
+/* Quotes */
+.quote-wrap { display: grid; gap: 1.25rem; padding-bottom: 3rem; max-width: 60rem; }
+.quote-row { display: grid; gap: .6rem; padding-block: .5rem; border-top: 1px solid var(--line); }
+@media (min-width: 720px) { .quote-row { grid-template-columns: 3fr 1fr 2fr; } }
+.thread { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: .75rem; }
+.msg { padding: .75rem 1rem; border: 1px solid var(--line); border-radius: 12px; background: var(--canvas); }
+.msg-staff { border-color: var(--blue); }
+.msg-system { background: var(--band); font-style: italic; }
+.msg-meta { margin: 0; font-size: .85rem; color: var(--muted); }
+.msg-body { margin: .3rem 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.badge.quote-new, .badge.quote-in_progress { background: color-mix(in srgb, var(--blue) 14%, var(--surface)); color: var(--blue); }
+.badge.quote-quoted { background: color-mix(in srgb, var(--green) 12%, var(--surface)); color: var(--green); }
+.badge.quote-accepted { background: color-mix(in srgb, var(--green) 22%, var(--surface)); color: var(--green); }
+.badge.quote-declined, .badge.quote-closed { background: var(--band); color: var(--muted); }

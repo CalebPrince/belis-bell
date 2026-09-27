@@ -27,11 +27,11 @@ $steps = [
       <?php endforeach; ?>
     </ol>
     <div class="btn-row">
-      <button type="button" class="btn-primary" disabled>Request a quote</button>
+      <a class="btn-primary" href="/quote/new">Request a quote</a>
       <?php if ($whatsapp !== null) : ?><a class="btn-outline" href="<?= e($whatsapp) ?>" target="_blank" rel="noopener noreferrer">Ask on WhatsApp</a><?php endif; ?>
       <a class="btn-outline" href="/contact">Contact us</a>
     </div>
-    <p class="hint">Quote requests are not built yet, so the button is switched off.</p>
+    <p class="hint">You will be asked to sign in first, so we can keep your quote and our replies in one place.</p>
   </div>
 </section>
 

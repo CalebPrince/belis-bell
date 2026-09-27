@@ -11,7 +11,7 @@ use Belis\Payments\PaystackWebhook;
  */
 final class Policy
 {
-    public const KNOWN = ['public', 'customer', 'staff', 'owner', 'content', 'orders', 'fulfilment', 'webhook:paystack'];
+    public const KNOWN = ['public', 'customer', 'staff', 'owner', 'content', 'orders', 'fulfilment', 'quotes', 'webhook:paystack'];
 
     /** @return int 200 allowed, 401 sign in needed, 403 forbidden */
     public static function evaluate(string $policy, Request $request): int
@@ -21,7 +21,7 @@ final class Policy
             'customer' => Auth::customer() !== null ? 200 : 401,
             'staff' => Auth::staff() !== null ? 200 : 401,
             'owner' => Auth::owner() !== null ? 200 : (Auth::staff() !== null ? 403 : 401),
-            'content', 'orders', 'fulfilment' => Auth::can($policy) ? 200 : (Auth::staff() !== null ? 403 : 401),
+            'content', 'orders', 'fulfilment', 'quotes' => Auth::can($policy) ? 200 : (Auth::staff() !== null ? 403 : 401),
             'webhook:paystack' => PaystackWebhook::verifySignature(
                 $request->rawBody(),
                 $request->header('x-paystack-signature'),

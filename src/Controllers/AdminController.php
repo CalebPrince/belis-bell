@@ -74,6 +74,14 @@ final class AdminController
                 $low = [];
             }
         }
+        if (isset($staff['id']) && Auth::can('quotes')) {
+            try {
+                $qf = (new \Belis\Domain\Quotes(Db::fromEnv()))->figures();
+                $stats[] = ['label' => 'Open quotes', 'value' => (string) $qf['open'], 'note' => $qf['new'] . ' new, ' . $qf['quoted'] . ' waiting for an answer'];
+            } catch (\Throwable $e) {
+                Logger::error('Admin quote figures failed', ['type' => $e::class]);
+            }
+        }
         return Response::html(View::render('pages/admin/dashboard', [
             'title' => 'Admin | Belis Bell',
             'staff' => array_replace($staff, ['role' => ucfirst((string) ($staff['role'] ?? ''))]),

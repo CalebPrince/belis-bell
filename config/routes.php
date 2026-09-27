@@ -7,6 +7,7 @@ use Belis\Controllers\AdminCategoriesController;
 use Belis\Controllers\AdminConfirmController;
 use Belis\Controllers\AdminController;
 use Belis\Controllers\AdminProductsController;
+use Belis\Controllers\AdminQuotesController;
 use Belis\Controllers\AdminStaffController;
 use Belis\Controllers\AdminOrdersController;
 use Belis\Controllers\AuthController;
@@ -16,6 +17,7 @@ use Belis\Controllers\CatalogueController;
 use Belis\Controllers\HomeController;
 use Belis\Controllers\SettingsController;
 use Belis\Controllers\PageController;
+use Belis\Controllers\QuoteController;
 use Belis\Core\Router;
 
 /**
@@ -46,6 +48,12 @@ return static function (Router $router): void {
     $router->add('POST', '/account/verify', [AuthController::class, 'customerVerify'], 'public');
     $router->add('POST', '/account/resend', [AuthController::class, 'customerResend'], 'public');
     $router->add('POST', '/account/sign-out', [AuthController::class, 'customerSignOut'], 'public');
+    $router->add('GET', '/quote/new', [QuoteController::class, 'newForm'], 'customer');
+    $router->add('POST', '/quote/new', [QuoteController::class, 'create'], 'customer');
+    $router->add('GET', '/quotes', [QuoteController::class, 'index'], 'customer');
+    $router->add('GET', '/quotes/{ref}', [QuoteController::class, 'show'], 'customer');
+    $router->add('POST', '/quotes/{ref}/reply', [QuoteController::class, 'reply'], 'customer');
+    $router->add('POST', '/quotes/{ref}/answer', [QuoteController::class, 'answer'], 'customer');
     $router->add('GET', '/account/forgot', [AccountController::class, 'forgot'], 'public');
     $router->add('POST', '/account/forgot', [AuthController::class, 'customerForgot'], 'public');
     $router->add('GET', '/account/reset', [AccountController::class, 'reset'], 'public');
@@ -80,6 +88,11 @@ return static function (Router $router): void {
     $router->add('GET', '/admin/orders/{ref}', [AdminOrdersController::class, 'show'], 'orders');
     $router->add('POST', '/admin/orders/{ref}/refund', [AdminOrdersController::class, 'refund'], 'owner');
     $router->add('POST', '/admin/orders/{ref}/fulfilment', [AdminOrdersController::class, 'fulfilment'], 'fulfilment');
+    $router->add('GET', '/admin/quotes', [AdminQuotesController::class, 'index'], 'quotes');
+    $router->add('GET', '/admin/quotes/{ref}', [AdminQuotesController::class, 'show'], 'quotes');
+    $router->add('POST', '/admin/quotes/{ref}/reply', [AdminQuotesController::class, 'reply'], 'quotes');
+    $router->add('POST', '/admin/quotes/{ref}/status', [AdminQuotesController::class, 'status'], 'quotes');
+    $router->add('POST', '/admin/quotes/{ref}/offer', [AdminQuotesController::class, 'offer'], 'quotes');
     $router->add('GET', '/admin/categories', [AdminCategoriesController::class, 'index'], 'content');
     $router->add('POST', '/admin/categories', [AdminCategoriesController::class, 'create'], 'content');
     $router->add('GET', '/admin/categories/{id}', [AdminCategoriesController::class, 'show'], 'content');

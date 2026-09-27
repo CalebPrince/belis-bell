@@ -44,7 +44,7 @@ function admin_areas(): array
     return [
         'products' => ['GET', '/admin/products'], 'product' => ['GET', '/admin/products/1'], 'categories' => ['GET', '/admin/categories'],
         'orders' => ['GET', '/admin/orders'], 'fulfilment' => ['POST', '/admin/orders/BB-X/fulfilment'],
-        'staff' => ['GET', '/admin/staff'], 'audit' => ['GET', '/admin/audit'], 'settings' => ['GET', '/admin/settings'], 'new product' => ['GET', '/admin/products/new'],
+        'quotes' => ['GET', '/admin/quotes'], 'staff' => ['GET', '/admin/staff'], 'audit' => ['GET', '/admin/audit'], 'settings' => ['GET', '/admin/settings'], 'new product' => ['GET', '/admin/products/new'],
     ];
 }
 
@@ -57,7 +57,7 @@ function allowed(int $status): bool
 test('the content role reaches products and categories and nothing else', function (): void {
     $mail = roles_env();
     as_person($mail, 'staff');
-    $expect = ['products' => true, 'product' => true, 'categories' => true, 'orders' => false, 'fulfilment' => false, 'staff' => false, 'audit' => false, 'settings' => false, 'new product' => false];
+    $expect = ['quotes' => false, 'products' => true, 'product' => true, 'categories' => true, 'orders' => false, 'fulfilment' => false, 'staff' => false, 'audit' => false, 'settings' => false, 'new product' => false];
     foreach (admin_areas() as $name => [$m, $p]) {
         assert_same($expect[$name], allowed(reach($m, $p)), 'content role on ' . $name);
     }
@@ -68,17 +68,17 @@ test('the content role reaches products and categories and nothing else', functi
 test('the fulfilment role reaches orders and delivery progress and nothing else', function (): void {
     $mail = roles_env();
     as_person($mail, 'fulfil');
-    $expect = ['products' => false, 'product' => false, 'categories' => false, 'orders' => true, 'fulfilment' => true, 'staff' => false, 'audit' => false, 'settings' => false, 'new product' => false];
+    $expect = ['quotes' => false, 'products' => false, 'product' => false, 'categories' => false, 'orders' => true, 'fulfilment' => true, 'staff' => false, 'audit' => false, 'settings' => false, 'new product' => false];
     foreach (admin_areas() as $name => [$m, $p]) {
         assert_same($expect[$name], allowed(reach($m, $p)), 'fulfilment role on ' . $name);
     }
     shop_done();
 });
 
-test('the sales role can see orders but cannot move them, and reaches nothing else', function (): void {
+test('the sales role can see orders and quotes but cannot move orders, and reaches nothing else', function (): void {
     $mail = roles_env();
     as_person($mail, 'sales');
-    $expect = ['products' => false, 'product' => false, 'categories' => false, 'orders' => true, 'fulfilment' => false, 'staff' => false, 'audit' => false, 'settings' => false, 'new product' => false];
+    $expect = ['quotes' => true, 'products' => false, 'product' => false, 'categories' => false, 'orders' => true, 'fulfilment' => false, 'staff' => false, 'audit' => false, 'settings' => false, 'new product' => false];
     foreach (admin_areas() as $name => [$m, $p]) {
         assert_same($expect[$name], allowed(reach($m, $p)), 'sales role on ' . $name);
     }
@@ -204,6 +204,6 @@ test('every admin route has a policy, and the staff-only areas are never left as
             assert_same('staff', $r['policy'], $r['path']);
             continue;
         }
-        assert_true(in_array($r['policy'], ['content', 'orders', 'fulfilment', 'owner'], true), $r['method'] . ' ' . $r['path'] . ' has policy ' . $r['policy']);
+        assert_true(in_array($r['policy'], ['content', 'orders', 'fulfilment', 'quotes', 'owner'], true), $r['method'] . ' ' . $r['path'] . ' has policy ' . $r['policy']);
     }
 });

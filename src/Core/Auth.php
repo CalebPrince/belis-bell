@@ -79,7 +79,7 @@ final class Auth
     }
 
     /** What each staff role may open. The owner may open everything. */
-    public const ROLE_AREAS = ['content' => ['content'], 'fulfilment' => ['orders', 'fulfilment'], 'sales' => ['orders']];
+    public const ROLE_AREAS = ['content' => ['content'], 'fulfilment' => ['orders', 'fulfilment'], 'sales' => ['orders', 'quotes']];
 
     /**
      * May the signed-in staff member or owner use this area (content, orders or fulfilment)? A staff account with no
