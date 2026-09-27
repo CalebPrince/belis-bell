@@ -1,6 +1,6 @@
 schema_version: "2.1"
-baseline_version: "0.5.0"
-record_digest: "8096f61945d374fb4a3261b921508e5b9604176cce186585cbf621b1aad1a4b3"
+baseline_version: "0.6.0"
+record_digest: "004a0e9d55e4bf9e5eaf5b6ebaf41fd453b61865d8ffc0f099abaaddc7539f36"
 project:
   id: "PRJ-BELISBELL-001"
   name: "Belis Bell Online Store"
@@ -20,10 +20,10 @@ risk:
     - "The payment provider is Paystack (DEC-002). Live use needs a verified Paystack business account owned by Belis Bell and passing GATE-006; the first build uses Paystack test keys only"
   likely_production_tier: "HIGH"
 lifecycle:
-  status: "APPROVED"
+  status: "SUSPENDED"
   production_posture: "ELIGIBLE_WHEN_APPROVED"
   spike_expires_at: null
-  development_lock: "UNLOCKED"
+  development_lock: "LOCKED"
   deployment_lock: "LOCKED"
 classification_levels: [PUBLIC, INTERNAL, CONFIDENTIAL, SENSITIVE, RESTRICTED]
 assets:
@@ -270,7 +270,7 @@ identities:
     type: "HUMAN"
     authentication: "Password plus an emailed one-time code at every sign-in (5 minute code, single use); short admin sessions; no remember-me; a passkey or authenticator app is recommended later"
     resources: ["CMP-005", "CMP-002"]
-    permissions: ["role-scoped: reply to quotes, update orders, edit catalogue drafts"]
+    permissions: ["role-scoped (content, fulfilment or sales, CTL-AUTHZ-002): edit products and categories, update orders and delivery progress, reply to quotes"]
     forbidden_actions: ["publish bulk price changes alone", "export all customer data", "change staff roles", "read payment instruments"]
     human_approval: "Bulk price changes and data exports need owner approval"
   - id: "ID-005"
@@ -529,6 +529,42 @@ threats:
     residual_risk: "MEDIUM"
     owner: "belis-bell-owner"
     status: "OPEN"
+  - id: "THR-024"
+    component_ids: ["CMP-005", "CMP-006"]
+    scenario: "A taken-over or coerced owner account refunds many paid orders (to the original payment method) or refunds an order and keeps the goods, draining the business"
+    likelihood: "MEDIUM"
+    impact: "HIGH"
+    control_ids: ["CTL-PAY-003", "CTL-AUTH-002", "CTL-AUDIT-001"]
+    residual_risk: "MEDIUM"
+    owner: "belis-bell-owner"
+    status: "OPEN"
+  - id: "THR-025"
+    component_ids: ["CMP-005", "CMP-002"]
+    scenario: "A staff account with one role (for example content) reaches another role's pages or actions, or a role change leaves old sessions with more access than they should have"
+    likelihood: "MEDIUM"
+    impact: "HIGH"
+    control_ids: ["CTL-AUTHZ-002", "CTL-AUTHZ-001", "CTL-AUDIT-001"]
+    residual_risk: "LOW"
+    owner: "developer"
+    status: "OPEN"
+  - id: "THR-026"
+    component_ids: ["CMP-002", "CMP-003"]
+    scenario: "Two buyers order the last units at the same time, or a client or replayed payment event changes stock, so the shop sells goods it does not have or shows wrong stock"
+    likelihood: "MEDIUM"
+    impact: "MEDIUM"
+    control_ids: ["CTL-BIZ-002", "CTL-BIZ-001"]
+    residual_risk: "LOW"
+    owner: "developer"
+    status: "OPEN"
+  - id: "THR-027"
+    component_ids: ["CMP-002", "CMP-007"]
+    scenario: "The breached-password lookup service leaks a password (a bug sends more than the hash prefix), is unavailable, or is compromised and returns wrong answers"
+    likelihood: "LOW"
+    impact: "MEDIUM"
+    control_ids: ["CTL-AUTH-003"]
+    residual_risk: "LOW"
+    owner: "developer"
+    status: "OPEN"
 controls:
   - id: "CTL-GOV-001"
     domain: "GOVERNANCE"
@@ -684,6 +720,34 @@ controls:
     owner: "developer"
     acceptance: "Tests show that a non-owner and a signed-out visitor cannot read or change settings, that a change without a fresh code is refused, that stored values are ciphertext and differ per nonce, that values never appear in rendered pages, logs or audit rows, that live and test key rules are enforced, and that each change writes an audit entry and an owner email"
     evidence_ids: []
+  - id: "CTL-PAY-003"
+    domain: "PAYMENTS"
+    requirement: "Refunds are made only by the owner, from the admin order page, for a paid order, in full or in part, and only back to the original Paystack payment through Paystack's refund API. Every refund needs a fresh emailed code and the CSRF token. The server checks the amount against what was paid and what has already been refunded and never trusts an amount typed in the browser. Once more than GHS 2,000.00 has been refunded in one UTC day, each further refund needs another fresh code (the limit is an owner setting with that default). The refund result is read back from Paystack (never set by a button or a redirect), a refund event that arrives by webhook is verified the same way as a payment (CTL-PAY-002), and repeated or replayed events change nothing. Each refund writes an audit entry and emails the owner and the customer, without card or mobile money details. Refunds are recorded in their own append-only table."
+    status: "REQUIRED"
+    owner: "belis-bell-owner"
+    acceptance: "Tests show only the owner can refund, a refund needs a fresh code, over-refunding and refunding unpaid orders are refused, the daily limit needs a second code, replayed webhooks change nothing, and each refund is audited and emailed"
+    evidence_ids: []
+  - id: "CTL-AUTHZ-002"
+    domain: "AUTHORIZATION"
+    requirement: "Staff have exactly one role: content (products and categories), fulfilment (orders and delivery progress) or sales (orders now, quotes later). The owner can do everything the roles can, and only the owner manages prices, settings, staff, roles and refunds. The role is checked on the server for every admin page and action; hiding a link is not access control. A role change needs a fresh emailed code, is audited, and ends that person's sessions. A role is stored on the account and re-read on every request."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Tests show each role can reach only its own admin pages and actions and is refused (403) on the others, the owner-only areas refuse every staff role, a role change needs a fresh code and ends old sessions, and every change is audited"
+    evidence_ids: []
+  - id: "CTL-BIZ-002"
+    domain: "BUSINESS_LOGIC"
+    requirement: "Stock is a whole number per size. It is reduced on the server, in the same database transaction, when an order becomes paid (never earlier, never by the browser), and checkout refuses an order that would take a size below zero. A size at 10 or fewer shows as low stock, and at zero as out of stock, and the shop label follows the number. Staff and the owner can adjust stock only with a written reason, and every adjustment and every automatic change is logged in an append-only stock history. A paid order that cannot be filled because stock ran out in the meantime is flagged for staff, not silently accepted or refunded. Replayed payment events never reduce stock twice."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Tests show stock falls once per paid order, replays and failed payments change nothing, checkout refuses over-stock quantities, concurrent last-unit orders cannot both be filled, adjustments need a reason and are logged, and labels follow the number"
+    evidence_ids: []
+  - id: "CTL-AUTH-003"
+    domain: "AUTHENTICATION"
+    requirement: "New passwords (register, reset, change) are checked against the Have I Been Pwned range service from the server: only the first 5 characters of the SHA-1 hash are sent, never the password or the full hash, over TLS with the certificate verified, with a 3 second timeout, no cookies and no other identifying data. A password found in breaches is refused. If the service is unreachable or answers oddly, the built-in list of common passwords still applies, sign-up continues, and the failure is logged. This is the only new third party and it is called only from the server."
+    status: "REQUIRED"
+    owner: "developer"
+    acceptance: "Tests show only the 5 character prefix leaves the server, a breached password is refused, and an outage falls back to the built-in list without blocking sign-up"
+    evidence_ids: []
   - id: "CTL-CLIENT-001"
     domain: "DATA"
     requirement: "Browser drafts store only non-sensitive fields (product IDs, quantities, notes without personal identifiers), expire quickly, are cleared on logout and submit, and never hold payment, identity documents or passwords. Shared-device prompts offer a quick clear."
@@ -829,6 +893,12 @@ decisions:
     required_decision: "Requested by the owner on 2026-09-27: in a Settings page for the Super Admin, not only in the environment file. Trade-off accepted for approval: this is more convenient and lets the owner rotate keys without file access, but it puts the keys in the database and lets anyone who controls the owner account change where payments go. Compensating controls are in CTL-SET-001 (encryption, owner only, fresh emailed code, audit log, owner email on every change, write-only values). Recommended before live payments: a passkey or authenticator app for the owner account (see DEC-003 and THR-022), and an alert to a second contact when the payment key changes."
     blocks_approval: false
     status: "DECIDED"
+  - id: "DEC-016"
+    question: "Which known gaps were approved for building in CHG-003?"
+    owner: "belis-bell-owner"
+    required_decision: "Decided by the owner on 2026-09-27: (1) refunds through Paystack, full and partial, owner only, fresh code each time, second code above GHS 2,000.00 refunded in a day; (2) staff roles content, fulfilment and sales; (3) real stock counts, reduced when an order is paid, low stock at 10 or fewer; (4) the Have I Been Pwned range check for new passwords, falling back to the built-in list if the service is down. Not approved: bulk price changes with a second approver (dropped, so the baseline's dual-approval rule stays unbuilt until such a feature is asked for)."
+    blocks_approval: false
+    status: "DECIDED"
   - id: "DEC-004"
     question: "Who can start a quote request, and how are institutions confirmed?"
     owner: "belis-bell-owner"
@@ -943,7 +1013,7 @@ monitoring:
     provider: "NONE"
     owner: "belis-bell-owner"
     configuration_status: "NOT_CONFIGURED"
-    baseline_version: "0.5.0"
+    baseline_version: "0.6.0"
     record_digest: "d60e5d34e8d59b4c57b111cf2476d2ab8614eadd0daa8bc11e76d0c68e5c529e"
     environments: ["staging", "production"]
     handed_off_at: null
@@ -1028,7 +1098,7 @@ recovery:
   rollback: {status: "REQUIRED", details: "Switch back to the previous release folder or tag; reversible migrations"}
   incident_response: {status: "REQUIRED", details: "Disable the affected route or payment mode, revoke sessions and keys, preserve logs, notify the owner, assess notification duties under the Data Protection Act with qualified advice"}
 approval:
-  decision: "APPROVED"
+  decision: "SUSPENDED"
   approver: "Prince Caleb (Super Admin)"
   approved_at: "2026-09-26T21:56:02Z"
   baseline_version: "0.5.0"
@@ -1039,6 +1109,7 @@ approval:
     - "Implement GATE-001 to GATE-005 as the first engineering work, before feature code is merged"
     - "Emailed sign-in codes for customers and staff (CHG-001) as designed in CTL-AUTH-001 and CTL-AUTH-002"
     - "Provider keys (Paystack, SMTP, other APIs) managed in the owner-only Settings page, encrypted in the database, as designed in CTL-SET-001 (CHG-002, DEC-015)"
+    - "SUSPENDED on 2026-09-27 by CHG-003 (refunds, staff roles, stock counts, breached-password lookup). Version 0.5.0 stays approved as recorded above until 0.6.0 is approved; no work under CHG-003 may start before that."
     - "NOT covered: real customer data, live payments, live Paystack keys, production deployment, and enabling uploads in production"
     - "Any change to authentication, payments, personal data, uploads, hosting, third parties or admin permissions suspends this approval until reassessed"
   expires_at: null
@@ -1064,4 +1135,15 @@ changes:
     new_rule: "Integration credentials are managed by the owner in an admin Settings page and stored encrypted in the database (CTL-SET-001). The environment file keeps the bootstrap values and the master encryption key, and remains the fallback."
     reason: "Owner request on 2026-09-27: keys for Paystack, email SMTP and any other API should be set in the Super Admin settings page."
     impact: "New CRITICAL-impact threat THR-023: taking over the owner account, or reading the database and environment file together, could redirect payments or read a secret. Compensating controls: authenticated encryption, owner-only access, fresh emailed code for every view or change, write-only values, audit log and owner email on every change, live and test key rules, environment fallback. The audit log (CTL-AUDIT-001) must exist at least for settings before this ships. Residual risk MEDIUM, rising to HIGH if the owner mailbox is compromised (THR-022) until a passkey or authenticator is added."
+    approver_required: "Prince Caleb (Super Admin) or the Belis Bell business owner"
+  - id: "CHG-003"
+    type: "ADDED"
+    status: "PROPOSED"
+    security_impact: "HIGH"
+    material: true
+    targets: ["CTL-PAY-003", "CTL-AUTHZ-002", "CTL-BIZ-002", "CTL-AUTH-003", "ID-004", "THR-024", "THR-025", "THR-026", "THR-027", "DEC-016"]
+    old_rule: "Payments only take money in. Every staff account has one shared level of access. Stock is a label. New passwords are checked against a short built-in list only."
+    new_rule: "The owner can refund paid orders through Paystack under CTL-PAY-003. Staff have one of three roles under CTL-AUTHZ-002. Stock is a counted number under CTL-BIZ-002. New passwords are also checked against the Have I Been Pwned range service under CTL-AUTH-003."
+    reason: "Owner request and decision on 2026-09-27 (approval of the proposals in docs/PROPOSED-CHANGES.md, with the choices recorded in DEC-016)."
+    impact: "Money can now leave the business (THR-024), permissions are split (THR-025), stock decides what can be sold (THR-026), and one more third party is called from the server (THR-027). Compensating controls are in the four new controls, and the existing fresh-code, audit and owner-email patterns are reused."
     approver_required: "Prince Caleb (Super Admin) or the Belis Bell business owner"

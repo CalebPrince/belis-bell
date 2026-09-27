@@ -1,4 +1,6 @@
-# Proposed baseline change CHG-003 (DRAFT, not approved, nothing built)
+# Baseline change CHG-003 (proposed as baseline 0.6.0, awaiting approval of that version, nothing built)
+
+**Decisions recorded 2026-09-27 (DEC-016):** refunds full and partial with GHS 2,000.00 a day before a second code; roles content, fulfilment and sales; stock reduced when paid, low at 10 or fewer; Have I Been Pwned range check with fallback to the built-in list; bulk price changes with a second approver NOT wanted (dropped). The text below is the original proposal; the baseline (0.6.0) has the final wording (CTL-PAY-003, CTL-AUTHZ-002, CTL-BIZ-002, CTL-AUTH-003).
 
 Written 2026-09-27. These are the known gaps that cannot be built inside the approved baseline 0.5.0, because each one changes payments, permissions, business rules or adds a third party. The approved baseline says any such change suspends approval until the owner approves a new version, so **none of this is built or in `security-baseline.yaml`**. To go ahead, reply "Approve CHG-003" for all of it, or name the items you want. I will then write baseline 0.6.0, suspend, get your explicit approval of that version, and only then build.
 

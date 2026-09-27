@@ -1,6 +1,6 @@
 # Belis Bell Online Store
 
-Status: DRAFT scaffold. Design gate sealed. Security baseline 0.5.0 (emailed sign-in codes CHG-001, keys in an owner Settings page CHG-002) is approved for development and staging only. Production is locked.  
+Status: DRAFT scaffold. Design gate sealed. Security baseline 0.5.0 (emailed sign-in codes CHG-001, keys in an owner Settings page CHG-002) is approved for development and staging only; 0.6.0 (refunds, staff roles, stock counts, breached-password lookup, CHG-003) is proposed and awaits the owner's approval. Production is locked.  
 Owner: Prince Caleb (Super Admin); a Belis Bell business owner is still to be named (DEC-010, DEC-013)  
 Last reviewed: 2026-09-26
 
